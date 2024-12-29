@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# -*- mode: shell-script; sh-shell: bash; sh-basic-offset: 4; sh-indentation: 4; coding: utf-8 -*-
+# shellcheck shell=bash
+
+if ! TEST_DIRECTORY=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P); then
+    echo >&2 "Error fetching test directory."
+    exit 1
+fi
+
+if ! TEST_VENDOR_DIRECTORY=$(cd "${TEST_DIRECTORY}/../vendor" &>/dev/null && pwd -P); then
+    echo >&2 "Error fetching test vendor directory."
+    exit 1
+fi
+
+if ! [[ -v MYCMD_SYSTEM_BASE_DIR ]]; then
+    echo >&2 "Error fetching MyCmd lib directory."
+    exit 1
+fi
+
+function test_mycmd_lib_is_loaded() {
+    assertTrue 'MyCmd Lib is loaded' '[ -v _MYCMD_LIB ]'
+}
+
+function test_project_lib_is_loaded() {
+    assertTrue 'Project Lib is loaded' '[ -v _MYCMD_PROJECT_LIB ]'
+}
+
+function oneTimeSetUp() {
+    # shellcheck source=/dev/null
+    . "${MYCMD_SYSTEM_BASE_DIR}/mycmd-lib"
+    mycmd.source_mycmd_lib "myproject"
+}
+
+# shellcheck source=../vendor/shunit2
+. "${TEST_VENDOR_DIRECTORY}/shunit2"

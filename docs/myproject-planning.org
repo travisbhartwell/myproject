@@ -1,0 +1,6 @@
+#+title: MyProject Planning
+
+* Project Task Runner
+** TODO Out of band =myproject= files for work projects
+** TODO =project.find_files_for_filset= should be additive
+** TODO =project.find_files_for_filset= should support symlinks and files with spaces in them
