@@ -1,0 +1,3 @@
+#+title: MyCmd Concepts and Conventions
+
+This document will be where I document the concepts and conventions used in the MyProject implementation.

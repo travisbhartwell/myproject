@@ -1,6 +1,49 @@
 #+title: MyProject Planning
 
 * Project Task Runner
-** TODO Out of band =myproject= files for work projects
 ** TODO =project.find_files_for_filset= should be additive
 ** TODO =project.find_files_for_filset= should support symlinks and files with spaces in them
+
+* Milestones
+** Features to Design and Explore
+*** TODO Data structures/split between Task Definitions and Task Execution
+*** TODO Intra- and Inter- project code re-use
+*** TODO Out of band =myproject= directories and configuration
+*** TODO Declaring task dependencies on one another
+
+** Dog Fooding
+*** TODO Remove =myproject-tasks= file
+*** TODO Remove =mycmd/project= from MyCmd
+*** TODO Rename MyProject's =mycmd/myproject= to =mycmd/project=
+*** TODO Convert all personal =myproject= files to =myproject= directories
+*** TODO Create snapshot
+
+** 0.1
+*** TODO End User Documentation
+*** TODO Installation Documentation
+*** TODO CI using GHA
+*** TODO Emacs support for executing tasks outside of my own dotfiles
+*** TODO Announcement development log post
+*** TODO Announcement YouTube video
+
+** Post-0.1
+*** TODO Command-line completion for tasks for =mycmd project run=
+
+* Work Log Posts
+** TODO Introduction to MyProject
+
+* Next Steps
+** TODO Freewrite about design of out of band =myproject= directories and configuration
+** TODO Implement and test =project.find_up= using that
+
+* Strategies and Goals
+
+My development process should follow the following tenants:
+
+** When I need to figure out something, use Free Writing to figure out the simplest possible thing that could work.
+** Document each design decision (even tenuous ones) in the [[file:myproject-design.org][MyProject Design Document]].
+** When previous decisions end up not working, repeat the process and update the design document.
+** When implementing a design, start by breaking down the next steps in small increments in this planning document.
+** Implement those design decisions in as small of increments as I can, using automated testing to give feedback, especially when the increment isn't enough to execute meaningfully.
+** These small increments can be as small as "create a  placeholder function"; anything to promote momentum.
+** Use [[https://mitchellh.com/writing/building-large-technical-projects][demo-driven development]]; iterate quickly towards being able to show the code working.

@@ -1,0 +1,3 @@
+#+title: MyProject Design
+
+This document will be where I document the implementation design decisions.
