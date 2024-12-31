@@ -33,6 +33,7 @@
 ** TODO Introduction to MyProject
 
 * Next Steps
+** DONE Add more details to [[file:~/Developer/Personal/myproject/main/README.md][README]]
 ** TODO Freewrite about design of out of band =myproject= directories and configuration
 ** TODO Implement and test =project.find_up= using that
 
