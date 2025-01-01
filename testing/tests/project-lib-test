@@ -6,16 +6,36 @@ if ! TEST_DIRECTORY=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
     echo >&2 "Error fetching test directory."
     exit 1
 fi
+readonly TEST_DIRECTORY
 
 if ! TEST_VENDOR_DIRECTORY=$(cd "${TEST_DIRECTORY}/../vendor" &>/dev/null && pwd -P); then
     echo >&2 "Error fetching test vendor directory."
     exit 1
 fi
+readonly TEST_VENDOR_DIRECTORY
+
+if ! TEST_DATA_SRC_DIR=$(cd "${TEST_DIRECTORY}/../test-data" &>/dev/null && pwd -P); then
+    echo >&2 "Error fetching test data source directory."
+    exit 1
+fi
+readonly TEST_DATA_SRC_DIR
 
 if ! [[ -v MYCMD_SYSTEM_BASE_DIR ]]; then
     echo >&2 "Error fetching MyCmd lib directory."
     exit 1
 fi
+
+if ! TEST_DATA_DIR="$(mktemp -q -d -t "test-data-XXXXXX")"; then
+    echo >&2 "Error getting temporary directory for test data."
+    exit 1
+fi
+
+# On Mac OS, the TMPDIR is a symlink, so this gets the resolved path
+if ! TEST_DATA_DIR=$(cd "${TEST_DATA_DIR}" &>/dev/null && pwd -P); then
+    echo >&2 "Error fetching test data directory."
+    exit 1
+fi
+readonly TEST_DATA_DIR
 
 function test_mycmd_lib_is_loaded() {
     assertTrue 'MyCmd Lib is loaded' '[ -v _MYCMD_LIB ]'
@@ -25,10 +45,78 @@ function test_project_lib_is_loaded() {
     assertTrue 'Project Lib is loaded' '[ -v _MYCMD_PROJECT_LIB ]'
 }
 
+# shellcheck disable=SC2034
+function test_find_up_invalid_projects() {
+    local -a project_roots=()
+    local result=0
+
+    local -r no_myproject_dir="${TEST_DATA_DIR}/invalid/no-myproject"
+    project.find_up project_roots "${no_myproject_dir}" || result="${?}"
+    assertFalse "'${no_myproject_dir}' does not have a corresponding MyProject Task Defintion directory" \
+        "${result}"
+    assertEquals "project_roots should be empty" \
+        0 "${#project_roots[@]}"
+
+    project_roots=()
+    result=0
+
+    local -r no_myproject_main_dir="${TEST_DATA_DIR}/invalid/no-myproject-main"
+    project.find_up project_roots "${no_myproject_main_dir}" || result="${?}"
+    assertFalse "'${no_myproject_main_dir}' is missing a myproject/main file" \
+        "${result}"
+    assertEquals "project_roots should be empty" \
+        0 "${#project_roots[@]}"
+}
+
+# shellcheck disable=SC2034
+function test_find_up_valid_projects() {
+    local -a project_roots=()
+    local result=0
+
+    local -r valid_project_dir="${TEST_DATA_DIR}/valid"
+    project.find_up project_roots "${valid_project_dir}" || result="${?}"
+    assertTrue "'${valid_project_dir}' is a valid project" \
+        "${result}"
+
+    assertEquals "project_roots should have two entries" \
+        2 "${#project_roots[@]}"
+    assertEquals "${valid_project_dir} is the project root directory" \
+        "${valid_project_dir}" "${project_roots["${_PROJECT_ROOT_DIR}"]}"
+    assertEquals "${valid_project_dir}/myproject is the MyProject Task Definition directory" \
+        "${valid_project_dir}/myproject" "${project_roots["${_PROJECT_TASK_DEFINITION_ROOT_DIR}"]}"
+
+    project_roots=()
+    result=0
+
+    local -r valid_project_module_dir="${TEST_DATA_DIR}/valid/module1"
+    project.find_up project_roots "${valid_project_module_dir}" || result="${?}"
+    assertTrue "'${valid_project_module_dir}' is in a valid project" \
+        "${result}"
+
+    assertEquals "project_roots should have two entries" \
+        2 "${#project_roots[@]}"
+    assertEquals "${valid_project_dir} is the project root directory" \
+        "${valid_project_dir}" "${project_roots["${_PROJECT_ROOT_DIR}"]}"
+    assertEquals "${valid_project_dir}/myproject is the MyProject Task Definition directory" \
+        "${valid_project_dir}/myproject" "${project_roots["${_PROJECT_TASK_DEFINITION_ROOT_DIR}"]}"
+}
+
 function oneTimeSetUp() {
+    # Copy the test data into a new directory in TMPDIR so there won't be a `myproject` directory above them
+    if ! cp -R "${TEST_DATA_SRC_DIR}/" "${TEST_DATA_DIR}"; then
+        echo >&2 "Error copying test data into '${TEST_DATA_DIR}'."
+        exit 1
+    fi
+
     # shellcheck source=/dev/null
     . "${MYCMD_SYSTEM_BASE_DIR}/mycmd-lib"
     mycmd.source_mycmd_lib "myproject"
+}
+
+function oneTimeTearDown() {
+    if [[ -d "${TEST_DATA_DIR}" ]]; then
+        rm -rf "${TEST_DATA_DIR}" || true
+    fi
 }
 
 # shellcheck source=../vendor/shunit2

@@ -20,4 +20,37 @@ mycmd:command_group.register_help_text "Library for Project Task Runner Function
 [[ -n "${_MYCMD_PROJECT_LIB:-}" ]] && return
 readonly _MYCMD_PROJECT_LIB=1
 
+readonly _PROJECT_ROOT_DIR=0
+readonly _PROJECT_TASK_DEFINITION_ROOT_DIR=1
+
+function project.find_up() {
+    local -n project_root_dirs="${1}"
+    local starting_dir="${2}"
+
+    mycmd.trace "Looking in '${starting_dir}' for MyProject Task Definition directory."
+
+    if ! starting_dir="$(mycmd.canonicalize_path "${starting_dir}")"; then
+        mycmd.debug "'${starting_dir}' not found."
+        return 1
+    fi
+
+    mycmd.trace "Looking in '${starting_dir}' for MyProject Task Definition directory."
+
+    local -r possible_path="${starting_dir}/myproject"
+
+    if [[ -e "${possible_path}/main" ]]; then
+        project_root_dirs["${_PROJECT_ROOT_DIR}"]="${starting_dir}"
+        # shellcheck disable=SC2034
+        project_root_dirs["${_PROJECT_TASK_DEFINITION_ROOT_DIR}"]="${possible_path}"
+        return 0
+    fi
+
+    if [[ "${starting_dir}" = "/" ]]; then
+        mycmd.debug "MyProject task definition directory not found"
+        return 1
+    fi
+
+    project.find_up "${!project_root_dirs}" "${starting_dir}/.."
+}
+
 mycmd.trace "The MyCmd Project command group library has been sourced."

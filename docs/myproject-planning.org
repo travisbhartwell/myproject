@@ -36,7 +36,7 @@
 ** DONE Add more details to [[file:~/Developer/Personal/myproject/main/README.md][README]]
 ** DONE Freewrite about design of out of band =myproject= directories and configuration
 ** Locating MyProject Task Definitions
-*** TODO Implement and test the basic =project.find_up= which simply looks for =myproject/main=
+*** DONE Implement and test the basic =project.find_up= which simply looks for =myproject/main=
 *** TODO Implement and test the =_MYPROJECT_MAPPINGS= associative array, test and use that in =project.find_up=
 *** TODO Implement and test parsing the =MYPROJECT_MAPPING= environment variable in =project.find_up=
 *** TODO Implement and test parsing the MyProject Mapping Configuration File using the =MYPROJECT_MAPPING_CONFIG= environment variable

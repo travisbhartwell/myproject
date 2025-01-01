@@ -3,6 +3,7 @@
 This document will be where I document the implementation design decisions.
 
 * MyProject Task Definitions
+
 ** Concepts
 *** A Project root directory
 
@@ -30,7 +31,7 @@ The configuration file can be located in the following locations, by priority:
 
 ** Locating MyProject Task Definitions
 
-Locating the MyProject task definitions is done using the =project.find_up= function. It outputs the following, delimited by a null-byte:
+Locating the MyProject task definitions is done using the =project.find_up= function. It takes an array reference, which it populates with:
 1. The project root directory.
 2. The MyProject Task Definition root directory.
 
