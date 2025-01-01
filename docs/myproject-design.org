@@ -1,3 +1,51 @@
 #+title: MyProject Design
 
 This document will be where I document the implementation design decisions.
+
+* MyProject Task Definitions
+** Concepts
+*** A Project root directory
+
+A Project root directory is the top-level directory for a given project.
+
+*** A MyProject Task Definition
+
+MyProject tasks are defined in one or more task files located in a =myproject= directory, with =myproject/main= being the only required file.
+
+*** The MyProject Mapping Configuration File
+
+A mapping configuration file has one or more lines of the pairs of =<project root>= and =<myproject root>= directories, separated by equals, for example:
+
+#+BEGIN_SRC shell
+~/Developer/OpenSource/=~/Developer/Personal/Projects/Updater/myproject/
+~/Developer/Work/Project1/=~/Developer/Personal/Projects/Work/Project1/myproject/
+#+END_SRC
+
+Each directory should be an absolute path, with the usual =~= being allowed for the user's home directory.
+
+The configuration file can be located in the following locations, by priority:
+
+1. In the path pointed to by =MYPROJECT_MAPPING_CONFIG=.
+2. Otherwise, in an operating system standard user location, such as =~/.config/mycmd/project/mapping= (or =XDG_CONFIG_HOME= instead of =~/.config=) on Linux, and =~/Library/Application Support/mycmd/project/mapping= on Mac OS.
+
+** Locating MyProject Task Definitions
+
+Locating the MyProject task definitions is done using the =project.find_up= function. It outputs the following, delimited by a null-byte:
+1. The project root directory.
+2. The MyProject Task Definition root directory.
+
+Or, it returns =1= if no project is found.
+
+Locating the MyProject task definitions for a given project is done using this priority:
+
+*** Using the =MYPROJECT_MAPPING= environment variable
+
+The =MYPROJECT_MAPPING= environment variable, if set, has this format: =<project root>:<myproject root>=, where =<project root>= is the root directory of the project, and =<myproject root>= is the root directory of the MyProject Task definition directory to be used for the project. If the project root from that environment variable matches the root of the project, the specified MyProject Task definition directory, it is used.
+
+*** Using the MyProject Mapping Configuration File
+
+If a mapping is defined for the project root in the MyProject Mapping Configuration file (described above), it is used.
+
+*** The existence of a =myproject= directory
+
+If a =myproject= directory is found in the project root, it is used.
