@@ -25,7 +25,7 @@ declare -Agx _MYPROJECT_MAPPINGS=()
 readonly _PROJECT_ROOT_DIR=0
 readonly _PROJECT_TASK_DEFINITION_ROOT_DIR=1
 
-function project.find_up() {
+function project._find_up() {
     local -n project_root_dirs="${1}"
     local starting_dir="${2}"
 
@@ -61,7 +61,36 @@ function project.find_up() {
         return 1
     fi
 
-    project.find_up "${!project_root_dirs}" "${starting_dir}/.."
+    project._find_up "${!project_root_dirs}" "${starting_dir}/.."
+}
+
+function project.find_up() {
+    _MYPROJECT_MAPPINGS=()
+
+    if [[ -n "${MYPROJECT_MAPPING-}" ]]; then
+        local project_root="${MYPROJECT_MAPPING%%:*}"
+        local myproject_root="${MYPROJECT_MAPPING##*:}"
+        local error=false
+
+        mycmd.trace "Checking '${MYPROJECT_MAPPING}' with project root '${project_root}' and myproject root '${myproject_root}'."
+
+        if ! project_root="$(mycmd.canonicalize_path_missing_ok "${project_root}")"; then
+            mycmd.debug "Error canonicalizing '${project_root}'."
+            error="true"
+        fi
+
+        if ! myproject_root="$(mycmd.canonicalize_path_missing_ok "${myproject_root}")"; then
+            mycmd.debug "Error canonicalizing '${myproject_root}'."
+            error="true"
+        fi
+
+        if [[ "${error}" == "false" ]]; then
+            mycmd.trace "Configuring mapping for '${project_root}' as '${myproject_root}'."
+            _MYPROJECT_MAPPINGS["${project_root}"]="${myproject_root}"
+        fi
+    fi
+
+    project._find_up "${@}"
 }
 
 mycmd.trace "The MyCmd Project command group library has been sourced."

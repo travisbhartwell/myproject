@@ -73,8 +73,7 @@ function test_find_up_mapping_config() {
     local -r project_root_dir="${TEST_DATA_DIR}/invalid/no-myproject"
     local -r myproject_root_dir="${TEST_DATA_DIR}/valid/myproject"
 
-    # Hard-code the configuration, for now
-    _MYPROJECT_MAPPINGS["${project_root_dir}"]="${myproject_root_dir}"
+    export MYPROJECT_MAPPING="${project_root_dir}:${myproject_root_dir}"
 
     local -a project_roots=()
     local result=0
@@ -90,8 +89,17 @@ function test_find_up_mapping_config() {
     assertEquals "${myproject_root_dir} is the MyProject Task Definition directory" \
         "${myproject_root_dir}" "${project_roots["${_PROJECT_TASK_DEFINITION_ROOT_DIR}"]}"
 
-    # Reset the mappings for now
-    _MYPROJECT_MAPPINGS=()
+    unset MYPROJECT_MAPPING
+
+    # Validate that it fails after removing mapping
+    project_roots=()
+    result=0
+
+    project.find_up project_roots "${project_root_dir}" || result="${?}"
+    assertFalse "'${project_root_dir}' does not have a corresponding MyProject Task Defintion directory" \
+        "${result}"
+    assertEquals "project_roots should be empty" \
+        0 "${#project_roots[@]}"
 }
 
 # shellcheck disable=SC2034
