@@ -25,6 +25,85 @@ declare -Agx _MYPROJECT_MAPPINGS=()
 readonly _PROJECT_ROOT_DIR=0
 readonly _PROJECT_TASK_DEFINITION_ROOT_DIR=1
 
+# --------------------------------------------------------------------------------------------------
+# Project Locating Public Functions
+function project.find_up() {
+    project._load_mapping_configuration
+
+    project._find_up "${@}"
+}
+
+# --------------------------------------------------------------------------------------------------
+# Project Locating Private Helper Functions
+function project._load_mapping_configuration() {
+    _MYPROJECT_MAPPINGS=()
+
+    if [[ -n "${MYPROJECT_MAPPING-}" ]]; then
+        local -r project_root="${MYPROJECT_MAPPING%%:*}"
+        local -r myproject_root="${MYPROJECT_MAPPING##*:}"
+        mycmd.trace "Checking '${MYPROJECT_MAPPING}' with project root '${project_root}' and myproject root '${myproject_root}'."
+
+        project._add_myproject_mapping_if_valid "${project_root}" "${myproject_root}"
+    fi
+
+    if [[ -z "${MYPROJECT_MAPPING_CONFIG-}" ]]; then
+        return
+    fi
+
+    if ! [[ -e "${MYPROJECT_MAPPING_CONFIG}" ]]; then
+        mycmd.debug "MyProject Mapping Configuration file '${MYPROJECT_MAPPING_CONFIG}' does not exist."
+        return
+    fi
+}
+
+function project._add_myproject_mapping_if_valid() {
+    local project_root="${1}"
+    local myproject_root="${2}"
+
+    mycmd.trace "Checking mapping with project root '${project_root}' and myproject root '${myproject_root}'."
+
+    if ! project_root="$(mycmd.canonicalize_path "${project_root}")"; then
+        mycmd.debug "Error canonicalizing project root '${project_root}', ignoring mapping."
+        return
+    fi
+    readonly project_root
+
+    if ! myproject_root="$(mycmd.canonicalize_path "${myproject_root}")"; then
+
+        return
+    fi
+    readonly myproject_root
+
+    if ! project._is_valid_myproject_task_definition_directory "${myproject_root}"; then
+        mycmd.debug "'${myproject_root}' is not a valid Task Definition Directory, ignoring mapping."
+        return
+    fi
+
+    mycmd.trace "Configuring mapping for '${project_root}' as '${myproject_root}'."
+    _MYPROJECT_MAPPINGS["${project_root}"]="${myproject_root}"
+}
+
+function project._is_valid_myproject_task_definition_directory() {
+    local -r task_definition_directory="${1}"
+
+    if ! [[ -d "${task_definition_directory}" ]]; then
+        mycmd.debug "'${task_definition_directory}' does not exist."
+        return 1
+    fi
+
+    if ! [[ "$(basename "${task_definition_directory}")" == "myproject" ]]; then
+        mycmd.debug "'${task_definition_directory}' is not named 'myproject'."
+        return 1
+    fi
+
+    if ! [[ -e "${task_definition_directory}/main" ]]; then
+        mycmd.debug "Required file 'main' missing from '${task_definition_directory}'."
+        return 1
+    fi
+
+    return 0
+}
+
 function project._find_up() {
     local -n project_root_dirs="${1}"
     local starting_dir="${2}"
@@ -62,72 +141,6 @@ function project._find_up() {
     fi
 
     project._find_up "${!project_root_dirs}" "${starting_dir}/.."
-}
-
-function project._is_valid_myproject_task_definition_directory() {
-    local -r task_definition_directory="${1}"
-
-    if ! [[ -d "${task_definition_directory}" ]]; then
-        mycmd.debug "'${task_definition_directory}' does not exist."
-        return 1
-    fi
-
-    if ! [[ "$(basename "${task_definition_directory}")" == "myproject" ]]; then
-        mycmd.debug "'${task_definition_directory}' is not named 'myproject'."
-        return 1
-    fi
-
-    if ! [[ -e "${task_definition_directory}/main" ]]; then
-        mycmd.debug "Required file 'main' missing from '${task_definition_directory}'."
-        return 1
-    fi
-
-    return 0
-}
-
-function project._add_myproject_mapping_if_valid() {
-    local project_root="${1}"
-    local myproject_root="${2}"
-
-    mycmd.trace "Checking mapping with project root '${project_root}' and myproject root '${myproject_root}'."
-
-    if ! project_root="$(mycmd.canonicalize_path "${project_root}")"; then
-        mycmd.debug "Error canonicalizing project root '${project_root}', ignoring mapping."
-        return
-    fi
-    readonly project_root
-
-    if ! myproject_root="$(mycmd.canonicalize_path "${myproject_root}")"; then
-
-        return
-    fi
-    readonly myproject_root
-
-    if ! project._is_valid_myproject_task_definition_directory "${myproject_root}"; then
-        mycmd.debug "'${myproject_root}' is not a valid Task Definition Directory, ignoring mapping."
-        return
-    fi
-
-    mycmd.trace "Configuring mapping for '${project_root}' as '${myproject_root}'."
-    _MYPROJECT_MAPPINGS["${project_root}"]="${myproject_root}"
-}
-
-function project._load_mapping_configuration() {
-    _MYPROJECT_MAPPINGS=()
-
-    if [[ -n "${MYPROJECT_MAPPING-}" ]]; then
-        local -r project_root="${MYPROJECT_MAPPING%%:*}"
-        local -r myproject_root="${MYPROJECT_MAPPING##*:}"
-        mycmd.trace "Checking '${MYPROJECT_MAPPING}' with project root '${project_root}' and myproject root '${myproject_root}'."
-
-        project._add_myproject_mapping_if_valid "${project_root}" "${myproject_root}"
-    fi
-}
-
-function project.find_up() {
-    project._load_mapping_configuration
-
-    project._find_up "${@}"
 }
 
 mycmd.trace "The MyCmd Project command group library has been sourced."
