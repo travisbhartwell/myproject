@@ -39,6 +39,10 @@
 *** DONE Implement and test the basic =project.find_up= which simply looks for =myproject/main=
 *** DONE Implement and test the =_MYPROJECT_MAPPINGS= associative array, test and use that in =project.find_up=
 *** DONE Implement and test parsing the =MYPROJECT_MAPPING= environment variable in =project.find_up=
+*** DONE Implement function to check if it is a valid Task Definition directory and use it in =project.find_up= and =project._find_up=
+*** DONE Implement separate =project._load_mapping_configuration= function and call it from =project.find_up=
+*** DONE Implement tests for =project._is_valid_task_definition_directory=
+*** DONE Test that =MYPROJECT_MAPPING= is ignored for invalid directories
 *** TODO Implement and test parsing the MyProject Mapping Configuration File using the =MYPROJECT_MAPPING_CONFIG= environment variable
 *** TODO Implement and test parsing the MyProject Mapping Configuration File from the standard location
 

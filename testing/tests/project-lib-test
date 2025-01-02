@@ -37,6 +37,14 @@ if ! TEST_DATA_DIR=$(cd "${TEST_DATA_DIR}" &>/dev/null && pwd -P); then
 fi
 readonly TEST_DATA_DIR
 
+# Common constants for paths used in tests
+readonly INVALID_NO_MYPROJECT_DIR="${TEST_DATA_DIR}/invalid/no-myproject"
+readonly INVALID_NO_MYPROJECT_MAIN_DIR="${TEST_DATA_DIR}/invalid/no-myproject-main"
+readonly VALID_PROJECT_DIR1="${TEST_DATA_DIR}/valid/valid1"
+readonly VALID_MYPROJECT_DIR1="${VALID_PROJECT_DIR1}/myproject"
+readonly VALID_PROJECT_DIR2="${TEST_DATA_DIR}/valid/valid2"
+readonly VALID_MYPROJECT_DIR2="${VALID_PROJECT_DIR2}/myproject"
+
 function test_mycmd_lib_is_loaded() {
     assertTrue 'MyCmd Lib is loaded' '[ -v _MYCMD_LIB ]'
 }
@@ -45,14 +53,53 @@ function test_project_lib_is_loaded() {
     assertTrue 'Project Lib is loaded' '[ -v _MYCMD_PROJECT_LIB ]'
 }
 
+# shellcheck disable=SC2016,SC2034,SC2153,SC2154
+function test_mapping_env_variable() {
+    assertEquals "There are 0 items in the _MYPROJECT_MAPPINGS array to start" \
+        0 "${#_MYPROJECT_MAPPINGS[@]}"
+
+    export MYPROJECT_MAPPING="/invalid-path:${VALID_MYPROJECT_DIR1}"
+    project._load_mapping_configuration
+    assertEquals "There are still 0 items in the _MYPROJECT_MAPPINGS array after invalid project path" \
+        0 "${#_MYPROJECT_MAPPINGS[@]}"
+
+    export MYPROJECT_MAPPING="${INVALID_NO_MYPROJECT_DIR}:/invalid-path"
+    project._load_mapping_configuration
+    assertEquals "There are still 0 items in the _MYPROJECT_MAPPINGS array after invalid myproject path" \
+        0 "${#_MYPROJECT_MAPPINGS[@]}"
+
+    export MYPROJECT_MAPPING="${INVALID_NO_MYPROJECT_DIR}:${INVALID_NO_MYPROJECT_MAIN_DIR}"
+    project._load_mapping_configuration
+    assertEquals "There are still 0 items in the _MYPROJECT_MAPPINGS array after myproject dir without main" \
+        0 "${#_MYPROJECT_MAPPINGS[@]}"
+
+    export MYPROJECT_MAPPING="${INVALID_NO_MYPROJECT_DIR}:${VALID_MYPROJECT_DIR1}"
+    project._load_mapping_configuration
+    assertEquals "There are now 1 items in the _MYPROJECT_MAPPINGS array after valid project and myproject dirs" \
+        1 "${#_MYPROJECT_MAPPINGS[@]}"
+
+    unset MYPROJECT_MAPPING
+}
+
+# shellcheck disable=SC2016,SC2034
+function test_is_valid_myproject_task_definition_directory() {
+    assertFalse "'${INVALID_NO_MYPROJECT_DIR}' is not named 'myproject', so not a task definition directory." \
+        'project._is_valid_myproject_task_definition_directory "${INVALID_NO_MYPROJECT_DIR}"'
+
+    assertFalse "'${INVALID_NO_MYPROJECT_MAIN_DIR}' is missing the 'main' file, so not a task definition directory." \
+        'project._is_valid_myproject_task_definition_directory "${INVALID_NO_MYPROJECT_MAIN_DIR}"'
+
+    assertTrue "'${VALID_MYPROJECT_DIR1}' is a valid task definition directory" \
+        'project._is_valid_myproject_task_definition_directory "${VALID_MYPROJECT_DIR1}"'
+}
+
 # shellcheck disable=SC2034
 function test_find_up_invalid_projects() {
     local -a project_roots=()
     local result=0
 
-    local -r no_myproject_dir="${TEST_DATA_DIR}/invalid/no-myproject"
-    project.find_up project_roots "${no_myproject_dir}" || result="${?}"
-    assertFalse "'${no_myproject_dir}' does not have a corresponding MyProject Task Defintion directory" \
+    project.find_up project_roots "${INVALID_NO_MYPROJECT_DIR}" || result="${?}"
+    assertFalse "'${INVALID_NO_MYPROJECT_DIR}' does not have a corresponding MyProject Task Defintion directory" \
         "${result}"
     assertEquals "project_roots should be empty" \
         0 "${#project_roots[@]}"
@@ -60,9 +107,8 @@ function test_find_up_invalid_projects() {
     project_roots=()
     result=0
 
-    local -r no_myproject_main_dir="${TEST_DATA_DIR}/invalid/no-myproject-main"
-    project.find_up project_roots "${no_myproject_main_dir}" || result="${?}"
-    assertFalse "'${no_myproject_main_dir}' is missing a myproject/main file" \
+    project.find_up project_roots "${INVALID_NO_MYPROJECT_MAIN_DIR}" || result="${?}"
+    assertFalse "'${INVALID_NO_MYPROJECT_MAIN_DIR}' is missing a myproject/main file" \
         "${result}"
     assertEquals "project_roots should be empty" \
         0 "${#project_roots[@]}"
@@ -70,8 +116,8 @@ function test_find_up_invalid_projects() {
 
 # shellcheck disable=SC2034
 function test_find_up_mapping_config() {
-    local -r project_root_dir="${TEST_DATA_DIR}/invalid/no-myproject"
-    local -r myproject_root_dir="${TEST_DATA_DIR}/valid/myproject"
+    local -r project_root_dir="${INVALID_NO_MYPROJECT_DIR}"
+    local -r myproject_root_dir="${VALID_MYPROJECT_DIR1}"
 
     export MYPROJECT_MAPPING="${project_root_dir}:${myproject_root_dir}"
 
@@ -103,36 +149,76 @@ function test_find_up_mapping_config() {
 }
 
 # shellcheck disable=SC2034
-function test_find_up_valid_projects() {
+function test_find_up_mapping_config_override_valid() {
+    local -r project_root_dir="${VALID_PROJECT_DIR1}"
+    local -r myproject_root_dir="${VALID_MYPROJECT_DIR2}"
+
+    export MYPROJECT_MAPPING="${project_root_dir}:${myproject_root_dir}"
+
     local -a project_roots=()
     local result=0
 
-    local -r valid_project_dir="${TEST_DATA_DIR}/valid"
-    project.find_up project_roots "${valid_project_dir}" || result="${?}"
-    assertTrue "'${valid_project_dir}' is a valid project" \
+    project.find_up project_roots "${project_root_dir}" || result="${?}"
+    assertTrue "'${project_root_dir}' is a valid project" \
         "${result}"
 
     assertEquals "project_roots should have two entries" \
         2 "${#project_roots[@]}"
-    assertEquals "${valid_project_dir} is the project root directory" \
-        "${valid_project_dir}" "${project_roots["${_PROJECT_ROOT_DIR}"]}"
-    assertEquals "${valid_project_dir}/myproject is the MyProject Task Definition directory" \
-        "${valid_project_dir}/myproject" "${project_roots["${_PROJECT_TASK_DEFINITION_ROOT_DIR}"]}"
+    assertEquals "${project_root_dir} is the project root directory" \
+        "${project_root_dir}" "${project_roots["${_PROJECT_ROOT_DIR}"]}"
+    assertEquals "${myproject_root_dir} is the MyProject Task Definition directory" \
+        "${myproject_root_dir}" "${project_roots["${_PROJECT_TASK_DEFINITION_ROOT_DIR}"]}"
+
+    unset MYPROJECT_MAPPING
+
+    # Validate that it returns the in-project task definition after removing mapping
+    local -r original_myproject_dir="${VALID_MYPROJECT_DIR1}"
 
     project_roots=()
     result=0
 
-    local -r valid_project_module_dir="${TEST_DATA_DIR}/valid/module1"
+    project.find_up project_roots "${project_root_dir}" || result="${?}"
+    assertTrue "'${project_root_dir}' is a valid project" \
+        "${result}"
+
+    assertEquals "project_roots should have two entries" \
+        2 "${#project_roots[@]}"
+    assertEquals "${project_root_dir} is the project root directory" \
+        "${project_root_dir}" "${project_roots["${_PROJECT_ROOT_DIR}"]}"
+    assertEquals "${original_myproject_dir} is the MyProject Task Definition directory" \
+        "${original_myproject_dir}" "${project_roots["${_PROJECT_TASK_DEFINITION_ROOT_DIR}"]}"
+}
+
+# shellcheck disable=SC2034
+function test_find_up_valid_projects() {
+    local -a project_roots=()
+    local result=0
+
+    project.find_up project_roots "${VALID_PROJECT_DIR1}" || result="${?}"
+    assertTrue "'${VALID_PROJECT_DIR1}' is a valid project" \
+        "${result}"
+
+    assertEquals "project_roots should have two entries" \
+        2 "${#project_roots[@]}"
+    assertEquals "${VALID_PROJECT_DIR1} is the project root directory" \
+        "${VALID_PROJECT_DIR1}" "${project_roots["${_PROJECT_ROOT_DIR}"]}"
+    assertEquals "${VALID_PROJECT_DIR1}/myproject is the MyProject Task Definition directory" \
+        "${VALID_PROJECT_DIR1}/myproject" "${project_roots["${_PROJECT_TASK_DEFINITION_ROOT_DIR}"]}"
+
+    project_roots=()
+    result=0
+
+    local -r valid_project_module_dir="${VALID_PROJECT_DIR1}/module1"
     project.find_up project_roots "${valid_project_module_dir}" || result="${?}"
     assertTrue "'${valid_project_module_dir}' is in a valid project" \
         "${result}"
 
     assertEquals "project_roots should have two entries" \
         2 "${#project_roots[@]}"
-    assertEquals "${valid_project_dir} is the project root directory" \
-        "${valid_project_dir}" "${project_roots["${_PROJECT_ROOT_DIR}"]}"
-    assertEquals "${valid_project_dir}/myproject is the MyProject Task Definition directory" \
-        "${valid_project_dir}/myproject" "${project_roots["${_PROJECT_TASK_DEFINITION_ROOT_DIR}"]}"
+    assertEquals "${VALID_PROJECT_DIR1} is the project root directory" \
+        "${VALID_PROJECT_DIR1}" "${project_roots["${_PROJECT_ROOT_DIR}"]}"
+    assertEquals "${VALID_PROJECT_DIR1}/myproject is the MyProject Task Definition directory" \
+        "${VALID_MYPROJECT_DIR1}" "${project_roots["${_PROJECT_TASK_DEFINITION_ROOT_DIR}"]}"
 }
 
 function oneTimeSetUp() {
