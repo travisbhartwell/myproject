@@ -20,6 +20,8 @@ mycmd:command_group.register_help_text "Library for Project Task Runner Function
 [[ -n "${_MYCMD_PROJECT_LIB:-}" ]] && return
 readonly _MYCMD_PROJECT_LIB=1
 
+declare -Agx _MYPROJECT_MAPPINGS=()
+
 readonly _PROJECT_ROOT_DIR=0
 readonly _PROJECT_TASK_DEFINITION_ROOT_DIR=1
 
@@ -27,14 +29,23 @@ function project.find_up() {
     local -n project_root_dirs="${1}"
     local starting_dir="${2}"
 
-    mycmd.trace "Looking in '${starting_dir}' for MyProject Task Definition directory."
-
     if ! starting_dir="$(mycmd.canonicalize_path "${starting_dir}")"; then
         mycmd.debug "'${starting_dir}' not found."
         return 1
     fi
 
     mycmd.trace "Looking in '${starting_dir}' for MyProject Task Definition directory."
+
+    if [[ -v _MYPROJECT_MAPPINGS[${starting_dir}] ]]; then
+        local -r myproject_root_dir="${_MYPROJECT_MAPPINGS["${starting_dir}"]}"
+
+        mycmd.trace "Found MyProject Mapping for '${starting_dir}' as '${myproject_root_dir}'."
+
+        project_root_dirs["${_PROJECT_ROOT_DIR}"]="${starting_dir}"
+        # shellcheck disable=SC2034
+        project_root_dirs["${_PROJECT_TASK_DEFINITION_ROOT_DIR}"]="${myproject_root_dir}"
+        return 0
+    fi
 
     local -r possible_path="${starting_dir}/myproject"
 

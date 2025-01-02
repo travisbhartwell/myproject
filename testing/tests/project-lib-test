@@ -69,6 +69,32 @@ function test_find_up_invalid_projects() {
 }
 
 # shellcheck disable=SC2034
+function test_find_up_mapping_config() {
+    local -r project_root_dir="${TEST_DATA_DIR}/invalid/no-myproject"
+    local -r myproject_root_dir="${TEST_DATA_DIR}/valid/myproject"
+
+    # Hard-code the configuration, for now
+    _MYPROJECT_MAPPINGS["${project_root_dir}"]="${myproject_root_dir}"
+
+    local -a project_roots=()
+    local result=0
+
+    project.find_up project_roots "${project_root_dir}" || result="${?}"
+    assertTrue "'${project_root_dir}' is a valid project" \
+        "${result}"
+
+    assertEquals "project_roots should have two entries" \
+        2 "${#project_roots[@]}"
+    assertEquals "${project_root_dir} is the project root directory" \
+        "${project_root_dir}" "${project_roots["${_PROJECT_ROOT_DIR}"]}"
+    assertEquals "${myproject_root_dir} is the MyProject Task Definition directory" \
+        "${myproject_root_dir}" "${project_roots["${_PROJECT_TASK_DEFINITION_ROOT_DIR}"]}"
+
+    # Reset the mappings for now
+    _MYPROJECT_MAPPINGS=()
+}
+
+# shellcheck disable=SC2034
 function test_find_up_valid_projects() {
     local -a project_roots=()
     local result=0
