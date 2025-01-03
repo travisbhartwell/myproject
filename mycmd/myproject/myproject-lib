@@ -50,6 +50,8 @@ function project._load_mapping_configuration() {
 
         project._add_myproject_mapping_if_valid "${project_root}" "${myproject_root}"
     fi
+
+    project._log_myproject_mappings
 }
 
 function project._add_myproject_mapping_if_valid() {
@@ -127,6 +129,18 @@ function project._is_valid_myproject_task_definition_directory() {
     fi
 
     return 0
+}
+
+function project._log_myproject_mappings() {
+    # TODO: Use mycmd.print_table when it can use mycmd.trace
+    mycmd.trace "MyProject Mapping is configured with ${#_MYPROJECT_MAPPINGS[@]} entries.\n"
+
+    local project_root
+    local myproject_root
+    for project_root in "${!_MYPROJECT_MAPPINGS[@]}"; do
+        myproject_root="${_MYPROJECT_MAPPINGS["${project_root}"]}"
+        mycmd.trace "'${project_root}' is mapped to use the MyProject Task Definition directory '${myproject_root}'."
+    done
 }
 
 function project._find_up() {
