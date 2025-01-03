@@ -1,0 +1,30 @@
+#!/usr/bin/env -S mycmd
+# -*- mode: shell-script; sh-shell: bash; sh-basic-offset: 4; sh-indentation: 4; coding: utf-8 -*-
+# shellcheck shell=bash
+
+mycmd:command.register_version "0.1"
+mycmd:command.register_short_description "List the tasks defined by the current myproject file."
+
+# shellcheck disable=SC2154
+mycmd:command.register_help_text "${_MYCMD_NAMESPACED_PARTS_STRING}"
+mycmd:command.register_help_text "${_MYCMD_NAMESPACED_PARTS_STRING} -h | --help"
+mycmd:command.register_help_text "${_MYCMD_NAMESPACED_PARTS_STRING} -v | --version"
+mycmd:command.register_help_text "Options:"
+mycmd:command.register_help_text "\t-h | --help    - Show this help"
+mycmd:command.register_help_text "\t-v | --version - Show this command's version"
+
+[[ -n "${_MYCMD_SOURCING_FOR_HELP:-}" ]] && return
+
+set -o nounset -o errexit -o errtrace -o pipefail
+
+function mycmd.main() {
+    local -a project_roots
+
+    if ! project.find_up project_roots "${PWD}"; then
+        mycmd.log "Not located in a MyCmd Project"
+        exit 1
+    fi
+
+    mycmd.output "Using project root at '${project_roots["${_PROJECT_ROOT_DIR}"]}'.\n"
+    mycmd.output "Use task definition directory at '${project_roots["${_PROJECT_TASK_DEFINITION_ROOT_DIR}"]}'."
+}

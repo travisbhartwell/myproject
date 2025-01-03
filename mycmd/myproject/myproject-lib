@@ -12,8 +12,8 @@ set -o nounset -o errexit -o errtrace -o pipefail
 }
 
 mycmd:command_group.register_version "0.1"
-mycmd:command_group.register_short_description "MyCmd Project Command Group Library"
-mycmd:command_group.register_help_text "Library for Project Task Runner Functionality"
+mycmd:command_group.register_short_description "MyProject Command Group Library"
+mycmd:command_group.register_help_text "The MyProject Project Task Runner"
 
 [[ -n "${_MYCMD_SOURCING_FOR_HELP:-}" ]] && return
 
