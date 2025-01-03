@@ -60,13 +60,13 @@ function project._add_myproject_mapping_if_valid() {
 
     mycmd.trace "Checking mapping with project root '${project_root}' and myproject root '${myproject_root}'."
 
-    if ! project_root="$(mycmd.canonicalize_path "${project_root}")"; then
+    if ! project_root="$(project._resolve_directory "${project_root}")"; then
         mycmd.debug "Error canonicalizing project root, ignoring mapping."
         return
     fi
     readonly project_root
 
-    if ! myproject_root="$(mycmd.canonicalize_path "${myproject_root}")"; then
+    if ! myproject_root="$(project._resolve_directory "${myproject_root}")"; then
         mycmd.debug "Error canonicalizing myproject root, ignoring mapping."
         return
     fi
@@ -108,6 +108,12 @@ function project._load_mapping_config_file() {
 
         project._add_myproject_mapping_if_valid "${project_root}" "${myproject_root}"
     done
+}
+
+function project._resolve_directory() {
+    local dir="${1}"
+    dir=${dir/#\~/${HOME}}
+    mycmd.canonicalize_path "${dir}"
 }
 
 function project._is_valid_myproject_task_definition_directory() {

@@ -50,7 +50,7 @@ SCHEDULED: <2025-01-03 Fri>
 *** DONE Test that =MYPROJECT_MAPPING= is ignored for invalid directories
 *** DONE Implement and test parsing the MyProject Mapping Configuration File using the =MYPROJECT_MAPPING_CONFIG= environment variable
 *** DONE Add trace logs for =_MYPROJECT_MAPPINGS=
-*** TODO Test that the config file can handle using =~= for home
+*** DONE Test that the config file can handle using =~= for home
 *** TODO Test the priority of =MYPROJECT_MAPPING= over =MYPROJECT_MAPPING_CONFIG=
 *** TODO Move tests to new file and re-organize based on implementation file order
 *** TODO Implement minimal =mycmd myproject list-tasks= that calls =project.find_up=
