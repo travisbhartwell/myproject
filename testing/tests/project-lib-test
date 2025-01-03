@@ -37,6 +37,11 @@ if ! TEST_DATA_DIR=$(cd "${TEST_DATA_DIR}" &>/dev/null && pwd -P); then
 fi
 readonly TEST_DATA_DIR
 
+readonly TEST_MAPPING_CONFIG_DIR="${TEST_DATA_DIR}/mapping-configs"
+if ! mkdir -p "${TEST_MAPPING_CONFIG_DIR}"; then
+    echo >&2 "Error creating test mapping config dir, '${TEST_MAPPING_CONFIG_DIR}'."
+fi
+
 # Common constants for paths used in tests
 readonly INVALID_NO_MYPROJECT_DIR="${TEST_DATA_DIR}/invalid/no-myproject"
 readonly INVALID_NO_MYPROJECT_MAIN_DIR="${TEST_DATA_DIR}/invalid/no-myproject-main"
@@ -44,6 +49,7 @@ readonly VALID_PROJECT_DIR1="${TEST_DATA_DIR}/valid/valid1"
 readonly VALID_MYPROJECT_DIR1="${VALID_PROJECT_DIR1}/myproject"
 readonly VALID_PROJECT_DIR2="${TEST_DATA_DIR}/valid/valid2"
 readonly VALID_MYPROJECT_DIR2="${VALID_PROJECT_DIR2}/myproject"
+readonly MAPPING_CONFIG_FILE1="${TEST_MAPPING_CONFIG_DIR}/config1"
 
 function test_mycmd_lib_is_loaded() {
     assertTrue 'MyCmd Lib is loaded' '[ -v _MYCMD_LIB ]'
@@ -79,6 +85,16 @@ function test_mapping_env_variable() {
         1 "${#_MYPROJECT_MAPPINGS[@]}"
 
     unset MYPROJECT_MAPPING
+}
+
+function test_mapping_config_file_env_variable() {
+    export MYPROJECT_MAPPING_CONFIG="${MAPPING_CONFIG_FILE1}"
+    project._load_mapping_configuration
+    unset MYPROJECT_MAPPING_CONFIG
+
+    local -r loaded_config_counts=2
+    assertEquals "There are ${loaded_config_counts} items in the _MYPROJECT_MAPPINGS array after loading the config file" \
+        "${loaded_config_counts}" "${#_MYPROJECT_MAPPINGS[@]}"
 }
 
 # shellcheck disable=SC2016,SC2034
@@ -190,6 +206,81 @@ function test_find_up_mapping_config_override_valid() {
 }
 
 # shellcheck disable=SC2034
+function test_find_up_mapping_config_file_env_variable() {
+    local -r project_root_dir="${INVALID_NO_MYPROJECT_DIR}"
+    local -r myproject_root_dir="${VALID_MYPROJECT_DIR1}"
+
+    export MYPROJECT_MAPPING_CONFIG="${MAPPING_CONFIG_FILE1}"
+
+    local -a project_roots=()
+    local result=0
+
+    project.find_up project_roots "${project_root_dir}" || result="${?}"
+    assertTrue "'${project_root_dir}' is a valid project" \
+        "${result}"
+
+    assertEquals "project_roots should have two entries" \
+        2 "${#project_roots[@]}"
+    assertEquals "${project_root_dir} is the project root directory" \
+        "${project_root_dir}" "${project_roots["${_PROJECT_ROOT_DIR}"]}"
+    assertEquals "${myproject_root_dir} is the MyProject Task Definition directory" \
+        "${myproject_root_dir}" "${project_roots["${_PROJECT_TASK_DEFINITION_ROOT_DIR}"]}"
+
+    unset MYPROJECT_MAPPING_CONFIG
+
+    # Validate that it fails after removing mapping
+    project_roots=()
+    result=0
+
+    project.find_up project_roots "${project_root_dir}" || result="${?}"
+    assertFalse "'${project_root_dir}' does not have a corresponding MyProject Task Defintion directory" \
+        "${result}"
+    assertEquals "project_roots should be empty" \
+        0 "${#project_roots[@]}"
+}
+
+# shellcheck disable=SC2034
+function test_find_up_mapping_config_file_env_variable_override_valid() {
+    local -r project_root_dir="${VALID_PROJECT_DIR1}"
+    local -r myproject_root_dir="${VALID_MYPROJECT_DIR2}"
+
+    export MYPROJECT_MAPPING_CONFIG="${MAPPING_CONFIG_FILE1}"
+
+    local -a project_roots=()
+    local result=0
+
+    project.find_up project_roots "${project_root_dir}" || result="${?}"
+    assertTrue "'${project_root_dir}' is a valid project" \
+        "${result}"
+
+    assertEquals "project_roots should have two entries" \
+        2 "${#project_roots[@]}"
+    assertEquals "${project_root_dir} is the project root directory" \
+        "${project_root_dir}" "${project_roots["${_PROJECT_ROOT_DIR}"]}"
+    assertEquals "${myproject_root_dir} is the MyProject Task Definition directory" \
+        "${myproject_root_dir}" "${project_roots["${_PROJECT_TASK_DEFINITION_ROOT_DIR}"]}"
+
+    unset MYPROJECT_MAPPING_CONFIG
+
+    # Validate that it returns the in-project task definition after removing mapping
+    local -r original_myproject_dir="${VALID_MYPROJECT_DIR1}"
+
+    project_roots=()
+    result=0
+
+    project.find_up project_roots "${project_root_dir}" || result="${?}"
+    assertTrue "'${project_root_dir}' is a valid project" \
+        "${result}"
+
+    assertEquals "project_roots should have two entries" \
+        2 "${#project_roots[@]}"
+    assertEquals "${project_root_dir} is the project root directory" \
+        "${project_root_dir}" "${project_roots["${_PROJECT_ROOT_DIR}"]}"
+    assertEquals "${original_myproject_dir} is the MyProject Task Definition directory" \
+        "${original_myproject_dir}" "${project_roots["${_PROJECT_TASK_DEFINITION_ROOT_DIR}"]}"
+}
+
+# shellcheck disable=SC2034
 function test_find_up_valid_projects() {
     local -a project_roots=()
     local result=0
@@ -221,12 +312,29 @@ function test_find_up_valid_projects() {
         "${VALID_MYPROJECT_DIR1}" "${project_roots["${_PROJECT_TASK_DEFINITION_ROOT_DIR}"]}"
 }
 
+function generate_mapping_config() {
+    {
+        # Invalid project path that will be ignored
+        echo "/invalid-path=${VALID_MYPROJECT_DIR1}"
+        # Invalid myproject path that will be ignored
+        echo "${INVALID_NO_MYPROJECT_DIR}=/invalid-path"
+        # MyProject Dir without main file
+        echo "${INVALID_NO_MYPROJECT_DIR}=${INVALID_NO_MYPROJECT_MAIN_DIR}"
+        # Valid Configuration
+        echo "${INVALID_NO_MYPROJECT_DIR}=${VALID_MYPROJECT_DIR1}"
+        # Override Configuration
+        echo "${VALID_PROJECT_DIR1}=${VALID_MYPROJECT_DIR2}"
+    } >>"${MAPPING_CONFIG_FILE1}"
+}
+
 function oneTimeSetUp() {
     # Copy the test data into a new directory in TMPDIR so there won't be a `myproject` directory above them
     if ! cp -R "${TEST_DATA_SRC_DIR}/" "${TEST_DATA_DIR}"; then
         echo >&2 "Error copying test data into '${TEST_DATA_DIR}'."
         exit 1
     fi
+
+    generate_mapping_config
 
     # shellcheck source=/dev/null
     . "${MYCMD_SYSTEM_BASE_DIR}/mycmd-lib"

@@ -38,21 +38,17 @@ function project.find_up() {
 function project._load_mapping_configuration() {
     _MYPROJECT_MAPPINGS=()
 
+    if [[ -n "${MYPROJECT_MAPPING_CONFIG-}" ]]; then
+        project._load_mapping_config_file "${MYPROJECT_MAPPING_CONFIG}"
+    fi
+
+    # Parse MYPROJECT_MAPPING last so it can override values from the configuration file
     if [[ -n "${MYPROJECT_MAPPING-}" ]]; then
         local -r project_root="${MYPROJECT_MAPPING%%:*}"
         local -r myproject_root="${MYPROJECT_MAPPING##*:}"
         mycmd.trace "Checking '${MYPROJECT_MAPPING}' with project root '${project_root}' and myproject root '${myproject_root}'."
 
         project._add_myproject_mapping_if_valid "${project_root}" "${myproject_root}"
-    fi
-
-    if [[ -z "${MYPROJECT_MAPPING_CONFIG-}" ]]; then
-        return
-    fi
-
-    if ! [[ -e "${MYPROJECT_MAPPING_CONFIG}" ]]; then
-        mycmd.debug "MyProject Mapping Configuration file '${MYPROJECT_MAPPING_CONFIG}' does not exist."
-        return
     fi
 }
 
@@ -63,13 +59,13 @@ function project._add_myproject_mapping_if_valid() {
     mycmd.trace "Checking mapping with project root '${project_root}' and myproject root '${myproject_root}'."
 
     if ! project_root="$(mycmd.canonicalize_path "${project_root}")"; then
-        mycmd.debug "Error canonicalizing project root '${project_root}', ignoring mapping."
+        mycmd.debug "Error canonicalizing project root, ignoring mapping."
         return
     fi
     readonly project_root
 
     if ! myproject_root="$(mycmd.canonicalize_path "${myproject_root}")"; then
-
+        mycmd.debug "Error canonicalizing myproject root, ignoring mapping."
         return
     fi
     readonly myproject_root
@@ -81,6 +77,35 @@ function project._add_myproject_mapping_if_valid() {
 
     mycmd.trace "Configuring mapping for '${project_root}' as '${myproject_root}'."
     _MYPROJECT_MAPPINGS["${project_root}"]="${myproject_root}"
+}
+
+function project._load_mapping_config_file() {
+    local -r mapping_config_file="${1}"
+
+    if ! [[ -e "${mapping_config_file}" ]]; then
+        mycmd.debug "MyProject Mapping Configuration file '${mapping_config_file}' does not exist."
+        return
+    fi
+
+    local -a config_lines=()
+
+    readarray -t config_lines <"${mapping_config_file}"
+
+    mycmd.trace "Processing ${#config_lines[@]} lines from mapping config file '${mapping_config_file}'."
+
+    local line
+    local project_root
+    local myproject_root
+
+    for line in "${config_lines[@]}"; do
+        mycmd.trace "Processing config file line:"
+        mycmd.trace "${line}"
+
+        project_root="${line%%=*}"
+        myproject_root="${line##*=}"
+
+        project._add_myproject_mapping_if_valid "${project_root}" "${myproject_root}"
+    done
 }
 
 function project._is_valid_myproject_task_definition_directory() {

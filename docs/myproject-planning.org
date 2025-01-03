@@ -31,11 +31,16 @@
 
 * Work Log Posts
 ** TODO Introduction to MyProject
+** TODO Weekly Progress Report with weekly demo
+SCHEDULED: <2025-01-03 Fri>
 
 * Next Steps
 ** DONE Add more details to [[file:~/Developer/Personal/myproject/main/README.md][README]]
 ** DONE Freewrite about design of out of band =myproject= directories and configuration
-** Locating MyProject Task Definitions
+
+* Next Demo
+** Minimal =mycmd myproject list-tasks= that prints project root and MyProject task definition root
+SCHEDULED: <2025-01-03 Fri>
 *** DONE Implement and test the basic =project.find_up= which simply looks for =myproject/main=
 *** DONE Implement and test the =_MYPROJECT_MAPPINGS= associative array, test and use that in =project.find_up=
 *** DONE Implement and test parsing the =MYPROJECT_MAPPING= environment variable in =project.find_up=
@@ -43,8 +48,13 @@
 *** DONE Implement separate =project._load_mapping_configuration= function and call it from =project.find_up=
 *** DONE Implement tests for =project._is_valid_task_definition_directory=
 *** DONE Test that =MYPROJECT_MAPPING= is ignored for invalid directories
-*** TODO Implement and test parsing the MyProject Mapping Configuration File using the =MYPROJECT_MAPPING_CONFIG= environment variable
+*** DONE Implement and test parsing the MyProject Mapping Configuration File using the =MYPROJECT_MAPPING_CONFIG= environment variable
+*** TODO Test that the config file can handle using =~= for home
+*** TODO Implement minimal =mycmd myproject list-tasks= that calls =project.find_up=
 *** TODO Implement and test parsing the MyProject Mapping Configuration File from the standard location
+
+** Working =mycmd myproject list-tasks= that will load tasks from a =myproject/main=
+SCHEDULED: <2025-01-10 Fri>
 
 * Strategies and Goals
 
