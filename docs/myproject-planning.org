@@ -53,7 +53,7 @@ SCHEDULED: <2025-01-03 Fri>
 *** DONE Test that the config file can handle using =~= for home
 *** DONE Test the priority of =MYPROJECT_MAPPING= over =MYPROJECT_MAPPING_CONFIG=
 *** DONE Implement minimal =mycmd myproject list-tasks= that calls =project.find_up=
-*** TODO Implement and test parsing the MyProject Mapping Configuration File from the standard location
+*** DONE Implement and test parsing the MyProject Mapping Configuration File from the standard location
 
 ** Working =mycmd myproject list-tasks= that will load tasks from a =myproject/main=
 SCHEDULED: <2025-01-10 Fri>

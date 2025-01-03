@@ -25,6 +25,9 @@ declare -Agx _MYPROJECT_MAPPINGS=()
 readonly _PROJECT_ROOT_DIR=0
 readonly _PROJECT_TASK_DEFINITION_ROOT_DIR=1
 
+_MYPROJECT_USER_CONFIG_FILE="$(mycmd:command_group.get_config_file "mapping-config")"
+readonly _MYPROJECT_USER_CONFIG_FILE
+
 # --------------------------------------------------------------------------------------------------
 # Project Locating Public Functions
 function project.find_up() {
@@ -38,9 +41,8 @@ function project.find_up() {
 function project._load_mapping_configuration() {
     _MYPROJECT_MAPPINGS=()
 
-    if [[ -n "${MYPROJECT_MAPPING_CONFIG-}" ]]; then
-        project._load_mapping_config_file "${MYPROJECT_MAPPING_CONFIG}"
-    fi
+    local -r mapping_config_file="${MYPROJECT_MAPPING_CONFIG:-${_MYPROJECT_USER_CONFIG_FILE}}"
+    project._load_mapping_config_file "${mapping_config_file}"
 
     # Parse MYPROJECT_MAPPING last so it can override values from the configuration file
     if [[ -n "${MYPROJECT_MAPPING-}" ]]; then
