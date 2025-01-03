@@ -129,7 +129,7 @@ function project._is_valid_myproject_task_definition_directory() {
         return 1
     fi
 
-    if ! [[ -e "${task_definition_directory}/main" ]]; then
+    if ! [[ -f "${task_definition_directory}/main" ]]; then
         mycmd.debug "Required file 'main' missing from '${task_definition_directory}'."
         return 1
     fi
