@@ -57,3 +57,6 @@ My development process should follow the following tenants:
 ** Implement those design decisions in as small of increments as I can, using automated testing to give feedback, especially when the increment isn't enough to execute meaningfully.
 ** These small increments can be as small as "create a  placeholder function"; anything to promote momentum.
 ** Use [[https://mitchellh.com/writing/building-large-technical-projects][demo-driven development]]; iterate quickly towards being able to show the code working.
+** Once a feature is complete:
+*** Take a pass to add details to the [[file:myproject-concepts-and-conventions.org][Concepts and Conventions Document]] and update the implementation and testing code to fit.
+*** If it is a user-facing feature, add appropriate documentation to the End User Documentation.
