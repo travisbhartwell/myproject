@@ -51,8 +51,7 @@ SCHEDULED: <2025-01-03 Fri>
 *** DONE Implement and test parsing the MyProject Mapping Configuration File using the =MYPROJECT_MAPPING_CONFIG= environment variable
 *** DONE Add trace logs for =_MYPROJECT_MAPPINGS=
 *** DONE Test that the config file can handle using =~= for home
-*** TODO Test the priority of =MYPROJECT_MAPPING= over =MYPROJECT_MAPPING_CONFIG=
-*** TODO Move tests to new file and re-organize based on implementation file order
+*** DONE Test the priority of =MYPROJECT_MAPPING= over =MYPROJECT_MAPPING_CONFIG=
 *** TODO Implement minimal =mycmd myproject list-tasks= that calls =project.find_up=
 *** TODO Implement and test parsing the MyProject Mapping Configuration File from the standard location
 

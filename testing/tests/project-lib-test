@@ -280,6 +280,49 @@ function test_find_up_mapping_config_file_env_variable_override_valid() {
         "${original_myproject_dir}" "${project_roots["${_PROJECT_TASK_DEFINITION_ROOT_DIR}"]}"
 }
 
+function test_find_up_config_priority() {
+    local -r project_root_dir="${INVALID_NO_MYPROJECT_DIR}"
+    local -r myproject_root_dir="${VALID_MYPROJECT_DIR2}"
+
+    export MYPROJECT_MAPPING_CONFIG="${MAPPING_CONFIG_FILE1}"
+    export MYPROJECT_MAPPING="${INVALID_NO_MYPROJECT_DIR}:${VALID_MYPROJECT_DIR2}"
+
+    local -a project_roots=()
+    local result=0
+
+    project.find_up project_roots "${project_root_dir}" || result="${?}"
+    assertTrue "'${project_root_dir}' is a valid project" \
+        "${result}"
+
+    assertEquals "project_roots should have two entries" \
+        2 "${#project_roots[@]}"
+    assertEquals "${project_root_dir} is the project root directory" \
+        "${project_root_dir}" "${project_roots["${_PROJECT_ROOT_DIR}"]}"
+    assertEquals "${myproject_root_dir} is the MyProject Task Definition directory" \
+        "${myproject_root_dir}" "${project_roots["${_PROJECT_TASK_DEFINITION_ROOT_DIR}"]}"
+
+    unset MYPROJECT_MAPPING
+
+    # Validate that it returns the config file task definition after removing mapping
+    local -r original_myproject_dir="${VALID_MYPROJECT_DIR1}"
+
+    project_roots=()
+    result=0
+
+    project.find_up project_roots "${project_root_dir}" || result="${?}"
+    assertTrue "'${project_root_dir}' is a valid project" \
+        "${result}"
+
+    assertEquals "project_roots should have two entries" \
+        2 "${#project_roots[@]}"
+    assertEquals "${project_root_dir} is the project root directory" \
+        "${project_root_dir}" "${project_roots["${_PROJECT_ROOT_DIR}"]}"
+    assertEquals "${original_myproject_dir} is the MyProject Task Definition directory" \
+        "${original_myproject_dir}" "${project_roots["${_PROJECT_TASK_DEFINITION_ROOT_DIR}"]}"
+
+    unset MYPROJECT_MAPPING_CONFIG
+}
+
 # shellcheck disable=SC2034
 function test_find_up_valid_projects() {
     local -a project_roots=()
