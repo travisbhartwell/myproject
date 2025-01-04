@@ -31,15 +31,17 @@
 
 * Work Log Posts
 ** TODO Introduction to MyProject
-** TODO Weekly Progress Report with weekly demo
+** DONE Weekly Progress Report with weekly demo
 SCHEDULED: <2025-01-03 Fri>
+** TODO Weekly Progress Report with weekly demo
+SCHEDULED: <2025-01-10 Fri>
 
 * Next Steps
 ** DONE Add more details to [[file:~/Developer/Personal/myproject/main/README.md][README]]
 ** DONE Freewrite about design of out of band =myproject= directories and configuration
 
 * Next Demo
-** Minimal =mycmd myproject list-tasks= that prints project root and MyProject task definition root
+** DONE Minimal =mycmd myproject list-tasks= that prints project root and MyProject task definition root
 SCHEDULED: <2025-01-03 Fri>
 *** DONE Implement and test the basic =project.find_up= which simply looks for =myproject/main=
 *** DONE Implement and test the =_MYPROJECT_MAPPINGS= associative array, test and use that in =project.find_up=
@@ -55,8 +57,13 @@ SCHEDULED: <2025-01-03 Fri>
 *** DONE Implement minimal =mycmd myproject list-tasks= that calls =project.find_up=
 *** DONE Implement and test parsing the MyProject Mapping Configuration File from the standard location
 
+
 ** Working =mycmd myproject list-tasks= that will load tasks from a =myproject/main=
 SCHEDULED: <2025-01-10 Fri>
+*** TODO Clean up and re-organize =project-lib-test=
+*** TODO Document existing concepts and conventions to the [[file:myproject-concepts-and-conventions.org][Concepts and Conventions Document]]
+*** TODO Freewrite about task registry design
+*** TODO Write design of task registry
 
 * Strategies and Goals
 
