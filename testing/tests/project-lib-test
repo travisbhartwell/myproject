@@ -64,67 +64,8 @@ function test_project_lib_is_loaded() {
     assertTrue 'Project Lib is loaded' '[ -v _MYCMD_PROJECT_LIB ]'
 }
 
-# shellcheck disable=SC2016,SC2034,SC2153,SC2154
-function test_mapping_env_variable() {
-    assertEquals "There are 0 items in the _MYPROJECT_MAPPINGS array to start" \
-        0 "${#_MYPROJECT_MAPPINGS[@]}"
-
-    export MYPROJECT_MAPPING="/invalid-path:${VALID_TASK_DEFINITION_DIRECTORY1}"
-    project._load_mapping_configuration
-    assertEquals "There are still 0 items in the _MYPROJECT_MAPPINGS array after invalid project path" \
-        0 "${#_MYPROJECT_MAPPINGS[@]}"
-
-    export MYPROJECT_MAPPING="${INVALID_NO_TASK_DEFINITION_DIRECTORY}:/invalid-path"
-    project._load_mapping_configuration
-    assertEquals "There are still 0 items in the _MYPROJECT_MAPPINGS array after invalid myproject path" \
-        0 "${#_MYPROJECT_MAPPINGS[@]}"
-
-    export MYPROJECT_MAPPING="${INVALID_NO_TASK_DEFINITION_DIRECTORY}:${INVALID_NO_MYPROJECT_MAIN_DIRECTORY}"
-    project._load_mapping_configuration
-    assertEquals "There are still 0 items in the _MYPROJECT_MAPPINGS array after myproject dir without main" \
-        0 "${#_MYPROJECT_MAPPINGS[@]}"
-
-    export MYPROJECT_MAPPING="${INVALID_NO_TASK_DEFINITION_DIRECTORY}:${VALID_TASK_DEFINITION_DIRECTORY1}"
-    project._load_mapping_configuration
-    assertEquals "There are now 1 items in the _MYPROJECT_MAPPINGS array after valid project root directory and task definition directory" \
-        1 "${#_MYPROJECT_MAPPINGS[@]}"
-
-    unset MYPROJECT_MAPPING
-}
-
-function test_mapping_config_file_env_variable() {
-    export MYPROJECT_MAPPING_CONFIG="${MAPPING_CONFIG_FILE1}"
-    project._load_mapping_configuration
-    unset MYPROJECT_MAPPING_CONFIG
-
-    local -r loaded_config_counts=2
-    assertEquals "There are ${loaded_config_counts} items in the _MYPROJECT_MAPPINGS array after loading the config file" \
-        "${loaded_config_counts}" "${#_MYPROJECT_MAPPINGS[@]}"
-}
-
-function test_mapping_user_config_file() {
-    generate_mapping_config1 "${USER_MAPPING_CONFIG}"
-    project._load_mapping_configuration
-
-    local -r loaded_config_counts=2
-    assertEquals "There are ${loaded_config_counts} items in the _MYPROJECT_MAPPINGS array after loading the config file" \
-        "${loaded_config_counts}" "${#_MYPROJECT_MAPPINGS[@]}"
-
-    rm "${USER_MAPPING_CONFIG}" || true
-}
-
-# shellcheck disable=SC2016,SC2034
-function test_is_valid_task_definition_directory() {
-    assertFalse "'${INVALID_NO_TASK_DEFINITION_DIRECTORY}' is not named 'myproject', so not a task definition directory." \
-        'project._is_valid_task_definition_directory "${INVALID_NO_TASK_DEFINITION_DIRECTORY}"'
-
-    assertFalse "'${INVALID_NO_MYPROJECT_MAIN_DIRECTORY}' is missing the 'main' file, so not a task definition directory." \
-        'project._is_valid_task_definition_directory "${INVALID_NO_MYPROJECT_MAIN_DIRECTORY}"'
-
-    assertTrue "'${VALID_TASK_DEFINITION_DIRECTORY1}' is a valid task definition directory" \
-        'project._is_valid_task_definition_directory "${VALID_TASK_DEFINITION_DIRECTORY1}"'
-}
-
+# --------------------------------------------------------------------------------------------------
+# project.find_up Tests
 # shellcheck disable=SC2034
 function test_find_up_invalid_projects() {
     local -a project_directories=()
@@ -144,6 +85,38 @@ function test_find_up_invalid_projects() {
         "${result}"
     assertEquals "project_directories should be empty" \
         0 "${#project_directories[@]}"
+}
+
+# shellcheck disable=SC2034
+function test_find_up_valid_projects() {
+    local -a project_directories=()
+    local result=0
+
+    project.find_up project_directories "${VALID_PROJECT_DIRECTORY1}" || result="${?}"
+    assertTrue "'${VALID_PROJECT_DIRECTORY1}' is a valid project" \
+        "${result}"
+
+    assertEquals "project_directories should have two entries" \
+        2 "${#project_directories[@]}"
+    assertEquals "${VALID_PROJECT_DIRECTORY1} is the project root directory" \
+        "${VALID_PROJECT_DIRECTORY1}" "${project_directories["${_PROJECT_ROOT_DIRECTORY}"]}"
+    assertEquals "${VALID_PROJECT_DIRECTORY1}/myproject is the task definition directory" \
+        "${VALID_PROJECT_DIRECTORY1}/myproject" "${project_directories["${_PROJECT_TASK_DEFINITION_DIRECTORY}"]}"
+
+    project_directories=()
+    result=0
+
+    local -r valid_project_module_dir="${VALID_PROJECT_DIRECTORY1}/module1"
+    project.find_up project_directories "${valid_project_module_dir}" || result="${?}"
+    assertTrue "'${valid_project_module_dir}' is in a valid project" \
+        "${result}"
+
+    assertEquals "project_directories should have two entries" \
+        2 "${#project_directories[@]}"
+    assertEquals "${VALID_PROJECT_DIRECTORY1} is the project root directory" \
+        "${VALID_PROJECT_DIRECTORY1}" "${project_directories["${_PROJECT_ROOT_DIRECTORY}"]}"
+    assertEquals "${VALID_PROJECT_DIRECTORY1}/myproject is the task definition directory" \
+        "${VALID_TASK_DEFINITION_DIRECTORY1}" "${project_directories["${_PROJECT_TASK_DEFINITION_DIRECTORY}"]}"
 }
 
 # shellcheck disable=SC2034
@@ -403,37 +376,75 @@ function test_find_up_config_priority() {
         0 "${#project_directories[@]}"
 }
 
-# shellcheck disable=SC2034
-function test_find_up_valid_projects() {
-    local -a project_directories=()
-    local result=0
+# --------------------------------------------------------------------------------------------------
+# project._load_mapping_configuration Tests
 
-    project.find_up project_directories "${VALID_PROJECT_DIRECTORY1}" || result="${?}"
-    assertTrue "'${VALID_PROJECT_DIRECTORY1}' is a valid project" \
-        "${result}"
+# shellcheck disable=SC2016,SC2034,SC2153,SC2154
+function test_mapping_env_variable() {
+    assertEquals "There are 0 items in the _MYPROJECT_MAPPINGS array to start" \
+        0 "${#_MYPROJECT_MAPPINGS[@]}"
 
-    assertEquals "project_directories should have two entries" \
-        2 "${#project_directories[@]}"
-    assertEquals "${VALID_PROJECT_DIRECTORY1} is the project root directory" \
-        "${VALID_PROJECT_DIRECTORY1}" "${project_directories["${_PROJECT_ROOT_DIRECTORY}"]}"
-    assertEquals "${VALID_PROJECT_DIRECTORY1}/myproject is the task definition directory" \
-        "${VALID_PROJECT_DIRECTORY1}/myproject" "${project_directories["${_PROJECT_TASK_DEFINITION_DIRECTORY}"]}"
+    export MYPROJECT_MAPPING="/invalid-path:${VALID_TASK_DEFINITION_DIRECTORY1}"
+    project._load_mapping_configuration
+    assertEquals "There are still 0 items in the _MYPROJECT_MAPPINGS array after invalid project path" \
+        0 "${#_MYPROJECT_MAPPINGS[@]}"
 
-    project_directories=()
-    result=0
+    export MYPROJECT_MAPPING="${INVALID_NO_TASK_DEFINITION_DIRECTORY}:/invalid-path"
+    project._load_mapping_configuration
+    assertEquals "There are still 0 items in the _MYPROJECT_MAPPINGS array after invalid myproject path" \
+        0 "${#_MYPROJECT_MAPPINGS[@]}"
 
-    local -r valid_project_module_dir="${VALID_PROJECT_DIRECTORY1}/module1"
-    project.find_up project_directories "${valid_project_module_dir}" || result="${?}"
-    assertTrue "'${valid_project_module_dir}' is in a valid project" \
-        "${result}"
+    export MYPROJECT_MAPPING="${INVALID_NO_TASK_DEFINITION_DIRECTORY}:${INVALID_NO_MYPROJECT_MAIN_DIRECTORY}"
+    project._load_mapping_configuration
+    assertEquals "There are still 0 items in the _MYPROJECT_MAPPINGS array after myproject dir without main" \
+        0 "${#_MYPROJECT_MAPPINGS[@]}"
 
-    assertEquals "project_directories should have two entries" \
-        2 "${#project_directories[@]}"
-    assertEquals "${VALID_PROJECT_DIRECTORY1} is the project root directory" \
-        "${VALID_PROJECT_DIRECTORY1}" "${project_directories["${_PROJECT_ROOT_DIRECTORY}"]}"
-    assertEquals "${VALID_PROJECT_DIRECTORY1}/myproject is the task definition directory" \
-        "${VALID_TASK_DEFINITION_DIRECTORY1}" "${project_directories["${_PROJECT_TASK_DEFINITION_DIRECTORY}"]}"
+    export MYPROJECT_MAPPING="${INVALID_NO_TASK_DEFINITION_DIRECTORY}:${VALID_TASK_DEFINITION_DIRECTORY1}"
+    project._load_mapping_configuration
+    assertEquals "There are now 1 items in the _MYPROJECT_MAPPINGS array after valid project root directory and task definition directory" \
+        1 "${#_MYPROJECT_MAPPINGS[@]}"
+
+    unset MYPROJECT_MAPPING
 }
+
+function test_mapping_config_file_env_variable() {
+    export MYPROJECT_MAPPING_CONFIG="${MAPPING_CONFIG_FILE1}"
+    project._load_mapping_configuration
+    unset MYPROJECT_MAPPING_CONFIG
+
+    local -r loaded_config_counts=2
+    assertEquals "There are ${loaded_config_counts} items in the _MYPROJECT_MAPPINGS array after loading the config file" \
+        "${loaded_config_counts}" "${#_MYPROJECT_MAPPINGS[@]}"
+}
+
+function test_mapping_user_config_file() {
+    generate_mapping_config1 "${USER_MAPPING_CONFIG}"
+    project._load_mapping_configuration
+
+    local -r loaded_config_counts=2
+    assertEquals "There are ${loaded_config_counts} items in the _MYPROJECT_MAPPINGS array after loading the config file" \
+        "${loaded_config_counts}" "${#_MYPROJECT_MAPPINGS[@]}"
+
+    rm "${USER_MAPPING_CONFIG}" || true
+}
+
+# --------------------------------------------------------------------------------------------------
+# project._is_valid_task_definition_directory Tests
+
+# shellcheck disable=SC2016,SC2034
+function test_is_valid_task_definition_directory() {
+    assertFalse "'${INVALID_NO_TASK_DEFINITION_DIRECTORY}' is not named 'myproject', so not a task definition directory." \
+        'project._is_valid_task_definition_directory "${INVALID_NO_TASK_DEFINITION_DIRECTORY}"'
+
+    assertFalse "'${INVALID_NO_MYPROJECT_MAIN_DIRECTORY}' is missing the 'main' file, so not a task definition directory." \
+        'project._is_valid_task_definition_directory "${INVALID_NO_MYPROJECT_MAIN_DIRECTORY}"'
+
+    assertTrue "'${VALID_TASK_DEFINITION_DIRECTORY1}' is a valid task definition directory" \
+        'project._is_valid_task_definition_directory "${VALID_TASK_DEFINITION_DIRECTORY1}"'
+}
+
+# --------------------------------------------------------------------------------------------------
+# Test Helper Functions
 
 function generate_mapping_config1() {
     local -r config_file="${1}"

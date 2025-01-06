@@ -60,7 +60,7 @@ SCHEDULED: <2025-01-03 Fri>
 ** Working =mycmd myproject list-tasks= that will load tasks from a =myproject/main=
 SCHEDULED: <2025-01-10 Fri>
 *** DONE Document existing concepts and conventions to the [[file:myproject-concepts-and-conventions.org][Concepts and Conventions Document]]
-*** TODO Clean up and re-organize =project-lib-test=
+*** DONE Clean up and re-organize =project-lib-test=
 *** TODO Freewrite about task registry design
 *** TODO Write design of task registry
 

@@ -19,3 +19,8 @@ The top-level directory of a project that tasks are being defined for.
 - When referring to the project root directory, use the name =project_root_directory=.
 
 - When referring to the output of =project.find_up=, use the name =project_directories=.
+
+** Testing
+- Test files should generally test one feature and be self contained.
+
+- The ordering of test functions in a file should reflect the order of the functions being tested in the implementation files.
