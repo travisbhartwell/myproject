@@ -1,3 +1,21 @@
 #+title: MyProject Concepts and Conventions
 
 This document will be where I document the concepts and conventions used in the MyProject implementation.
+
+* Concepts
+** Task Definition Directory
+
+A directory named =myproject= containing one ore more files, with =main= being the only required one. These files are shell scripts that register tasks based on shell functions.
+
+** Project Root Directory
+
+The top-level directory of a project that tasks are being defined for.
+
+* General Conventions
+** Naming
+*** Specific Naming Conventions
+- When referring to a task definition directory, use the name =task_definition_directory=.
+
+- When referring to the project root directory, use the name =project_root_directory=.
+
+- When referring to the output of =project.find_up=, use the name =project_directories=.

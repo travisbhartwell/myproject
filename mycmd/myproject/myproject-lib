@@ -22,8 +22,8 @@ readonly _MYCMD_PROJECT_LIB=1
 
 declare -Agx _MYPROJECT_MAPPINGS=()
 
-readonly _PROJECT_ROOT_DIR=0
-readonly _PROJECT_TASK_DEFINITION_ROOT_DIR=1
+readonly _PROJECT_ROOT_DIRECTORY=0
+readonly _PROJECT_TASK_DEFINITION_DIRECTORY=1
 
 _MYPROJECT_USER_CONFIG_FILE="$(mycmd:command_group.get_config_file "mapping-config")"
 readonly _MYPROJECT_USER_CONFIG_FILE
@@ -46,41 +46,41 @@ function project._load_mapping_configuration() {
 
     # Parse MYPROJECT_MAPPING last so it can override values from the configuration file
     if [[ -n "${MYPROJECT_MAPPING-}" ]]; then
-        local -r project_root="${MYPROJECT_MAPPING%%:*}"
-        local -r myproject_root="${MYPROJECT_MAPPING##*:}"
-        mycmd.trace "Checking '${MYPROJECT_MAPPING}' with project root '${project_root}' and myproject root '${myproject_root}'."
+        local -r project_root_directory="${MYPROJECT_MAPPING%%:*}"
+        local -r task_definition_directory="${MYPROJECT_MAPPING##*:}"
+        mycmd.trace "Checking '${MYPROJECT_MAPPING}' with project root directory '${project_root_directory}' and task definition directory '${task_definition_directory}'."
 
-        project._add_myproject_mapping_if_valid "${project_root}" "${myproject_root}"
+        project._add_myproject_mapping_if_valid "${project_root_directory}" "${task_definition_directory}"
     fi
 
     project._log_myproject_mappings
 }
 
 function project._add_myproject_mapping_if_valid() {
-    local project_root="${1}"
-    local myproject_root="${2}"
+    local project_root_directory="${1}"
+    local task_definition_directory="${2}"
 
-    mycmd.trace "Checking mapping with project root '${project_root}' and myproject root '${myproject_root}'."
+    mycmd.trace "Checking mapping with project root directory '${project_root_directory}' and task definition directory '${task_definition_directory}'."
 
-    if ! project_root="$(project._resolve_directory "${project_root}")"; then
-        mycmd.debug "Error canonicalizing project root, ignoring mapping."
+    if ! project_root_directory="$(project._resolve_directory "${project_root_directory}")"; then
+        mycmd.debug "Error canonicalizing project root directory, ignoring mapping."
         return
     fi
-    readonly project_root
+    readonly project_root_directory
 
-    if ! myproject_root="$(project._resolve_directory "${myproject_root}")"; then
-        mycmd.debug "Error canonicalizing myproject root, ignoring mapping."
+    if ! task_definition_directory="$(project._resolve_directory "${task_definition_directory}")"; then
+        mycmd.debug "Error canonicalizing task definition directory, ignoring mapping."
         return
     fi
-    readonly myproject_root
+    readonly task_definition_directory
 
-    if ! project._is_valid_myproject_task_definition_directory "${myproject_root}"; then
-        mycmd.debug "'${myproject_root}' is not a valid Task Definition Directory, ignoring mapping."
+    if ! project._is_valid_myproject_task_definition_directory "${task_definition_directory}"; then
+        mycmd.debug "'${task_definition_directory}' is not a valid task definition directory, ignoring mapping."
         return
     fi
 
-    mycmd.trace "Configuring mapping for '${project_root}' as '${myproject_root}'."
-    _MYPROJECT_MAPPINGS["${project_root}"]="${myproject_root}"
+    mycmd.trace "Configuring mapping for '${project_root_directory}' as '${task_definition_directory}'."
+    _MYPROJECT_MAPPINGS["${project_root_directory}"]="${task_definition_directory}"
 }
 
 function project._load_mapping_config_file() {
@@ -98,24 +98,24 @@ function project._load_mapping_config_file() {
     mycmd.trace "Processing ${#config_lines[@]} lines from mapping config file '${mapping_config_file}'."
 
     local line
-    local project_root
-    local myproject_root
+    local project_root_directory
+    local task_definition_directory
 
     for line in "${config_lines[@]}"; do
         mycmd.trace "Processing config file line:"
         mycmd.trace "${line}"
 
-        project_root="${line%%=*}"
-        myproject_root="${line##*=}"
+        project_root_directory="${line%%=*}"
+        task_definition_directory="${line##*=}"
 
-        project._add_myproject_mapping_if_valid "${project_root}" "${myproject_root}"
+        project._add_myproject_mapping_if_valid "${project_root_directory}" "${task_definition_directory}"
     done
 }
 
 function project._resolve_directory() {
-    local dir="${1}"
-    dir=${dir/#\~/${HOME}}
-    mycmd.canonicalize_path "${dir}"
+    local directory="${1}"
+    directory=${directory/#\~/${HOME}}
+    mycmd.canonicalize_path "${directory}"
 }
 
 function project._is_valid_myproject_task_definition_directory() {
@@ -143,51 +143,51 @@ function project._log_myproject_mappings() {
     # TODO: Use mycmd.print_table when it can use mycmd.trace
     mycmd.trace "MyProject Mapping is configured with ${#_MYPROJECT_MAPPINGS[@]} entries.\n"
 
-    local project_root
-    local myproject_root
-    for project_root in "${!_MYPROJECT_MAPPINGS[@]}"; do
-        myproject_root="${_MYPROJECT_MAPPINGS["${project_root}"]}"
-        mycmd.trace "'${project_root}' is mapped to use the MyProject Task Definition directory '${myproject_root}'."
+    local project_root_directory
+    local task_definition_directory
+    for project_root_directory in "${!_MYPROJECT_MAPPINGS[@]}"; do
+        task_definition_directory="${_MYPROJECT_MAPPINGS["${project_root_directory}"]}"
+        mycmd.trace "'${project_root_directory}' is mapped to use the task definition directory '${task_definition_directory}'."
     done
 }
 
 function project._find_up() {
-    local -n project_root_dirs="${1}"
-    local starting_dir="${2}"
+    local -n project_root_directories="${1}"
+    local starting_directory="${2}"
 
-    if ! starting_dir="$(mycmd.canonicalize_path "${starting_dir}")"; then
-        mycmd.debug "'${starting_dir}' not found."
+    if ! starting_directory="$(mycmd.canonicalize_path "${starting_directory}")"; then
+        mycmd.debug "'${starting_directory}' not found."
         return 1
     fi
 
-    mycmd.trace "Looking in '${starting_dir}' for MyProject Task Definition directory."
+    mycmd.trace "Looking in '${starting_directory}' for MyProject Task Definition directory."
 
-    if [[ -v _MYPROJECT_MAPPINGS[${starting_dir}] ]]; then
-        local -r myproject_root_dir="${_MYPROJECT_MAPPINGS["${starting_dir}"]}"
+    if [[ -v _MYPROJECT_MAPPINGS[${starting_directory}] ]]; then
+        local -r task_definition_directory="${_MYPROJECT_MAPPINGS["${starting_directory}"]}"
 
-        mycmd.trace "Found MyProject Mapping for '${starting_dir}' as '${myproject_root_dir}'."
+        mycmd.trace "Found MyProject Mapping for '${starting_directory}' as '${task_definition_directory}'."
 
-        project_root_dirs["${_PROJECT_ROOT_DIR}"]="${starting_dir}"
+        project_root_directories["${_PROJECT_ROOT_DIRECTORY}"]="${starting_directory}"
         # shellcheck disable=SC2034
-        project_root_dirs["${_PROJECT_TASK_DEFINITION_ROOT_DIR}"]="${myproject_root_dir}"
+        project_root_directories["${_PROJECT_TASK_DEFINITION_DIRECTORY}"]="${task_definition_directory}"
         return 0
     fi
 
-    local -r possible_path="${starting_dir}/myproject"
+    local -r possible_path="${starting_directory}/myproject"
 
     if project._is_valid_myproject_task_definition_directory "${possible_path}"; then
-        project_root_dirs["${_PROJECT_ROOT_DIR}"]="${starting_dir}"
+        project_root_directories["${_PROJECT_ROOT_DIRECTORY}"]="${starting_directory}"
         # shellcheck disable=SC2034
-        project_root_dirs["${_PROJECT_TASK_DEFINITION_ROOT_DIR}"]="${possible_path}"
+        project_root_directories["${_PROJECT_TASK_DEFINITION_DIRECTORY}"]="${possible_path}"
         return 0
     fi
 
-    if [[ "${starting_dir}" = "/" ]]; then
-        mycmd.debug "MyProject task definition directory not found"
+    if [[ "${starting_directory}" = "/" ]]; then
+        mycmd.debug "MyProject task definition directory not found."
         return 1
     fi
 
-    project._find_up "${!project_root_dirs}" "${starting_dir}/.."
+    project._find_up "${!project_root_directories}" "${starting_directory}/.."
 }
 
 mycmd.trace "The MyCmd Project command group library has been sourced."

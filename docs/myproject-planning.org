@@ -6,9 +6,9 @@
 
 * Milestones
 ** Features to Design and Explore
+*** DONE Out of band =myproject= directories and configuration
 *** TODO Data structures/split between Task Definitions and Task Execution
 *** TODO Intra- and Inter- project code re-use
-*** TODO Out of band =myproject= directories and configuration
 *** TODO Declaring task dependencies on one another
 
 ** Dog Fooding
@@ -30,9 +30,9 @@
 *** TODO Command-line completion for tasks for =mycmd project run=
 
 * Work Log Posts
-** TODO Introduction to MyProject
 ** DONE Weekly Progress Report with weekly demo
 SCHEDULED: <2025-01-03 Fri>
+** TODO Introduction to MyProject
 ** TODO Weekly Progress Report with weekly demo
 SCHEDULED: <2025-01-10 Fri>
 
@@ -57,11 +57,10 @@ SCHEDULED: <2025-01-03 Fri>
 *** DONE Implement minimal =mycmd myproject list-tasks= that calls =project.find_up=
 *** DONE Implement and test parsing the MyProject Mapping Configuration File from the standard location
 
-
 ** Working =mycmd myproject list-tasks= that will load tasks from a =myproject/main=
 SCHEDULED: <2025-01-10 Fri>
+*** DONE Document existing concepts and conventions to the [[file:myproject-concepts-and-conventions.org][Concepts and Conventions Document]]
 *** TODO Clean up and re-organize =project-lib-test=
-*** TODO Document existing concepts and conventions to the [[file:myproject-concepts-and-conventions.org][Concepts and Conventions Document]]
 *** TODO Freewrite about task registry design
 *** TODO Write design of task registry
 

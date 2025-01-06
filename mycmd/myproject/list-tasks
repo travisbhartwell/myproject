@@ -18,13 +18,13 @@ mycmd:command.register_help_text "\t-v | --version - Show this command's version
 set -o nounset -o errexit -o errtrace -o pipefail
 
 function mycmd.main() {
-    local -a project_roots
+    local -a project_directories
 
-    if ! project.find_up project_roots "${PWD}"; then
+    if ! project.find_up project_directories "${PWD}"; then
         mycmd.log "Not located in a MyCmd Project"
         exit 1
     fi
 
-    mycmd.output "Using project root at '${project_roots["${_PROJECT_ROOT_DIR}"]}'.\n"
-    mycmd.output "Use task definition directory at '${project_roots["${_PROJECT_TASK_DEFINITION_ROOT_DIR}"]}'."
+    mycmd.output "Using project root at '${project_directories["${_PROJECT_ROOT_DIR}"]}'.\n"
+    mycmd.output "Use task definition directory at '${project_directories["${_PROJECT_TASK_DEFINITION_DIRECTORY}"]}'."
 }
