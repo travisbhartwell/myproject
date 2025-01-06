@@ -50,37 +50,10 @@ function project._load_mapping_configuration() {
         local -r task_definition_directory="${MYPROJECT_MAPPING##*:}"
         mycmd.trace "Checking '${MYPROJECT_MAPPING}' with project root directory '${project_root_directory}' and task definition directory '${task_definition_directory}'."
 
-        project._add_myproject_mapping_if_valid "${project_root_directory}" "${task_definition_directory}"
+        project._add_task_definition_directory_mapping_if_valid "${project_root_directory}" "${task_definition_directory}"
     fi
 
     project._log_myproject_mappings
-}
-
-function project._add_myproject_mapping_if_valid() {
-    local project_root_directory="${1}"
-    local task_definition_directory="${2}"
-
-    mycmd.trace "Checking mapping with project root directory '${project_root_directory}' and task definition directory '${task_definition_directory}'."
-
-    if ! project_root_directory="$(project._resolve_directory "${project_root_directory}")"; then
-        mycmd.debug "Error canonicalizing project root directory, ignoring mapping."
-        return
-    fi
-    readonly project_root_directory
-
-    if ! task_definition_directory="$(project._resolve_directory "${task_definition_directory}")"; then
-        mycmd.debug "Error canonicalizing task definition directory, ignoring mapping."
-        return
-    fi
-    readonly task_definition_directory
-
-    if ! project._is_valid_myproject_task_definition_directory "${task_definition_directory}"; then
-        mycmd.debug "'${task_definition_directory}' is not a valid task definition directory, ignoring mapping."
-        return
-    fi
-
-    mycmd.trace "Configuring mapping for '${project_root_directory}' as '${task_definition_directory}'."
-    _MYPROJECT_MAPPINGS["${project_root_directory}"]="${task_definition_directory}"
 }
 
 function project._load_mapping_config_file() {
@@ -108,7 +81,46 @@ function project._load_mapping_config_file() {
         project_root_directory="${line%%=*}"
         task_definition_directory="${line##*=}"
 
-        project._add_myproject_mapping_if_valid "${project_root_directory}" "${task_definition_directory}"
+        project._add_task_definition_directory_mapping_if_valid "${project_root_directory}" "${task_definition_directory}"
+    done
+}
+
+function project._add_task_definition_directory_mapping_if_valid() {
+    local project_root_directory="${1}"
+    local task_definition_directory="${2}"
+
+    mycmd.trace "Checking mapping with project root directory '${project_root_directory}' and task definition directory '${task_definition_directory}'."
+
+    if ! project_root_directory="$(project._resolve_directory "${project_root_directory}")"; then
+        mycmd.debug "Error canonicalizing project root directory, ignoring mapping."
+        return
+    fi
+    readonly project_root_directory
+
+    if ! task_definition_directory="$(project._resolve_directory "${task_definition_directory}")"; then
+        mycmd.debug "Error canonicalizing task definition directory, ignoring mapping."
+        return
+    fi
+    readonly task_definition_directory
+
+    if ! project._is_valid_task_definition_directory "${task_definition_directory}"; then
+        mycmd.debug "'${task_definition_directory}' is not a valid task definition directory, ignoring mapping."
+        return
+    fi
+
+    mycmd.trace "Configuring mapping for '${project_root_directory}' as '${task_definition_directory}'."
+    _MYPROJECT_MAPPINGS["${project_root_directory}"]="${task_definition_directory}"
+}
+
+function project._log_myproject_mappings() {
+    # TODO: Use mycmd.print_table when it can use mycmd.trace
+    mycmd.trace "MyProject Mapping is configured with ${#_MYPROJECT_MAPPINGS[@]} entries.\n"
+
+    local project_root_directory
+    local task_definition_directory
+    for project_root_directory in "${!_MYPROJECT_MAPPINGS[@]}"; do
+        task_definition_directory="${_MYPROJECT_MAPPINGS["${project_root_directory}"]}"
+        mycmd.trace "'${project_root_directory}' is mapped to use the task definition directory '${task_definition_directory}'."
     done
 }
 
@@ -118,7 +130,7 @@ function project._resolve_directory() {
     mycmd.canonicalize_path "${directory}"
 }
 
-function project._is_valid_myproject_task_definition_directory() {
+function project._is_valid_task_definition_directory() {
     local -r task_definition_directory="${1}"
 
     if ! [[ -d "${task_definition_directory}" ]]; then
@@ -137,18 +149,6 @@ function project._is_valid_myproject_task_definition_directory() {
     fi
 
     return 0
-}
-
-function project._log_myproject_mappings() {
-    # TODO: Use mycmd.print_table when it can use mycmd.trace
-    mycmd.trace "MyProject Mapping is configured with ${#_MYPROJECT_MAPPINGS[@]} entries.\n"
-
-    local project_root_directory
-    local task_definition_directory
-    for project_root_directory in "${!_MYPROJECT_MAPPINGS[@]}"; do
-        task_definition_directory="${_MYPROJECT_MAPPINGS["${project_root_directory}"]}"
-        mycmd.trace "'${project_root_directory}' is mapped to use the task definition directory '${task_definition_directory}'."
-    done
 }
 
 function project._find_up() {
@@ -175,7 +175,7 @@ function project._find_up() {
 
     local -r possible_path="${starting_directory}/myproject"
 
-    if project._is_valid_myproject_task_definition_directory "${possible_path}"; then
+    if project._is_valid_task_definition_directory "${possible_path}"; then
         project_root_directories["${_PROJECT_ROOT_DIRECTORY}"]="${starting_directory}"
         # shellcheck disable=SC2034
         project_root_directories["${_PROJECT_TASK_DEFINITION_DIRECTORY}"]="${possible_path}"

@@ -114,15 +114,15 @@ function test_mapping_user_config_file() {
 }
 
 # shellcheck disable=SC2016,SC2034
-function test_is_valid_myproject_task_definition_directory() {
+function test_is_valid_task_definition_directory() {
     assertFalse "'${INVALID_NO_TASK_DEFINITION_DIRECTORY}' is not named 'myproject', so not a task definition directory." \
-        'project._is_valid_myproject_task_definition_directory "${INVALID_NO_TASK_DEFINITION_DIRECTORY}"'
+        'project._is_valid_task_definition_directory "${INVALID_NO_TASK_DEFINITION_DIRECTORY}"'
 
     assertFalse "'${INVALID_NO_MYPROJECT_MAIN_DIRECTORY}' is missing the 'main' file, so not a task definition directory." \
-        'project._is_valid_myproject_task_definition_directory "${INVALID_NO_MYPROJECT_MAIN_DIRECTORY}"'
+        'project._is_valid_task_definition_directory "${INVALID_NO_MYPROJECT_MAIN_DIRECTORY}"'
 
     assertTrue "'${VALID_TASK_DEFINITION_DIRECTORY1}' is a valid task definition directory" \
-        'project._is_valid_myproject_task_definition_directory "${VALID_TASK_DEFINITION_DIRECTORY1}"'
+        'project._is_valid_task_definition_directory "${VALID_TASK_DEFINITION_DIRECTORY1}"'
 }
 
 # shellcheck disable=SC2034
