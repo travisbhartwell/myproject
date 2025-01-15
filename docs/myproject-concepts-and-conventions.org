@@ -7,19 +7,29 @@ This document will be where I document the concepts and conventions used in the 
 
 A directory named =myproject= containing one ore more files, with =main= being the only required one. These files are shell scripts that register tasks based on shell functions.
 
+** Task Definition File
+
+One of the files in a task definition directory.
+
 ** Project Root Directory
 
 The top-level directory of a project that tasks are being defined for.
 
 * General Conventions
 ** Naming
+*** Function Namespaces
+- All functions that are the internal implementation of MyProject and are only called from other code in the MyProject Command Group and Commands should be in the =project= namespace.
+
+- All functions used in Task Definition Files, such as the function to register a task, should be in the =myproject= namespace.
+
+- MyCmd's naming practice is used here, a function is considered private if it is not called from outside the file it is defined in. Their names are preceeded with an underscore, such as =project._load_mapping_configuration=.
+
 *** Specific Naming Conventions
 - When referring to a task definition directory, use the name =task_definition_directory=.
 
 - When referring to the project root directory, use the name =project_root_directory=.
 
 - When referring to the output of =project.find_up=, use the name =project_directories=.
-
 ** Testing
 - Test files should generally test one feature and be self contained.
 

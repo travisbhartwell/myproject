@@ -34,11 +34,23 @@
 SCHEDULED: <2025-01-03 Fri>
 ** TODO Introduction to MyProject
 ** TODO Weekly Progress Report with weekly demo
-SCHEDULED: <2025-01-10 Fri>
+SCHEDULED: <2025-01-17 Fri>
 
 * Next Steps
 ** DONE Add more details to [[file:~/Developer/Personal/myproject/main/README.md][README]]
 ** DONE Freewrite about design of out of band =myproject= directories and configuration
+** Task Registry
+The following steps in the implementation should be done:
+*** Initial Implementation to Support =mycmd myproject list-tasks=
+**** Only fields are the name fields and the function name, no arguments or filesets
+**** Only loads =myproject/main=, with a simple =myproject.register_task= available.
+*** Initial Implementation of =mycmd myproject run=
+**** Simplest version of =run=: no arguments to tasks, only executing a single task
+*** Argument Support
+**** Both in the task definition and in =run= in execution
+*** Fileset definition and support
+**** Implement =myproject.register_fileset= and related methods
+*** Multiple task definition file support
 
 * Next Demo
 ** DONE Minimal =mycmd myproject list-tasks= that prints project root and MyProject task definition root
@@ -58,11 +70,15 @@ SCHEDULED: <2025-01-03 Fri>
 *** DONE Implement and test parsing the MyProject Mapping Configuration File from the standard location
 
 ** Working =mycmd myproject list-tasks= that will load tasks from a =myproject/main=
-SCHEDULED: <2025-01-10 Fri>
+SCHEDULED: <2025-01-17 Fri>
 *** DONE Document existing concepts and conventions to the [[file:myproject-concepts-and-conventions.org][Concepts and Conventions Document]]
 *** DONE Clean up and re-organize =project-lib-test=
-*** TODO Freewrite about task registry design
-*** TODO Write design of task registry
+*** DONE Freewrite about task registry design
+*** DONE Write design of task registry
+*** TODO Create =myproject-tasks-lib= with name and function fields
+*** TODO Create =myproject.register_task= accepting one or two arguments
+*** TODO Write minimal test for =myproject.register_task= and task object methods
+*** TODO Create a minimal =myproject/main= in test data
 
 * Strategies and Goals
 
@@ -78,3 +94,8 @@ My development process should follow the following tenants:
 ** Once a feature is complete:
 *** Take a pass to add details to the [[file:myproject-concepts-and-conventions.org][Concepts and Conventions Document]] and update the implementation and testing code to fit.
 *** If it is a user-facing feature, add appropriate documentation to the End User Documentation.
+
+* Ideas
+** I should integrate this with Projectile
+
+[[https://docs.projectile.mx/projectile/projects.html#adding-custom-project-types][Custom Project Types]]

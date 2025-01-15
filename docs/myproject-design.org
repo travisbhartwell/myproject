@@ -3,7 +3,6 @@
 This document will be where I document the implementation design decisions.
 
 * MyProject Task Definitions
-
 ** Concepts
 *** A Project root directory
 
@@ -50,3 +49,13 @@ If a mapping is defined for the project root in the MyProject Mapping Configurat
 *** The existence of a =myproject= directory
 
 If a =myproject= directory is found in the project root, it is used.
+
+* MyProject Task Registry
+
+I will implement another ECS-like architecture to track tasks within MyProject. There will be much in common with the [[https://github.com/travisbhartwell/mycmd/blob/19539dd3d5fde242ca5d6299a593f27f1bed1b54/mycmd/project/project-task-lib][MyCmd mycmd/project implementation]], which can be used for both tasks and task execution data.
+
+The id used for indexing tasks (the Entity) in the system is the fully qualified name of the task. A fully qualified name of a task is =<task definition file name>/<task name>=.
+
+Other main difference between the MyProject implementation and the implementation currently in MyCmd core is that the new implementation also has the following additional fields:
+- fully qualified task name
+- namespaced name parts string
