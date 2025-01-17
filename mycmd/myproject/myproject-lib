@@ -192,4 +192,30 @@ function project._find_up() {
     project._find_up "${!project_root_directories}" "${starting_directory}/.."
 }
 
+# --------------------------------------------------------------------------------------------------
+# Project Task Definition File Loading
+function project.load_task_definition_file() {
+    local -r project_root_directory="${1}"
+    local -r task_definition_directory="${2}"
+    local -r task_definition_file_name="${3}"
+
+    mycmd.trace "Loading '${task_definition_file_name}' from task definition directory '${task_definition_directory}' for project '${project_root_directory}'."
+
+    declare -gx MYPROJECT_ROOT_DIRECTORY="${project_root_directory}"
+
+    local -r task_definition_file="${task_definition_directory}/${task_definition_file_name}"
+
+    if ! mycmd.source_lib_by_path_if_found "${task_definition_file}"; then
+        mycmd.log "Error loading task definition file '${task_definition_file}'."
+        return 1
+    fi
+}
+
+function myproject.register_task() {
+    local -r task_name="${1}"
+    local -r task_function="${2}"
+
+    project:task_registry.new_task "${task_name}" "${task_function}"
+}
+
 mycmd.trace "The MyCmd Project command group library has been sourced."

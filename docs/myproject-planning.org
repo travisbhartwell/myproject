@@ -76,9 +76,10 @@ SCHEDULED: <2025-01-17 Fri>
 *** DONE Freewrite about task registry design
 *** DONE Write design of task registry
 *** DONE Create =myproject-tasks-lib= with name and function fields
+*** DONE Create =myproject.register_task= accepting one arguments
+*** DONE Create a minimal =myproject/main= in test data
+*** DONE Write minimal test for =myproject.register_task= and task object methods
 *** TODO Create =myproject.register_task= accepting one or two arguments
-*** TODO Write minimal test for =myproject.register_task= and task object methods
-*** TODO Create a minimal =myproject/main= in test data
 
 * Strategies and Goals
 

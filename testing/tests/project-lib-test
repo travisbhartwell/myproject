@@ -445,6 +445,33 @@ function test_is_valid_task_definition_directory() {
 }
 
 # --------------------------------------------------------------------------------------------------
+# project.load_task_definition_file tests
+
+# shellcheck disable=SC2034,SC2154,SC2312
+function test_load_task_definition_file() {
+    project:task_registry._reset_registry
+
+    local result=0
+    project.load_task_definition_file \
+        "${VALID_PROJECT_DIRECTORY1}" \
+        "${VALID_TASK_DEFINITION_DIRECTORY1}" \
+        "main" || result="${?}"
+    assertTrue "The main task definition file successfully loads" \
+        "${result}"
+    assertEquals "There should be 1 task registered." \
+        1 "${#_MYPROJECT_TASKS[@]}"
+
+    local -A task1=()
+    result=0
+    project:task_registry.get_task "task1" task1 || result="${?}"
+    assertTrue "Getting task1 should succeed" "${result}"
+    assertEquals "task1" "$(project:task.get_fully_qualified_task_name task1)"
+    assertEquals "task1" "$(project:task.get_task_name task1)"
+    assertEquals "task1" "$(project:task.get_namespaced_parts_as_string task1)"
+    assertEquals "task_function1" "$(project:task.get_function task1)"
+}
+
+# --------------------------------------------------------------------------------------------------
 # Test Helper Functions
 
 function generate_mapping_config1() {
