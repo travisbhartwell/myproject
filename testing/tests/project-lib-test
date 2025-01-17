@@ -61,7 +61,8 @@ function test_mycmd_lib_is_loaded() {
 }
 
 function test_project_lib_is_loaded() {
-    assertTrue 'Project Lib is loaded' '[ -v _MYCMD_PROJECT_LIB ]'
+    assertTrue 'Project Lib is loaded' '[ -v _MYPROJECT_LIB ]'
+    assertTrue 'Project Tasks Support Lib is loaded' '[ -v _MYPROJECT_TASK_LIB ]'
 }
 
 # --------------------------------------------------------------------------------------------------
