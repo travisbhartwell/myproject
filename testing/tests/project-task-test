@@ -82,6 +82,12 @@ function test_task_definition() {
     assertEquals "There should be 1 task registered." \
         1 "${#_MYPROJECT_TASKS[@]}"
 
+    result=0
+    project:task_registry.new_task "task1" "function2" || result="${?}"
+    assertTrue "Task was successfully registered." "${result}"
+    assertEquals "There should be 2 tasks registered." \
+        2 "${#_MYPROJECT_TASKS[@]}"
+
     task1=()
     result=0
     project:task_registry.get_task "file1/task1" task1 || result="${?}"
@@ -90,6 +96,15 @@ function test_task_definition() {
     assertEquals "task1" "$(project:task.get_task_name task1)"
     assertEquals "file1 task1" "$(project:task.get_namespaced_parts_as_string task1)"
     assertEquals "function1" "$(project:task.get_function task1)"
+
+    task1=()
+    result=0
+    project:task_registry.get_task "task1" task1 || result="${?}"
+    assertTrue "Getting task1 should succeed" "${result}"
+    assertEquals "task1" "$(project:task.get_fully_qualified_task_name task1)"
+    assertEquals "task1" "$(project:task.get_task_name task1)"
+    assertEquals "task1" "$(project:task.get_namespaced_parts_as_string task1)"
+    assertEquals "function2" "$(project:task.get_function task1)"
 
     project:task_registry._reset_registry
 }
