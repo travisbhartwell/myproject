@@ -82,6 +82,25 @@ function project:task_registry.get_task() {
     mycmd.trace "- ${_TASK_FUNCTION_FIELD}: ${task_struct_ref["${_TASK_FUNCTION_FIELD}"]}"
 }
 
+function project:task_registry.list_tasks() {
+    if (("${#_MYPROJECT_TASKS[@]}" == 0)); then
+        mycmd.output "There are no registered tasks."
+        return 0
+    fi
+
+    local -a sorted_task_names
+    # shellcheck disable=SC2034
+    readarray -t sorted_task_names < \
+        <(printf '%s\n' "${!_MYPROJECT_TASKS[@]}" | LC_ALL=en_US.UTF-8 sort || true)
+
+    mycmd.output "The following tasks are registered:"
+
+    local task
+    for task in "${sorted_task_names[@]}"; do
+        mycmd.output "${task}"
+    done
+}
+
 function project:task.get_fully_qualified_task_name() {
     project:task._get_field_from_task_struct \
         "${_TASK_FULLY_QUALIFIED_NAME_FIELD}" \

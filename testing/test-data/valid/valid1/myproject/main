@@ -12,3 +12,13 @@ function task_function1() {
     PROJECT_VARIABLE=2
 }
 myproject.register_task task1 task_function1
+
+function task_function2() {
+    mycmd.output "Running task_function2"
+}
+myproject.register_task task2 task_function2
+
+function task_function3() {
+    mycmd.output "Running task_function3"
+}
+myproject.register_task task3 task_function3

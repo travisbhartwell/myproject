@@ -25,6 +25,15 @@ function mycmd.main() {
         exit 1
     fi
 
-    mycmd.output "Using project root at '${project_directories["${_PROJECT_ROOT_DIR}"]}'.\n"
-    mycmd.output "Use task definition directory at '${project_directories["${_PROJECT_TASK_DEFINITION_DIRECTORY}"]}'."
+    mycmd.output "Using project root at '${project_directories["${_PROJECT_ROOT_DIRECTORY}"]}'.\n"
+    mycmd.output "Use task definition directory at '${project_directories["${_PROJECT_TASK_DEFINITION_DIRECTORY}"]}'.\n"
+
+    if ! project.load_task_definition_file "${project_directories["${_PROJECT_ROOT_DIRECTORY}"]}" \
+        "${project_directories["${_PROJECT_TASK_DEFINITION_DIRECTORY}"]}" \
+        main; then
+        mycmd.log "Error loading project task definition files."
+        return 1
+    fi
+
+    project:task_registry.list_tasks
 }
