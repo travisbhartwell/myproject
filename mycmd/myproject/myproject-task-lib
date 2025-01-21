@@ -139,4 +139,55 @@ function project:task._get_field_from_struct() {
     fi
 }
 
+function project:task.function_exists() {
+    # shellcheck disable=SC2178
+    local -n task_struct_ref="${1}"
+
+    local task_function_name
+    task_function_name="$(project:task.get_function_name "${!task_struct_ref}")"
+    readonly task_function_name
+
+    if ! mycmd.function_exists "${task_function_name}"; then
+        local fully_qualified_task_name
+        fully_qualified_task_name="$(project:task.get_fully_qualified_name "${!task_struct_ref}")"
+        readonly fully_qualified_task_name
+
+        mycmd.log "Unknown function '${task_function_name}' for task '${fully_qualified_task_name}'."
+        return 1
+    fi
+
+    return 0
+}
+
+function project:task.execute() {
+    # shellcheck disable=SC2178
+    local -n task_struct_ref="${1}"
+    shift
+
+    if ! project:task.function_exists "${!task_struct_ref}"; then
+        return 1
+    fi
+
+    local task_function_name
+    task_function_name="$(project:task.get_function_name "${!task_struct_ref}")"
+    readonly task_function_name
+
+    local namespaced_parts_string
+    namespaced_parts_string="$(project:task.get_namespaced_parts_as_string "${!task_struct_ref}")"
+    readonly namespaced_parts_string
+
+    mycmd.output "➡️ Executing task '${namespaced_parts_string}'..."
+
+    local return_code=0
+    "${task_function_name}" "${@}" || return_code="${?}"
+
+    if ((return_code == 0)); then
+        mycmd.output "✅ Task '${namespaced_parts_string}' succeeded."
+    else
+        mycmd.output "❌ Task '${namespaced_parts_string}' failed."
+    fi
+
+    return "${return_code}"
+}
+
 mycmd.trace "The MyProject Task command group support library has been sourced."

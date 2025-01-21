@@ -62,12 +62,20 @@ function test_new_task() {
 # --------------------------------------------------------------------------------------------------
 # project:task_registry.get_task related tests
 
+# shellcheck disable=SC2034
+function function1() {
+    TEST_VARIABLE=1
+}
+
 # shellcheck disable=SC2034,SC2154,SC2312
 function test_task_definition() {
+    declare -gx TEST_VARIABLE=0
+
     local result=0
     project:task_registry._reset_registry
     assertEquals "There should be no tasks registered." \
         0 "${#_MYPROJECT_TASKS[@]}"
+    assertEquals "TEST_VARIABLE should be 0" 0 "${TEST_VARIABLE}"
 
     local -A task1=()
     result=0
@@ -97,6 +105,12 @@ function test_task_definition() {
     assertEquals "file1 task1" "$(project:task.get_namespaced_parts_as_string task1)"
     assertEquals "function1" "$(project:task.get_function_name task1)"
 
+    result=0
+    project:task.execute task1 || result="${?}"
+    assertTrue "Executing file1/task1 should succeed" "${result}"
+    assertEquals "TEST_VARIABLE should now be 1" \
+        1 "${TEST_VARIABLE}"
+
     task1=()
     result=0
     project:task_registry.get_task "task1" task1 || result="${?}"
@@ -106,7 +120,12 @@ function test_task_definition() {
     assertEquals "task1" "$(project:task.get_namespaced_parts_as_string task1)"
     assertEquals "function2" "$(project:task.get_function_name task1)"
 
+    result=0
+    project:task.execute task1 || result="${?}"
+    assertFalse "Executing task1 should fail because function2 doesn't exist" "${result}"
+
     project:task_registry._reset_registry
+    unset TEST_VARIABLE
 }
 
 function oneTimeSetUp() {
