@@ -195,6 +195,25 @@ function project._find_up() {
 
 # --------------------------------------------------------------------------------------------------
 # Project Task Definition File Loading
+function project.load_closest_task_definition() {
+    local -a project_directories
+    if ! project.find_up project_directories "${PWD}"; then
+        mycmd.log "Not located in a MyProject Project."
+        return 1
+    fi
+
+    local -r project_root_directory="${project_directories["${_PROJECT_ROOT_DIRECTORY}"]}"
+    local -r task_definition_directory="${project_directories["${_PROJECT_TASK_DEFINITION_DIRECTORY}"]}"
+
+    mycmd.output "Using project root at '${project_root_directory}'.\n"
+    mycmd.output "Using task definition directory at '${task_definition_directory}'.\n"
+
+    if ! project.load_task_definition_file "${project_root_directory}" "${task_definition_directory}" main; then
+        mycmd.log "Error loading project task definition files."
+        return 1
+    fi
+}
+
 function project.load_task_definition_file() {
     local -r project_root_directory="${1}"
     local -r task_definition_directory="${2}"

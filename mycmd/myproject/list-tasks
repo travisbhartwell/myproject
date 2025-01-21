@@ -18,21 +18,8 @@ mycmd:command.register_help_text "\t-v | --version - Show this command's version
 set -o nounset -o errexit -o errtrace -o pipefail
 
 function mycmd.main() {
-    local -a project_directories
-
-    if ! project.find_up project_directories "${PWD}"; then
-        mycmd.log "Not located in a MyProject Project"
+    if ! project.load_closest_task_definition; then
         exit 1
-    fi
-
-    mycmd.output "Using project root at '${project_directories["${_PROJECT_ROOT_DIRECTORY}"]}'.\n"
-    mycmd.output "Using task definition directory at '${project_directories["${_PROJECT_TASK_DEFINITION_DIRECTORY}"]}'.\n"
-
-    if ! project.load_task_definition_file "${project_directories["${_PROJECT_ROOT_DIRECTORY}"]}" \
-        "${project_directories["${_PROJECT_TASK_DEFINITION_DIRECTORY}"]}" \
-        main; then
-        mycmd.log "Error loading project task definition files."
-        return 1
     fi
 
     project:task_registry.list_tasks
