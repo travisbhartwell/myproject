@@ -1,0 +1,26 @@
+# -*- mode: shell-script; sh-shell: bash; sh-basic-offset: 4; sh-indentation: 4; coding: utf-8 -*-
+# shellcheck shell=bash
+
+# MyProject User Command Group Support Library
+#   All of the User-facing Functions for MyProject
+
+set -o nounset -o errexit -o errtrace -o pipefail
+
+(return 0 >/dev/null 2>&1) || {
+    echo >&2 "$0 is a library only meant to be sourced."
+    exit 1
+}
+
+[[ -n "${_MYPROJECT_USER_LIB:-}" ]] && return
+readonly _MYPROJECT_USER_LIB=1
+
+mycmd:command_group.load_support_lib "task"
+
+function myproject.register_task() {
+    local -r task_name="${1}"
+    local -r task_function_name="${2}"
+
+    project:task_registry.new_task "${task_name}" "${task_function_name}"
+}
+
+mycmd.trace "The MyProject User command group support library has been sourced."

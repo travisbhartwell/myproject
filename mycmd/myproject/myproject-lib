@@ -21,6 +21,7 @@ mycmd:command_group.register_help_text "The MyProject Project Task Runner"
 readonly _MYPROJECT_LIB=1
 
 mycmd:command_group.load_support_lib "task"
+mycmd:command_group.load_support_lib "user"
 
 declare -Agx _MYPROJECT_MAPPINGS=()
 
@@ -211,11 +212,4 @@ function project.load_task_definition_file() {
     fi
 }
 
-function myproject.register_task() {
-    local -r task_name="${1}"
-    local -r task_function_name="${2}"
-
-    project:task_registry.new_task "${task_name}" "${task_function_name}"
-}
-
-mycmd.trace "The MyCmd Project command group library has been sourced."
+mycmd.trace "The MyProject command group library has been sourced."

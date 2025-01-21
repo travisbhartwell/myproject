@@ -21,12 +21,12 @@ function mycmd.main() {
     local -a project_directories
 
     if ! project.find_up project_directories "${PWD}"; then
-        mycmd.log "Not located in a MyCmd Project"
+        mycmd.log "Not located in a MyProject Project"
         exit 1
     fi
 
     mycmd.output "Using project root at '${project_directories["${_PROJECT_ROOT_DIRECTORY}"]}'.\n"
-    mycmd.output "Use task definition directory at '${project_directories["${_PROJECT_TASK_DEFINITION_DIRECTORY}"]}'.\n"
+    mycmd.output "Using task definition directory at '${project_directories["${_PROJECT_TASK_DEFINITION_DIRECTORY}"]}'.\n"
 
     if ! project.load_task_definition_file "${project_directories["${_PROJECT_ROOT_DIRECTORY}"]}" \
         "${project_directories["${_PROJECT_TASK_DEFINITION_DIRECTORY}"]}" \
