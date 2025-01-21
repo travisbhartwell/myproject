@@ -3,6 +3,7 @@
 This document will be where I document the concepts and conventions used in the MyProject implementation.
 
 * Concepts
+
 ** Task Definition Directory
 
 A directory named =myproject= containing one ore more files, with =main= being the only required one. These files are shell scripts that register tasks based on shell functions.
@@ -14,6 +15,15 @@ One of the files in a task definition directory.
 ** Project Root Directory
 
 The top-level directory of a project that tasks are being defined for.
+
+** Task
+
+A task is the smallest unit of execution in MyProject, with the following properties:
+- A task name
+- A task definition file where it was defined
+- A fully qualified task name that is the task definition file name, a slash, and the task name. However, for tasks defined in =myproject/main=, the task file name and slash is eliminated
+- The namespaced parts of the fully qualified task name, which is the fully qualified task name with the slash replaced with a space.
+- A Bash function name that is called when the task is executed
 
 * General Conventions
 ** Naming
@@ -30,6 +40,13 @@ The top-level directory of a project that tasks are being defined for.
 - When referring to the project root directory, use the name =project_root_directory=.
 
 - When referring to the output of =project.find_up=, use the name =project_directories=.
+
+- When referring to the fully qualified task name by itself, use the name =fully_qualified_task_name=. When referring to it as part of a object function call, such as =project:task.get_fully_qualified_name=, omit =task=.
+
+- When referring to the task name by itself, use the name =task_name=. When referring to it as part of a object function call, such as =project:task.get_name=, omit =task=.
+
+- When referring to the task function by itself, use the name =task_function_name=. When referring to it as part of a object function call, such as =project:task.get_function_name=, omit =task=.
+
 ** Testing
 - Test files should generally test one feature and be self contained.
 

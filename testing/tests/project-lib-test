@@ -465,28 +465,28 @@ function test_load_task_definition_file() {
     result=0
     project:task_registry.get_task "task1" task1 || result="${?}"
     assertTrue "Getting task1 should succeed" "${result}"
-    assertEquals "task1" "$(project:task.get_fully_qualified_task_name task1)"
-    assertEquals "task1" "$(project:task.get_task_name task1)"
+    assertEquals "task1" "$(project:task.get_fully_qualified_name task1)"
+    assertEquals "task1" "$(project:task.get_name task1)"
     assertEquals "task1" "$(project:task.get_namespaced_parts_as_string task1)"
-    assertEquals "task_function1" "$(project:task.get_function task1)"
+    assertEquals "task_function1" "$(project:task.get_function_name task1)"
 
     local -A task2=()
     result=0
     project:task_registry.get_task "task2" task2 || result="${?}"
     assertTrue "Getting task2 should succeed" "${result}"
-    assertEquals "task2" "$(project:task.get_fully_qualified_task_name task2)"
-    assertEquals "task2" "$(project:task.get_task_name task2)"
+    assertEquals "task2" "$(project:task.get_fully_qualified_name task2)"
+    assertEquals "task2" "$(project:task.get_name task2)"
     assertEquals "task2" "$(project:task.get_namespaced_parts_as_string task2)"
-    assertEquals "task_function2" "$(project:task.get_function task2)"
+    assertEquals "task_function2" "$(project:task.get_function_name task2)"
 
     local -A task3=()
     result=0
     project:task_registry.get_task "task3" task3 || result="${?}"
     assertTrue "Getting task3 should succeed" "${result}"
-    assertEquals "task3" "$(project:task.get_fully_qualified_task_name task3)"
-    assertEquals "task3" "$(project:task.get_task_name task3)"
+    assertEquals "task3" "$(project:task.get_fully_qualified_name task3)"
+    assertEquals "task3" "$(project:task.get_name task3)"
     assertEquals "task3" "$(project:task.get_namespaced_parts_as_string task3)"
-    assertEquals "task_function3" "$(project:task.get_function task3)"
+    assertEquals "task_function3" "$(project:task.get_function_name task3)"
 }
 
 # --------------------------------------------------------------------------------------------------

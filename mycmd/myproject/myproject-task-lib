@@ -30,15 +30,15 @@ project:task_registry._reset_registry
 
 function project:task_registry.new_task() {
     local -r fully_qualified_task_name="${1}"
-    local -r task_function="${2}"
+    local -r task_function_name="${2}"
 
-    mycmd.trace "Attempting to register task '${fully_qualified_task_name}' with function '${task_function}'."
+    mycmd.trace "Attempting to register task '${fully_qualified_task_name}' with function '${task_function_name}'."
 
     if [[ -v _MYPROJECT_TASKS["${fully_qualified_task_name}"] ]]; then
-        local existing_task_function="${_MYPROJECT_TASKS["${fully_qualified_task_name}"]}"
+        local existing_task_function_name="${_MYPROJECT_TASKS["${fully_qualified_task_name}"]}"
 
-        if [[ "${existing_task_function}" != "${task_function}" ]]; then
-            mycmd.debug "'${fully_qualified_task_name}' is already registered with function '${existing_task_function}', not '${task_function}'."
+        if [[ "${existing_task_function_name}" != "${task_function_name}" ]]; then
+            mycmd.debug "'${fully_qualified_task_name}' is already registered with function '${existing_task_function_name}', not '${task_function_name}'."
             return 1
         else
             mycmd.debug "'${fully_qualified_task_name}' is already registered."
@@ -46,8 +46,8 @@ function project:task_registry.new_task() {
         fi
     fi
 
-    _MYPROJECT_TASKS["${fully_qualified_task_name}"]="${task_function}"
-    mycmd.trace "Successfully registered task '${fully_qualified_task_name}' with function '${task_function}'."
+    _MYPROJECT_TASKS["${fully_qualified_task_name}"]="${task_function_name}"
+    mycmd.trace "Successfully registered task '${fully_qualified_task_name}' with function '${task_function_name}'."
     return 0
 }
 
@@ -101,31 +101,31 @@ function project:task_registry.list_tasks() {
     done
 }
 
-function project:task.get_fully_qualified_task_name() {
-    project:task._get_field_from_task_struct \
+function project:task.get_fully_qualified_name() {
+    project:task._get_field_from_struct \
         "${_TASK_FULLY_QUALIFIED_NAME_FIELD}" \
         "${@}"
 }
 
-function project:task.get_task_name() {
-    project:task._get_field_from_task_struct \
+function project:task.get_name() {
+    project:task._get_field_from_struct \
         "${_TASK_NAME_FIELD}" \
         "${@}"
 }
 
 function project:task.get_namespaced_parts_as_string() {
-    project:task._get_field_from_task_struct \
+    project:task._get_field_from_struct \
         "${_TASK_NAMESPACED_PARTS_STRING_FIELD}" \
         "${@}"
 }
 
-function project:task.get_function() {
-    project:task._get_field_from_task_struct \
+function project:task.get_function_name() {
+    project:task._get_field_from_struct \
         "${_TASK_FUNCTION_FIELD}" \
         "${@}"
 }
 
-function project:task._get_field_from_task_struct() {
+function project:task._get_field_from_struct() {
     local -r field_name="${1}"
     # shellcheck disable=SC2178
     local -n task_struct_ref="${2}"
