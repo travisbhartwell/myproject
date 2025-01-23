@@ -471,7 +471,7 @@ function test_load_task_definition_file() {
     assertEquals "task1" "$(project:task.get_namespaced_parts_as_string task1)"
     assertEquals "task_function1" "$(project:task.get_function_name task1)"
     result=0
-    project:task.execute task1 || result="${?}"
+    project.execute_task "task1" || result="${?}"
     assertTrue "Executing task1 should succeed" "${result}"
     assertEquals "PROJECT_VARIABLE should now be 2" \
         2 "${PROJECT_VARIABLE}"
@@ -485,7 +485,7 @@ function test_load_task_definition_file() {
     assertEquals "task2" "$(project:task.get_namespaced_parts_as_string task2)"
     assertEquals "task_function2" "$(project:task.get_function_name task2)"
     result=0
-    project:task.execute task2 || result="${?}"
+    project.execute_task "task2" || result="${?}"
     assertTrue "Executing task2 should succeed" "${result}"
 
     local -A task3=()
@@ -497,7 +497,7 @@ function test_load_task_definition_file() {
     assertEquals "task3" "$(project:task.get_namespaced_parts_as_string task3)"
     assertEquals "task_function3" "$(project:task.get_function_name task3)"
     result=0
-    project:task.execute task3 || result="${?}"
+    project.execute_task "task3" || result="${?}"
     assertTrue "Executing task3 should succeed" "${result}"
 }
 

@@ -1,0 +1,35 @@
+#!/usr/bin/env -S mycmd
+# -*- mode: shell-script; sh-shell: bash; sh-basic-offset: 4; sh-indentation: 4; coding: utf-8 -*-
+# shellcheck shell=bash
+
+mycmd:command.register_version "0.1"
+mycmd:command.register_short_description "Run one or more tasks defined by the current MyProject task definition directory."
+
+# shellcheck disable=SC2154
+mycmd:command.register_help_text "${_MYCMD_NAMESPACED_PARTS_STRING} [[-v|--verbose] [-q|--quiet] --] <task1> [argument1..] [;]\n"
+mycmd:command.register_help_text "Multiple tasks can be specified on one command line with a semi-colon separating them. This usually needs to be escaped so the shell passes it to the command."
+mycmd:command.register_help_text "${_MYCMD_NAMESPACED_PARTS_STRING} -h | --help"
+mycmd:command.register_help_text "${_MYCMD_NAMESPACED_PARTS_STRING} -v | --version"
+mycmd:command.register_help_text "${_MYCMD_NAMESPACED_PARTS_STRING} -p | --prompt"
+mycmd:command.register_help_text "Options:"
+mycmd:command.register_help_text "\t-h | --help    - Show this help"
+mycmd:command.register_help_text "\t-v | --version - Show this command's version"
+mycmd:command.register_help_text "\t-p | --prompt  - Prompt for task to run, even if default is set"
+mycmd:command.register_help_text "\t-q | --quiet   - Only show the names of the tasks"
+mycmd:command.register_help_text "\t-V | --verbose - Show detailed information about the tasks"
+
+[[ -n "${_MYCMD_SOURCING_FOR_HELP:-}" ]] && return
+
+set -o nounset -o errexit -o errtrace -o pipefail
+
+function mycmd.main() {
+    if ! project.load_closest_task_definition; then
+        exit 1
+    fi
+
+    if (($# == 0)); then
+        mycmd.err_exit 1 "Missing task to execute."
+    fi
+
+    project.execute_task "${@}"
+}
