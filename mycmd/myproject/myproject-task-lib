@@ -16,6 +16,7 @@ readonly _MYPROJECT_TASK_LIB=1
 
 declare -Agx _MYPROJECT_TASKS
 declare -Agx _MYPROJECT_TASKS_TASK_DEFINITION_FILES
+declare -Agx _MYPROJECT_LOADED_TASK_DEFINITION_FILES
 
 readonly _TASK_FULLY_QUALIFIED_NAME_FIELD='task-fully-qualified-name'
 readonly _TASK_NAME_FIELD='task-name'
@@ -27,9 +28,30 @@ function project:task_registry._reset_registry() {
     mycmd.trace "Resetting the MyProject Task Registry."
     _MYPROJECT_TASKS=()
     _MYPROJECT_TASKS_TASK_DEFINITION_FILES=()
+    _MYPROJECT_LOADED_TASK_DEFINITION_FILES=()
 }
 
 project:task_registry._reset_registry
+
+function project:task_registry.load_task_definition_file() {
+    local -r project_root_directory="${1}"
+    local -r task_definition_directory="${2}"
+    local -r task_definition_file_name="${3}"
+
+    mycmd.trace "Loading '${task_definition_file_name}' from task definition directory '${task_definition_directory}' for project '${project_root_directory}'."
+
+    declare -gx MYPROJECT_ROOT_DIRECTORY="${project_root_directory}"
+    declare -gx MYPROJECT_CURRENT_TASK_FILE="${task_definition_file_name}"
+
+    local -r task_definition_file="${task_definition_directory}/${task_definition_file_name}"
+
+    if ! mycmd.source_lib_by_path_if_found "${task_definition_file}"; then
+        mycmd.log "Error loading task definition file '${task_definition_file}'."
+        return 1
+    fi
+
+    _MYPROJECT_LOADED_TASK_DEFINITION_FILES["${task_definition_file_name}"]=1
+}
 
 function project:task_registry.new_task() {
     local -r task_definition_file_name="${1}"

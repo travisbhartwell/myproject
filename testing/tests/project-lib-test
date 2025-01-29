@@ -452,7 +452,7 @@ function test_load_task_definition_file() {
     project:task_registry._reset_registry
 
     local result=0
-    project.load_task_definition_file \
+    project:task_registry.load_task_definition_file \
         "${VALID_PROJECT_DIRECTORY1}" \
         "${VALID_TASK_DEFINITION_DIRECTORY1}" \
         "main" || result="${?}"

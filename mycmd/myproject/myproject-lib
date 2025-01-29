@@ -208,26 +208,8 @@ function project.load_closest_task_definition() {
     mycmd.output "Using project root at '${project_root_directory}'.\n"
     mycmd.output "Using task definition directory at '${task_definition_directory}'.\n"
 
-    if ! project.load_task_definition_file "${project_root_directory}" "${task_definition_directory}" main; then
+    if ! project:task_registry.load_task_definition_file "${project_root_directory}" "${task_definition_directory}" main; then
         mycmd.log "Error loading project task definition files."
-        return 1
-    fi
-}
-
-function project.load_task_definition_file() {
-    local -r project_root_directory="${1}"
-    local -r task_definition_directory="${2}"
-    local -r task_definition_file_name="${3}"
-
-    mycmd.trace "Loading '${task_definition_file_name}' from task definition directory '${task_definition_directory}' for project '${project_root_directory}'."
-
-    declare -gx MYPROJECT_ROOT_DIRECTORY="${project_root_directory}"
-    declare -gx MYPROJECT_CURRENT_TASK_FILE="${task_definition_file_name}"
-
-    local -r task_definition_file="${task_definition_directory}/${task_definition_file_name}"
-
-    if ! mycmd.source_lib_by_path_if_found "${task_definition_file}"; then
-        mycmd.log "Error loading task definition file '${task_definition_file}'."
         return 1
     fi
 }
