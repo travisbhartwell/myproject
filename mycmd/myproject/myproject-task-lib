@@ -15,22 +15,26 @@ set -o nounset -o errexit -o errtrace -o pipefail
 readonly _MYPROJECT_TASK_LIB=1
 
 declare -Agx _MYPROJECT_TASKS
+declare -Agx _MYPROJECT_TASKS_TASK_DEFINITION_FILES
 
 readonly _TASK_FULLY_QUALIFIED_NAME_FIELD='task-fully-qualified-name'
 readonly _TASK_NAME_FIELD='task-name'
 readonly _TASK_NAMESPACED_PARTS_STRING_FIELD='task-namespaced-parts-string'
+readonly _TASK_TASK_DEFINITION_FILE_FIELD='task-definition-file'
 readonly _TASK_FUNCTION_FIELD='task-function'
 
 function project:task_registry._reset_registry() {
     mycmd.trace "Resetting the MyProject Task Registry."
     _MYPROJECT_TASKS=()
+    _MYPROJECT_TASKS_TASK_DEFINITION_FILES=()
 }
 
 project:task_registry._reset_registry
 
 function project:task_registry.new_task() {
-    local -r fully_qualified_task_name="${1}"
-    local -r task_function_name="${2}"
+    local -r task_definition_file_name="${1}"
+    local -r fully_qualified_task_name="${2}"
+    local -r task_function_name="${3}"
 
     mycmd.trace "Attempting to register task '${fully_qualified_task_name}' with function '${task_function_name}'."
 
@@ -47,7 +51,8 @@ function project:task_registry.new_task() {
     fi
 
     _MYPROJECT_TASKS["${fully_qualified_task_name}"]="${task_function_name}"
-    mycmd.trace "Successfully registered task '${fully_qualified_task_name}' with function '${task_function_name}'."
+    _MYPROJECT_TASKS_TASK_DEFINITION_FILES["${fully_qualified_task_name}"]="${task_definition_file_name}"
+    mycmd.trace "Successfully registered task '${fully_qualified_task_name}' from task definition file '${task_definition_file_name}' with function '${task_function_name}'."
     return 0
 }
 
@@ -77,6 +82,9 @@ function project:task_registry.get_task() {
     local -r namespaced_parts_string="${fully_qualified_task_name//\// }"
     task_struct_ref["${_TASK_NAMESPACED_PARTS_STRING_FIELD}"]="${namespaced_parts_string}"
     mycmd.trace "- ${_TASK_NAMESPACED_PARTS_STRING_FIELD}: ${task_struct_ref["${_TASK_NAMESPACED_PARTS_STRING_FIELD}"]}"
+
+    task_struct_ref["${_TASK_TASK_DEFINITION_FILE_FIELD}"]="${_MYPROJECT_TASKS_TASK_DEFINITION_FILES["${fully_qualified_task_name}"]}"
+    mycmd.trace "- ${_TASK_TASK_DEFINITION_FILE_FIELD}: ${task_struct_ref["${_TASK_TASK_DEFINITION_FILE_FIELD}"]}"
 
     task_struct_ref["${_TASK_FUNCTION_FIELD}"]="${_MYPROJECT_TASKS["${fully_qualified_task_name}"]}"
     mycmd.trace "- ${_TASK_FUNCTION_FIELD}: ${task_struct_ref["${_TASK_FUNCTION_FIELD}"]}"
@@ -116,6 +124,12 @@ function project:task.get_name() {
 function project:task.get_namespaced_parts_as_string() {
     project:task._get_field_from_struct \
         "${_TASK_NAMESPACED_PARTS_STRING_FIELD}" \
+        "${@}"
+}
+
+function project:task.get_task_definition_file_name() {
+    project:task._get_field_from_struct \
+        "${_TASK_TASK_DEFINITION_FILE_FIELD}" \
         "${@}"
 }
 
@@ -175,6 +189,12 @@ function project:task.execute() {
     local namespaced_parts_string
     namespaced_parts_string="$(project:task.get_namespaced_parts_as_string "${!task_struct_ref}")"
     readonly namespaced_parts_string
+
+    local task_definition_file_name
+    task_definition_file_name="$(project:task.get_task_definition_file_name "${!task_struct_ref}")"
+    readonly task_definition_file_name
+
+    declare -gx MYPROJECT_CURRENT_TASK_FILE="${task_definition_file_name}"
 
     mycmd.output "➡️ Executing task '${namespaced_parts_string}'..."
 
