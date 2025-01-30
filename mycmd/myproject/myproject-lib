@@ -214,6 +214,22 @@ function project.load_closest_task_definition() {
     fi
 }
 
+function project.load_all_task_definition_files() {
+    local -a project_directories
+    if ! project.find_up project_directories "${PWD}"; then
+        mycmd.log "Not located in a MyProject Project."
+        return 1
+    fi
+
+    local -r project_root_directory="${project_directories["${_PROJECT_ROOT_DIRECTORY}"]}"
+    local -r task_definition_directory="${project_directories["${_PROJECT_TASK_DEFINITION_DIRECTORY}"]}"
+
+    if ! project:task_registry.load_all_task_definition_files "${project_root_directory}" "${task_definition_directory}"; then
+        mycmd.log "Error loading project task definition files."
+        return 1
+    fi
+}
+
 # --------------------------------------------------------------------------------------------------
 # Task Execution
 function project.execute_task() {

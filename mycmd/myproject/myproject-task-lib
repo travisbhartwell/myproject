@@ -53,6 +53,33 @@ function project:task_registry.load_task_definition_file() {
     _MYPROJECT_LOADED_TASK_DEFINITION_FILES["${task_definition_file_name}"]=1
 }
 
+function project:task_registry.load_all_task_definition_files() {
+    local -r project_root_directory="${1}"
+    local -r task_definition_directory="${2}"
+
+    # First load main
+    if ! project:task_registry.load_task_definition_file "${project_root_directory}" "${task_definition_directory}" main; then
+        mycmd.log "Error loading main task definition file."
+        return 1
+    fi
+
+    local -a task_definition_files=("${task_definition_directory}"/*)
+
+    local task_definition_file_path
+    local task_definition_file_name
+
+    for task_definition_file_path in "${task_definition_files[@]}"; do
+        task_definition_file_name="$(basename "${task_definition_file_path}")"
+
+        mycmd.trace "Attempting to load task definition file '${task_definition_file_name}'."
+
+        if ! project:task_registry.load_task_definition_file "${project_root_directory}" "${task_definition_directory}" "${task_definition_file_name}"; then
+            mycmd.log "Error loading task definition file name '${task_definition_file_name}'."
+            return 1
+        fi
+    done
+}
+
 function project:task_registry.new_task() {
     local -r task_definition_file_name="${1}"
     local -r fully_qualified_task_name="${2}"

@@ -22,5 +22,9 @@ function mycmd.main() {
         exit 1
     fi
 
+    if ! project.load_all_task_definition_files; then
+        exit 1
+    fi
+
     project:task_registry.list_tasks
 }
