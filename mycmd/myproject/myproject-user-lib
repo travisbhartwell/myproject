@@ -29,7 +29,7 @@ function myproject.register_task() {
     if [[ "${MYPROJECT_CURRENT_TASK_FILE}" == "main" ]]; then
         fully_qualified_task_name="${task_name}"
     else
-        fully_qualified_task_name"${MYPROJECT_CURRENT_TASK_FILE}/${task_name}"
+        fully_qualified_task_name="${MYPROJECT_CURRENT_TASK_FILE}/${task_name}"
     fi
     readonly fully_qualified_task_name
 

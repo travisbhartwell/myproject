@@ -462,6 +462,16 @@ function test_load_task_definition_file() {
         3 "${#_MYPROJECT_TASKS[@]}"
     assertEquals "PROJECT_VARIABLE should be 1" 1 "${PROJECT_VARIABLE}"
 
+    result=0
+    project:task_registry.load_task_definition_file \
+        "${VALID_PROJECT_DIRECTORY1}" \
+        "${VALID_TASK_DEFINITION_DIRECTORY1}" \
+        "sub" || result="${?}"
+    assertTrue "The sub task definition file successfully loads" \
+        "${result}"
+    assertEquals "There should be 6 tasks registered." \
+        6 "${#_MYPROJECT_TASKS[@]}"
+
     local -A task1=()
     result=0
     project:task_registry.get_task "task1" task1 || result="${?}"
@@ -469,6 +479,7 @@ function test_load_task_definition_file() {
     assertEquals "task1" "$(project:task.get_fully_qualified_name task1)"
     assertEquals "task1" "$(project:task.get_name task1)"
     assertEquals "task1" "$(project:task.get_namespaced_parts_as_string task1)"
+    assertEquals "main" "$(project:task.get_task_definition_file_name task1)"
     assertEquals "task_function1" "$(project:task.get_function_name task1)"
     result=0
     project.execute_task "task1" || result="${?}"
@@ -483,6 +494,7 @@ function test_load_task_definition_file() {
     assertEquals "task2" "$(project:task.get_fully_qualified_name task2)"
     assertEquals "task2" "$(project:task.get_name task2)"
     assertEquals "task2" "$(project:task.get_namespaced_parts_as_string task2)"
+    assertEquals "main" "$(project:task.get_task_definition_file_name task2)"
     assertEquals "task_function2" "$(project:task.get_function_name task2)"
     result=0
     project.execute_task "task2" || result="${?}"
@@ -495,10 +507,51 @@ function test_load_task_definition_file() {
     assertEquals "task3" "$(project:task.get_fully_qualified_name task3)"
     assertEquals "task3" "$(project:task.get_name task3)"
     assertEquals "task3" "$(project:task.get_namespaced_parts_as_string task3)"
+    assertEquals "main" "$(project:task.get_task_definition_file_name task3)"
     assertEquals "task_function3" "$(project:task.get_function_name task3)"
     result=0
     project.execute_task "task3" || result="${?}"
     assertTrue "Executing task3 should succeed" "${result}"
+
+    local -A sub_task1=()
+    result=0
+    project:task_registry.get_task "sub/task1" sub_task1 || result="${?}"
+    assertTrue "Getting sub/task1 should succeed" "${result}"
+    assertEquals "sub/task1" "$(project:task.get_fully_qualified_name sub_task1)"
+    assertEquals "task1" "$(project:task.get_name sub_task1)"
+    assertEquals "sub task1" "$(project:task.get_namespaced_parts_as_string sub_task1)"
+    assertEquals "sub" "$(project:task.get_task_definition_file_name sub_task1)"
+    assertEquals "sub_task_function1" "$(project:task.get_function_name sub_task1)"
+    result=0
+    project.execute_task "sub/task1" || result="${?}"
+    assertTrue "Executing sub/task1 should succeed" "${result}"
+
+    local -A sub_task2=()
+    result=0
+    project:task_registry.get_task "sub/task2" sub_task2 || result="${?}"
+    assertTrue "Getting sub/task2 should succeed" "${result}"
+    assertEquals "sub/task2" "$(project:task.get_fully_qualified_name sub_task2)"
+    assertEquals "task2" "$(project:task.get_name sub_task2)"
+    assertEquals "sub task2" "$(project:task.get_namespaced_parts_as_string sub_task2)"
+    assertEquals "sub" "$(project:task.get_task_definition_file_name sub_task2)"
+    assertEquals "sub_task_function2" "$(project:task.get_function_name sub_task2)"
+    result=0
+    project.execute_task "sub/task2" || result="${?}"
+    assertTrue "Executing sub/task2 should succeed" "${result}"
+
+    local -A sub_task3=()
+    result=0
+    project:task_registry.get_task "sub/task3" sub_task3 || result="${?}"
+    assertTrue "Getting sub/task3 should succeed" "${result}"
+    assertEquals "sub/task3" "$(project:task.get_fully_qualified_name sub_task3)"
+    assertEquals "task3" "$(project:task.get_name sub_task3)"
+    assertEquals "sub task3" "$(project:task.get_namespaced_parts_as_string sub_task3)"
+    assertEquals "sub" "$(project:task.get_task_definition_file_name sub_task3)"
+    assertEquals "sub_task_function3" "$(project:task.get_function_name sub_task3)"
+    result=0
+    project.execute_task "sub/task3" || result="${?}"
+    assertTrue "Executing sub/task3 should succeed" "${result}"
+
 }
 
 # --------------------------------------------------------------------------------------------------

@@ -1,0 +1,20 @@
+#!/usr/bin/env -S mycmd project run
+# -*- mode: shell-script; sh-shell: bash; sh-basic-offset: 4; sh-indentation: 4; coding: utf-8 -*-
+# shellcheck shell=bash
+
+set -o nounset -o errexit -o errtrace -o pipefail
+
+function sub_task_function1() {
+    mycmd.output "Running task_function1"
+}
+myproject.register_task task1 sub_task_function1
+
+function sub_task_function2() {
+    mycmd.output "Running task_function2"
+}
+myproject.register_task task2 sub_task_function2
+
+function sub_task_function3() {
+    mycmd.output "Running task_function3"
+}
+myproject.register_task task3 sub_task_function3
