@@ -491,10 +491,14 @@ function get_previous_snapshot_tag() {
     return 1
 }
 
-mycmd.defer_at_startup mycmd.init_bin gum
 function promote_local_snapshot_to_development() {
     if (($# == 0)); then
         mycmd.log "Missing snapshot to promote."
+        return 1
+    fi
+
+    if ! mycmd.init_bin_no_exit gum; then
+        mycmd.log "Required tool 'gum' not found."
         return 1
     fi
 
@@ -678,8 +682,12 @@ project.register_task update-snapshot-worktree-to-latest-development-snapshot \
 
 #----------------------------------------
 # Repo Stats
-mycmd.init_bin git-quick-stats
 function git-quick-stats() {
+    if ! mycmd.init_bin_no_exit git-quick-stats; then
+        mycmd.log "Required tool 'git-quick-stats' not found."
+        return 1
+    fi
+
     # shellcheck disable=SC2154
     /usr/bin/env PATH="${HOMEBREW_PREFIX}/opt/coreutils/libexec/gnubin:${PATH}" \
         git quick-stats "${@}"
