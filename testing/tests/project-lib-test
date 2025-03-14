@@ -585,7 +585,7 @@ function generate_mapping_config2() {
 
 function oneTimeSetUp() {
     # Copy the test data into a new directory in TMPDIR so there won't be a `myproject` directory above them
-    if ! cp -R "${TEST_DATA_SRC_DIRECTORY}/" "${TEST_DATA_DIRECTORY}"; then
+    if ! cp -R "${TEST_DATA_SRC_DIRECTORY}"/* "${TEST_DATA_DIRECTORY}"; then
         echo >&2 "Error copying test data into '${TEST_DATA_DIRECTORY}'."
         exit 1
     fi
