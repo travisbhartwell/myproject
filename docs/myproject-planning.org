@@ -32,9 +32,13 @@
 * Work Log Posts
 ** DONE Weekly Progress Report with weekly demo
 SCHEDULED: <2025-01-03 Fri>
+** DONE Weekly Progress Report with weekly demo
+SCHEDULED: <2025-01-17 Fri>
+** DONE Weekly Progress Report with weekly demo
+SCHEDULED: <2025-01-24 Fri>
 ** TODO Introduction to MyProject
 ** TODO Weekly Progress Report with weekly demo
-SCHEDULED: <2025-01-17 Fri>
+SCHEDULED: <2025-06-06 Fri>
 
 * Next Steps
 ** DONE Add more details to [[file:~/Developer/Personal/myproject/main/README.md][README]]
@@ -69,7 +73,7 @@ SCHEDULED: <2025-01-03 Fri>
 *** DONE Implement minimal =mycmd myproject list-tasks= that calls =project.find_up=
 *** DONE Implement and test parsing the MyProject Mapping Configuration File from the standard location
 
-** Working =mycmd myproject list-tasks= that will load tasks from a =myproject/main=
+** DONE Working =mycmd myproject list-tasks= that will load tasks from a =myproject/main=
 SCHEDULED: <2025-01-17 Fri>
 *** DONE Document existing concepts and conventions to the [[file:myproject-concepts-and-conventions.org][Concepts and Conventions Document]]
 *** DONE Clean up and re-organize =project-lib-test=
@@ -79,7 +83,15 @@ SCHEDULED: <2025-01-17 Fri>
 *** DONE Create =myproject.register_task= accepting one arguments
 *** DONE Create a minimal =myproject/main= in test data
 *** DONE Write minimal test for =myproject.register_task= and task object methods
-*** TODO Create =myproject.register_task= accepting one or two arguments
+*** DONE Create =myproject.register_task= accepting one or two arguments
+
+** DONE Working =mycmd myproject run= that will execute no-argument tasks from a =myproject/main=
+SCHEDULED: <2025-01-24 Fri>
+
+** Working =mycmd project run= that will execute no-argument tasks from a task definition file other than =myproject/main=
+SCHEDULED: <2025-06-06 Fri>
+*** TODO Modify =project.execute_task= to convert =sub task1= into =sub/task1=
+*** TODO Modify =project:task_registry.get_task= to attempt to load =sub= if it is not loaded
 
 * Strategies and Goals
 
@@ -96,7 +108,12 @@ My development process should follow the following tenants:
 *** Take a pass to add details to the [[file:myproject-concepts-and-conventions.org][Concepts and Conventions Document]] and update the implementation and testing code to fit.
 *** If it is a user-facing feature, add appropriate documentation to the End User Documentation.
 
+
 * Ideas
 ** I should integrate this with Projectile
 
 [[https://docs.projectile.mx/projectile/projects.html#adding-custom-project-types][Custom Project Types]]
+
+** Possibly Use a =command_not_found= handler to execute tasks
+
+Similar to what [[https://github.com/aleyan/dela][dela]] does.
