@@ -29,6 +29,8 @@ function project:task_registry._reset_registry() {
     _MYPROJECT_TASKS=()
     _MYPROJECT_TASKS_TASK_DEFINITION_FILES=()
     _MYPROJECT_LOADED_TASK_DEFINITION_FILES=()
+    unset MYPROJECT_ROOT_DIRECTORY
+    unset MYPROJECT_TASK_DEFINITION_DIRECTORY
 }
 
 project:task_registry._reset_registry
@@ -38,19 +40,10 @@ function project:task_registry.load_task_definition_file() {
     local -r task_definition_directory="${2}"
     local -r task_definition_file_name="${3}"
 
-    mycmd.trace "Loading '${task_definition_file_name}' from task definition directory '${task_definition_directory}' for project '${project_root_directory}'."
-
     declare -gx MYPROJECT_ROOT_DIRECTORY="${project_root_directory}"
-    declare -gx MYPROJECT_CURRENT_TASK_FILE="${task_definition_file_name}"
+    declare -gx MYPROJECT_TASK_DEFINITION_DIRECTORY="${task_definition_directory}"
 
-    local -r task_definition_file="${task_definition_directory}/${task_definition_file_name}"
-
-    if ! mycmd.source_lib_by_path_if_found "${task_definition_file}"; then
-        mycmd.log "Error loading task definition file '${task_definition_file}'."
-        return 1
-    fi
-
-    _MYPROJECT_LOADED_TASK_DEFINITION_FILES["${task_definition_file_name}"]=1
+    project:task_registry._load_task_definition_file "${task_definition_file_name}"
 }
 
 function project:task_registry.load_all_task_definition_files() {
@@ -78,6 +71,37 @@ function project:task_registry.load_all_task_definition_files() {
             return 1
         fi
     done
+}
+
+function project:task_registry._load_task_definition_file() {
+    if [[ ! -v MYPROJECT_ROOT_DIRECTORY && ! -v MYPROJECT_TASK_DEFINITION_DIRECTORY ]]; then
+        mycmd.debug "Error: MYPROJECT_ROOT DIRECTORY and MYPROJECT_TASK_DEFINITION_DIRECTORY must be set."
+        return 1
+    fi
+
+    local -r task_definition_file_name="${1}"
+
+    mycmd.trace "Loading '${task_definition_file_name}' from task definition directory '${MYPROJECT_TASK_DEFINITION_DIRECTORY}' for project '${MYPROJECT_ROOT_DIRECTORY}'."
+
+    declare -gx MYPROJECT_CURRENT_TASK_FILE="${task_definition_file_name}"
+
+    local -r task_definition_file="${MYPROJECT_TASK_DEFINITION_DIRECTORY}/${task_definition_file_name}"
+
+    local result=0
+    if ! mycmd.source_lib_by_path_if_found "${task_definition_file}"; then
+        mycmd.log "Error loading task definition file '${task_definition_file}'."
+        result=1
+    fi
+
+    unset MYPROJECT_CURRENT_TASK_FILE
+
+    if ((result != 0)); then
+        return "${result}"
+    fi
+
+    _MYPROJECT_LOADED_TASK_DEFINITION_FILES[${task_definition_file_name}]=1
+
+    return 0
 }
 
 function project:task_registry.new_task() {
