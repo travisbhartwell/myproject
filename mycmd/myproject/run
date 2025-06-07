@@ -31,11 +31,6 @@ function mycmd.main() {
         mycmd.err_exit 1 "Missing task to execute."
     fi
 
-    # First step; later, load on demand
-    if ! project.load_all_task_definition_files; then
-        exit 1
-    fi
-
     local fully_qualified_task_name="${1}"
     if (($# == 2)); then
         fully_qualified_task_name="${fully_qualified_task_name}/${2}"

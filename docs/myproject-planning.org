@@ -92,10 +92,10 @@ SCHEDULED: <2025-01-24 Fri>
 SCHEDULED: <2025-06-06 Fri>
 
 *** DONE Modify =mycmd.main= in =run= to convert =sub task1= into =sub/task1=
+*** DONE Set global variables for the project directory and task definition directory
+*** DONE Reset these global variables in =project:task_registry._reset_registry=
+*** DONE Modify =project:task_registry.get_task= to attempt to load =sub= if it is not loaded
 *** TODO Modify =project.execute_task= to validate a project task definition has been loaded
-*** TODO Set global variables for the project directory and task definition directory
-*** TODO Reset these global variables in =project:task_registry._reset_registry=
-*** TODO Modify =project:task_registry.get_task= to attempt to load =sub= if it is not loaded
 
 * Strategies and Goals
 

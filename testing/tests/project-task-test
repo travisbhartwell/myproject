@@ -77,24 +77,29 @@ function test_task_definition() {
         0 "${#_MYPROJECT_TASKS[@]}"
     assertEquals "TEST_VARIABLE should be 0" 0 "${TEST_VARIABLE}"
 
-    local -A task1=()
-    result=0
-    project:task_registry.get_task "invalid-task" task1 || result="${?}"
-    assertFalse "Getting an invalid task should fail" "${result}"
-    assertEquals "The task1 array should be empty" \
-        0 "${#task1[@]}"
-
     result=0
     project:task_registry.new_task "file1" "file1/task1" "function1" || result="${?}"
+    # Manually set these since we are not actually loading a real task definition file
+    _MYPROJECT_LOADED_TASK_DEFINITION_FILES["file1"]=1
+    declare -gx MYPROJECT_ROOT_DIRECTORY="root"
+    declare -gx MYPROJECT_TASK_DEFINITION_DIRECTORY="myproject"
     assertTrue "Task was successfully registered." "${result}"
     assertEquals "There should be 1 task registered." \
         1 "${#_MYPROJECT_TASKS[@]}"
 
     result=0
     project:task_registry.new_task "main" "task1" "function2" || result="${?}"
+    _MYPROJECT_LOADED_TASK_DEFINITION_FILES["main"]=1
     assertTrue "Task was successfully registered." "${result}"
     assertEquals "There should be 2 tasks registered." \
         2 "${#_MYPROJECT_TASKS[@]}"
+
+    local -A task1=()
+    result=0
+    project:task_registry.get_task "invalid-task" task1 || result="${?}"
+    assertFalse "Getting an invalid task should fail" "${result}"
+    assertEquals "The task1 array should be empty" \
+        0 "${#task1[@]}"
 
     task1=()
     result=0

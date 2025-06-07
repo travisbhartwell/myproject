@@ -1,0 +1,139 @@
+#!/usr/bin/env bash
+# -*- mode: shell-script; sh-shell: bash; sh-basic-offset: 4; sh-indentation: 4; coding: utf-8 -*-
+# shellcheck shell=bash
+
+if ! TEST_DIRECTORY=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P); then
+    echo >&2 "Error fetching test directory."
+    exit 1
+fi
+readonly TEST_DIRECTORY
+
+if ! TEST_VENDOR_DIRECTORY=$(cd "${TEST_DIRECTORY}/../vendor" &>/dev/null && pwd -P); then
+    echo >&2 "Error fetching test vendor directory."
+    exit 1
+fi
+readonly TEST_VENDOR_DIRECTORY
+
+if ! TEST_DATA_SRC_DIRECTORY=$(cd "${TEST_DIRECTORY}/../test-data" &>/dev/null && pwd -P); then
+    echo >&2 "Error fetching test data source directory."
+    exit 1
+fi
+readonly TEST_DATA_SRC_DIRECTORY
+
+if ! [[ -v MYCMD_SYSTEM_BASE_DIR ]]; then
+    echo >&2 "Error fetching MyCmd lib directory."
+    exit 1
+fi
+
+if ! TEST_DATA_DIRECTORY="$(mktemp -q -d -t "test-data-XXXXXX")"; then
+    echo >&2 "Error getting temporary directory for test data."
+    exit 1
+fi
+
+# On Mac OS, the TMPDIR is a symlink, so this gets the resolved path
+if ! TEST_DATA_DIRECTORY=$(cd "${TEST_DATA_DIRECTORY}" &>/dev/null && pwd -P); then
+    echo >&2 "Error fetching test data directory."
+    exit 1
+fi
+readonly TEST_DATA_DIRECTORY
+
+readonly TEST_MAPPING_CONFIG_DIRECTORY="${TEST_DATA_DIRECTORY}/mapping-configs"
+if ! mkdir -p "${TEST_MAPPING_CONFIG_DIRECTORY}"; then
+    echo >&2 "Error creating test mapping config dir, '${TEST_MAPPING_CONFIG_DIRECTORY}'."
+fi
+
+export _MYCMD_TEST_USER_CONFIG_HOME="${TEST_DATA_DIRECTORY}/user-config/mycmd"
+
+# Common constants for paths used in tests
+readonly VALID_PROJECT_DIRECTORY1="${TEST_DATA_DIRECTORY}/valid/valid1"
+readonly VALID_TASK_DEFINITION_DIRECTORY1="${VALID_PROJECT_DIRECTORY1}/myproject"
+
+function test_mycmd_lib_is_loaded() {
+    assertTrue 'MyCmd Lib is loaded' '[ -v _MYCMD_LIB ]'
+}
+
+function test_project_lib_is_loaded() {
+    assertTrue 'Project Lib is loaded' '[ -v _MYPROJECT_LIB ]'
+    assertTrue 'Project Tasks Support Lib is loaded' '[ -v _MYPROJECT_TASK_LIB ]'
+}
+
+# --------------------------------------------------------------------------------------------------
+# This test is in its own file instead of in `project-lib-test` because this needs to run in a fresh
+# environment, because other tests already load the task definition files for `valid/valid1`. It was
+# either make new test data or a new test file and this was easier.
+
+# --------------------------------------------------------------------------------------------------
+# project.execute_task tests
+# shellcheck disable=SC2034,SC2154,SC2312
+function test_execute_task() {
+    project:task_registry._reset_registry
+
+    local result=0
+    project:task_registry.load_task_definition_file \
+        "${VALID_PROJECT_DIRECTORY1}" \
+        "${VALID_TASK_DEFINITION_DIRECTORY1}" \
+        "main" || result="${?}"
+    assertTrue "The main task definition file successfully loads" \
+        "${result}"
+    assertEquals "There should be 3 tasks registered." \
+        3 "${#_MYPROJECT_TASKS[@]}"
+    assertEquals "There should be 1 task definition file loaded." \
+        1 "${#_MYPROJECT_LOADED_TASK_DEFINITION_FILES[@]}"
+    assertEquals "PROJECT_VARIABLE should be 1" 1 "${PROJECT_VARIABLE}"
+
+    local -A task1=()
+    result=0
+    project:task_registry.get_task "task1" task1 || result="${?}"
+    assertTrue "Getting task1 should succeed" "${result}"
+    assertEquals "task1" "$(project:task.get_fully_qualified_name task1)"
+    assertEquals "task1" "$(project:task.get_name task1)"
+    assertEquals "task1" "$(project:task.get_namespaced_parts_as_string task1)"
+    assertEquals "main" "$(project:task.get_task_definition_file_name task1)"
+    assertEquals "task_function1" "$(project:task.get_function_name task1)"
+    result=0
+    project.execute_task "task1" || result="${?}"
+    assertTrue "Executing task1 should succeed" "${result}"
+    assertEquals "PROJECT_VARIABLE should now be 2" \
+        2 "${PROJECT_VARIABLE}"
+
+    local -A sub_task1=()
+    result=0
+    project:task_registry.get_task "sub/task1" sub_task1 || result="${?}"
+    assertTrue "Getting sub/task1 should succeed" "${result}"
+    assertEquals "There should now be 6 tasks registered." \
+        6 "${#_MYPROJECT_TASKS[@]}"
+    assertEquals "There should now be 2 task definition file loaded." \
+        2 "${#_MYPROJECT_LOADED_TASK_DEFINITION_FILES[@]}"
+    assertEquals "sub/task1" "$(project:task.get_fully_qualified_name sub_task1)"
+    assertEquals "task1" "$(project:task.get_name sub_task1)"
+    assertEquals "sub task1" "$(project:task.get_namespaced_parts_as_string sub_task1)"
+    assertEquals "sub" "$(project:task.get_task_definition_file_name sub_task1)"
+    assertEquals "sub_task_function1" "$(project:task.get_function_name sub_task1)"
+    result=0
+    project.execute_task "sub/task1" || result="${?}"
+    assertTrue "Executing sub/task1 should succeed" "${result}"
+}
+
+# --------------------------------------------------------------------------------------------------
+# Test Helper Functions
+
+function oneTimeSetUp() {
+    # Copy the test data into a new directory in TMPDIR so there won't be a `myproject` directory above them
+    if ! cp -R "${TEST_DATA_SRC_DIRECTORY}"/* "${TEST_DATA_DIRECTORY}"; then
+        echo >&2 "Error copying test data into '${TEST_DATA_DIRECTORY}'."
+        exit 1
+    fi
+
+    # shellcheck source=/dev/null
+    . "${MYCMD_SYSTEM_BASE_DIR}/mycmd-lib"
+    mycmd.source_mycmd_lib "myproject"
+}
+
+function oneTimeTearDown() {
+    if [[ -d "${TEST_DATA_DIRECTORY}" ]]; then
+        rm -rf "${TEST_DATA_DIRECTORY}" || true
+    fi
+}
+
+# shellcheck source=../vendor/shunit2
+. "${TEST_VENDOR_DIRECTORY}/shunit2"
