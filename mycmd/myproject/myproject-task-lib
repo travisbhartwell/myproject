@@ -195,10 +195,53 @@ function project:task_registry.list_tasks() {
         return 0
     fi
 
+    local -a main_file_tasks=()
+    local -a other_tasks=()
+
+    local fully_qualified_task_name
+    local task_definition_file_name
+    local namespaced_parts_string
+    local -A task
+
+    mycmd.trace "Starting to fetch task information."
+
+    for fully_qualified_task_name in "${!_MYPROJECT_TASKS[@]}"; do
+        task=()
+
+        mycmd.trace "Fetching task '${fully_qualified_task_name}'."
+
+        if ! project:task_registry.get_task "${fully_qualified_task_name}" task; then
+            mycmd.debug "Unexpected error getting task '${fully_qualified_task_name}'."
+            return 1
+        fi
+
+        task_definition_file_name="$(project:task.get_task_definition_file_name task)"
+        namespaced_parts_string="$(project:task.get_namespaced_parts_as_string task)"
+
+        mycmd.trace "Found task with fully qualified name '${fully_qualified_task_name}', with namespaced parts string '${namespaced_parts_string}' with task file '${task_definition_file_name}'."
+
+        if [[ "${task_definition_file_name}" == "main" ]]; then
+            main_file_tasks+=("${namespaced_parts_string}")
+        else
+            other_tasks+=("${namespaced_parts_string}")
+        fi
+    done
+
+    mycmd.trace "Finished fetching tasks."
+
     local -a sorted_task_names
     # shellcheck disable=SC2034
     readarray -t sorted_task_names < \
-        <(printf '%s\n' "${!_MYPROJECT_TASKS[@]}" | LC_ALL=en_US.UTF-8 sort || true)
+        <(printf '%s\n' "${main_file_tasks[@]}" | LC_ALL=en_US.UTF-8 sort || true)
+
+    mycmd.trace "Sorted names: ${sorted_task_names[*]}"
+
+    local size_so_far="${#sorted_task_names[@]}"
+    mycmd.trace "Size so far: ${size_so_far}"
+    # shellcheck disable=SC2034
+    readarray -t -O "${size_so_far}" sorted_task_names < \
+        <(printf '%s\n' "${other_tasks[@]}" | LC_ALL=en_US.UTF-8 sort || true)
+    mycmd.trace "Sorted names: ${sorted_task_names[*]}"
 
     mycmd.output "The following tasks are registered:"
 

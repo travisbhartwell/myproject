@@ -98,11 +98,11 @@ SCHEDULED: <2025-06-06 Fri>
 *** DONE Modify =project:task_registry.get_task= to attempt to load =sub= if it is not loaded
 
 
-** TODO Clean up =mycmd myproject list-tasks= output
+** DONE Clean up =mycmd myproject list-tasks= output
 SCHEDULED: <2025-06-13 Fri>
-*** TODO Update =project:task_registry.list_tasks= to use the namespaced task name
-*** TODO Update =project:task_registry.list_tasks= to display tasks from =main= first
-*** TODO Update =project:task_registry.list_tasks= to sort task names within each section
+*** DONE Update =project:task_registry.list_tasks= to use the namespaced task name
+*** DONE Update =project:task_registry.list_tasks= to display tasks from =main= first
+*** DONE Update =project:task_registry.list_tasks= to sort task names within each section
 
 ** TODO Working =mycmd myproject run= with arguments for a single task
 SCHEDULED: <2025-06-13 Fri>
