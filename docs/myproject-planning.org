@@ -36,9 +36,11 @@ SCHEDULED: <2025-01-03 Fri>
 SCHEDULED: <2025-01-17 Fri>
 ** DONE Weekly Progress Report with weekly demo
 SCHEDULED: <2025-01-24 Fri>
+** DONE Weekly Progress Report with weekly demo
+SCHEDULED: <2025-06-06 Fri>
 ** TODO Introduction to MyProject
 ** TODO Weekly Progress Report with weekly demo
-SCHEDULED: <2025-06-06 Fri>
+SCHEDULED: <2025-06-13 Fri>
 
 * Next Steps
 ** DONE Add more details to [[file:~/Developer/Personal/myproject/main/README.md][README]]
@@ -88,14 +90,29 @@ SCHEDULED: <2025-01-17 Fri>
 ** DONE Working =mycmd myproject run= that will execute no-argument tasks from a =myproject/main=
 SCHEDULED: <2025-01-24 Fri>
 
-** Working =mycmd project run= that will execute no-argument tasks from a task definition file other than =myproject/main=
+** DONE Working =mycmd project run= that will execute no-argument tasks from a task definition file other than =myproject/main=
 SCHEDULED: <2025-06-06 Fri>
-
 *** DONE Modify =mycmd.main= in =run= to convert =sub task1= into =sub/task1=
 *** DONE Set global variables for the project directory and task definition directory
 *** DONE Reset these global variables in =project:task_registry._reset_registry=
 *** DONE Modify =project:task_registry.get_task= to attempt to load =sub= if it is not loaded
+
+
+** TODO Clean up =mycmd myproject list-tasks= output
+SCHEDULED: <2025-06-13 Fri>
+*** TODO Update =project:task_registry.list_tasks= to use the namespaced task name
+*** TODO Update =project:task_registry.list_tasks= to display tasks from =main= first
+*** TODO Update =project:task_registry.list_tasks= to sort task names within each section
+
+** TODO Working =mycmd myproject run= with arguments for a single task
+SCHEDULED: <2025-06-13 Fri>
+
+This task will first focus on arguments coming from =mycmd myproject run=, and then arguments defined with =myproject.register_task=.
+
 *** TODO Modify =project.execute_task= to validate a project task definition has been loaded
+*** TODO Update =run= to parse the command line to get task arguments
+*** TODO Add tasks in test data that take arguments
+*** TODO Write in the [[file:myproject-design.org][MyProject Design Document]] and the [[file:myproject-concepts-and-conventions.org][Concepts and Conventions Document]] about changes to the registry and tasks to support arguments
 
 * Strategies and Goals
 
