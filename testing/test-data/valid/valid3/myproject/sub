@@ -4,7 +4,7 @@
 
 set -o nounset -o errexit -o errtrace -o pipefail
 
-function task_function1() {
+function sub_task_function1() {
     mycmd.output "Running task_function1"
 }
-myproject.register_task task1 task_function1
+myproject.register_task task1 sub_task_function1

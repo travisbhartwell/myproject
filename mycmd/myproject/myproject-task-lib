@@ -203,12 +203,8 @@ function project:task_registry.list_tasks() {
     local namespaced_parts_string
     local -A task
 
-    mycmd.trace "Starting to fetch task information."
-
     for fully_qualified_task_name in "${!_MYPROJECT_TASKS[@]}"; do
         task=()
-
-        mycmd.trace "Fetching task '${fully_qualified_task_name}'."
 
         if ! project:task_registry.get_task "${fully_qualified_task_name}" task; then
             mycmd.debug "Unexpected error getting task '${fully_qualified_task_name}'."
@@ -227,21 +223,21 @@ function project:task_registry.list_tasks() {
         fi
     done
 
-    mycmd.trace "Finished fetching tasks."
+    local -a sorted_task_names=()
 
-    local -a sorted_task_names
-    # shellcheck disable=SC2034
-    readarray -t sorted_task_names < \
-        <(printf '%s\n' "${main_file_tasks[@]}" | LC_ALL=en_US.UTF-8 sort || true)
+    if (("${#main_file_tasks[@]}" > 0)); then
+        # shellcheck disable=SC2034
+        readarray -t sorted_task_names < \
+            <(printf '%s\n' "${main_file_tasks[@]}" | LC_ALL=en_US.UTF-8 sort || true)
+    fi
 
-    mycmd.trace "Sorted names: ${sorted_task_names[*]}"
+    if (("${#other_tasks[@]}" > 0)); then
+        local size_so_far="${#sorted_task_names[@]}"
 
-    local size_so_far="${#sorted_task_names[@]}"
-    mycmd.trace "Size so far: ${size_so_far}"
-    # shellcheck disable=SC2034
-    readarray -t -O "${size_so_far}" sorted_task_names < \
-        <(printf '%s\n' "${other_tasks[@]}" | LC_ALL=en_US.UTF-8 sort || true)
-    mycmd.trace "Sorted names: ${sorted_task_names[*]}"
+        # shellcheck disable=SC2034
+        readarray -t -O "${size_so_far}" sorted_task_names < \
+            <(printf '%s\n' "${other_tasks[@]}" | LC_ALL=en_US.UTF-8 sort || true)
+    fi
 
     mycmd.output "The following tasks are registered:"
 

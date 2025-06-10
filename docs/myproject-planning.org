@@ -3,6 +3,8 @@
 * Project Task Runner
 ** TODO =project.find_files_for_filset= should be additive
 ** TODO =project.find_files_for_filset= should support symlinks and files with spaces in them
+** Testing
+*** TODO Add automated tests of =list-tasks= and other output-producing actions
 
 * Milestones
 ** Features to Design and Explore
@@ -17,7 +19,6 @@
 *** TODO Rename MyProject's =mycmd/myproject= to =mycmd/project=
 *** TODO Convert all personal =myproject= files to =myproject= directories
 *** TODO Create snapshot
-
 ** 0.1
 *** TODO End User Documentation
 *** TODO Installation Documentation
@@ -103,6 +104,7 @@ SCHEDULED: <2025-06-13 Fri>
 *** DONE Update =project:task_registry.list_tasks= to use the namespaced task name
 *** DONE Update =project:task_registry.list_tasks= to display tasks from =main= first
 *** DONE Update =project:task_registry.list_tasks= to sort task names within each section
+*** DONE Ensure that things are handled properly when there are only tasks in =main=
 
 ** TODO Working =mycmd myproject run= with arguments for a single task
 SCHEDULED: <2025-06-13 Fri>
