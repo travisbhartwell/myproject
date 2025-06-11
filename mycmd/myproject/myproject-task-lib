@@ -16,6 +16,9 @@ readonly _MYPROJECT_TASK_LIB=1
 
 declare -Agx _MYPROJECT_TASKS
 declare -Agx _MYPROJECT_TASKS_TASK_DEFINITION_FILES
+declare -Agx _MYPROJECT_TASKS_ARGUMENT_COUNTS
+declare -Agx _MYPROJECT_TASKS_ARGUMENT_INDICES
+declare -agx _MYPROJECT_TASKS_ARGUMENTS
 declare -Agx _MYPROJECT_LOADED_TASK_DEFINITION_FILES
 
 readonly _TASK_FULLY_QUALIFIED_NAME_FIELD='task-fully-qualified-name'
@@ -23,11 +26,16 @@ readonly _TASK_NAME_FIELD='task-name'
 readonly _TASK_NAMESPACED_PARTS_STRING_FIELD='task-namespaced-parts-string'
 readonly _TASK_TASK_DEFINITION_FILE_FIELD='task-definition-file'
 readonly _TASK_FUNCTION_FIELD='task-function'
+readonly _TASK_ARGUMENT_COUNT_FIELD='task-argument-count'
+readonly _TASK_ARGUMENT_INDEX_FIELD='task-argument-index'
 
 function project:task_registry._reset_registry() {
     mycmd.trace "Resetting the MyProject Task Registry."
     _MYPROJECT_TASKS=()
     _MYPROJECT_TASKS_TASK_DEFINITION_FILES=()
+    _MYPROJECT_TASKS_ARGUMENT_COUNTS=()
+    _MYPROJECT_TASKS_ARGUMENT_INDICES=()
+    _MYPROJECT_TASKS_ARGUMENTS=()
     _MYPROJECT_LOADED_TASK_DEFINITION_FILES=()
     unset MYPROJECT_ROOT_DIRECTORY
     unset MYPROJECT_TASK_DEFINITION_DIRECTORY
@@ -113,6 +121,7 @@ function project:task_registry.new_task() {
     local -r task_definition_file_name="${1}"
     local -r fully_qualified_task_name="${2}"
     local -r task_function_name="${3}"
+    local -r argc=0
 
     mycmd.trace "Attempting to register task '${fully_qualified_task_name}' with function '${task_function_name}'."
 
@@ -130,7 +139,9 @@ function project:task_registry.new_task() {
 
     _MYPROJECT_TASKS["${fully_qualified_task_name}"]="${task_function_name}"
     _MYPROJECT_TASKS_TASK_DEFINITION_FILES["${fully_qualified_task_name}"]="${task_definition_file_name}"
-    mycmd.trace "Successfully registered task '${fully_qualified_task_name}' from task definition file '${task_definition_file_name}' with function '${task_function_name}'."
+    _MYPROJECT_TASKS_ARGUMENT_COUNTS["${fully_qualified_task_name}"]="${argc}"
+
+    mycmd.trace "Successfully registered task '${fully_qualified_task_name}' from task definition file '${task_definition_file_name}' with function '${task_function_name}' with ${argc} arguments."
     return 0
 }
 
@@ -171,6 +182,22 @@ function project:task_registry.get_task() {
 
     task_struct_ref["${_TASK_FUNCTION_FIELD}"]="${_MYPROJECT_TASKS["${fully_qualified_task_name}"]}"
     mycmd.trace "- ${_TASK_FUNCTION_FIELD}: ${task_struct_ref["${_TASK_FUNCTION_FIELD}"]}"
+
+    local -r argc="${_MYPROJECT_TASKS_ARGUMENT_COUNTS["${fully_qualified_task_name}"]}"
+    task_struct_ref["${_TASK_ARGUMENT_COUNT_FIELD}"]="${argc}"
+    mycmd.trace "- ${_TASK_ARGUMENT_COUNT_FIELD}: ${task_struct_ref["${_TASK_ARGUMENT_COUNT_FIELD}"]}"
+
+    if (("${argc}" > 0)); then
+        if ! [[ -v _MYPROJECT_TASKS_ARGUMENT_INDICES["${fully_qualified_task_name}"] ]]; then
+            mycmd.debug "Required argument indices data missing for '${fully_qualified_task_name}'."
+            return 1
+        fi
+
+        task_struct_ref["${_TASK_ARGUMENT_INDEX_FIELD}"]="${_MYPROJECT_TASKS_ARGUMENT_INDICES["${fully_qualified_task_name}"]}"
+        mycmd.trace "- ${_TASK_ARGUMENT_INDEX_FIELD}: ${task_struct_ref["${_TASK_ARGUMENT_INDEX_FIELD}"]}"
+    else
+        mycmd.trace "- ${_TASK_ARGUMENT_INDEX_FIELD}: No value set."
+    fi
 }
 
 function project:task_registry._load_task_definition_file_for_task() {
@@ -274,6 +301,18 @@ function project:task.get_task_definition_file_name() {
 function project:task.get_function_name() {
     project:task._get_field_from_struct \
         "${_TASK_FUNCTION_FIELD}" \
+        "${@}"
+}
+
+function project:task.get_argument_count() {
+    project:task._get_field_from_struct \
+        "${_TASK_ARGUMENT_COUNT_FIELD}" \
+        "${@}"
+}
+
+function project:task.get_argument_index() {
+    project:task._get_field_from_struct \
+        "${_TASK_ARGUMENT_INDEX_FIELD}" \
         "${@}"
 }
 

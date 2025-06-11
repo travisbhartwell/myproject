@@ -481,6 +481,10 @@ function test_load_task_definition_file() {
     assertEquals "task1" "$(project:task.get_namespaced_parts_as_string task1)"
     assertEquals "main" "$(project:task.get_task_definition_file_name task1)"
     assertEquals "task_function1" "$(project:task.get_function_name task1)"
+    assertEquals 0 "$(project:task.get_argument_count task1)"
+    result=0
+    project:task.get_argument_index task1 || result="${?}"
+    assertFalse "Getting task1 argument index should fail" "${result}"
     result=0
     project.execute_task "task1" || result="${?}"
     assertTrue "Executing task1 should succeed" "${result}"
@@ -496,6 +500,10 @@ function test_load_task_definition_file() {
     assertEquals "task2" "$(project:task.get_namespaced_parts_as_string task2)"
     assertEquals "main" "$(project:task.get_task_definition_file_name task2)"
     assertEquals "task_function2" "$(project:task.get_function_name task2)"
+    assertEquals 0 "$(project:task.get_argument_count task2)"
+    result=0
+    project:task.get_argument_index task2 || result="${?}"
+    assertFalse "Getting task2 argument index should fail" "${result}"
     result=0
     project.execute_task "task2" 4 || result="${?}"
     assertTrue "Executing task2 should succeed" "${result}"
@@ -511,6 +519,10 @@ function test_load_task_definition_file() {
     assertEquals "task3" "$(project:task.get_namespaced_parts_as_string task3)"
     assertEquals "main" "$(project:task.get_task_definition_file_name task3)"
     assertEquals "task_function3" "$(project:task.get_function_name task3)"
+    assertEquals 0 "$(project:task.get_argument_count task3)"
+    result=0
+    project:task.get_argument_index task3 || result="${?}"
+    assertFalse "Getting task3 argument index should fail" "${result}"
     result=0
     project.execute_task "task3" || result="${?}"
     assertTrue "Executing task3 should succeed" "${result}"
@@ -524,6 +536,10 @@ function test_load_task_definition_file() {
     assertEquals "sub task1" "$(project:task.get_namespaced_parts_as_string sub_task1)"
     assertEquals "sub" "$(project:task.get_task_definition_file_name sub_task1)"
     assertEquals "sub_task_function1" "$(project:task.get_function_name sub_task1)"
+    assertEquals 0 "$(project:task.get_argument_count sub_task1)"
+    result=0
+    project:task.get_argument_index sub_task1 || result="${?}"
+    assertFalse "Getting sub/task1 argument index should fail" "${result}"
     result=0
     project.execute_task "sub/task1" || result="${?}"
     assertTrue "Executing sub/task1 should succeed" "${result}"
@@ -537,6 +553,10 @@ function test_load_task_definition_file() {
     assertEquals "sub task2" "$(project:task.get_namespaced_parts_as_string sub_task2)"
     assertEquals "sub" "$(project:task.get_task_definition_file_name sub_task2)"
     assertEquals "sub_task_function2" "$(project:task.get_function_name sub_task2)"
+    assertEquals 0 "$(project:task.get_argument_count sub_task2)"
+    result=0
+    project:task.get_argument_index sub_task2 || result="${?}"
+    assertFalse "Getting sub/task2 argument index should fail" "${result}"
     result=0
     project.execute_task "sub/task2" || result="${?}"
     assertTrue "Executing sub/task2 should succeed" "${result}"
@@ -550,6 +570,10 @@ function test_load_task_definition_file() {
     assertEquals "sub task3" "$(project:task.get_namespaced_parts_as_string sub_task3)"
     assertEquals "sub" "$(project:task.get_task_definition_file_name sub_task3)"
     assertEquals "sub_task_function3" "$(project:task.get_function_name sub_task3)"
+    assertEquals 0 "$(project:task.get_argument_count sub_task3)"
+    result=0
+    project:task.get_argument_index sub_task3 || result="${?}"
+    assertFalse "Getting sub/task3 argument index should fail" "${result}"
     result=0
     project.execute_task "sub/task3" || result="${?}"
     assertTrue "Executing sub/task3 should succeed" "${result}"
