@@ -88,7 +88,7 @@ function test_task_definition() {
         1 "${#_MYPROJECT_TASKS[@]}"
 
     result=0
-    project:task_registry.new_task "main" "task1" "function2" || result="${?}"
+    project:task_registry.new_task "main" "task1" "function2" arg1 arg2 arg3 || result="${?}"
     _MYPROJECT_LOADED_TASK_DEFINITION_FILES["main"]=1
     assertTrue "Task was successfully registered." "${result}"
     assertEquals "There should be 2 tasks registered." \
@@ -114,6 +114,11 @@ function test_task_definition() {
     result=0
     project:task.get_argument_index task1 || result="${?}"
     assertFalse "Getting file1/task1 argument index should fail" "${result}"
+    local -a arguments=()
+    result=0
+    project:task.get_arguments task1 arguments || result="${?}"
+    assertTrue "Getting task1 arguments should succeed" "${result}"
+    assertEquals 0 "${#arguments[@]}"
 
     result=0
     project:task.execute task1 || result="${?}"
@@ -130,10 +135,16 @@ function test_task_definition() {
     assertEquals "task1" "$(project:task.get_namespaced_parts_as_string task1)"
     assertEquals "main" "$(project:task.get_task_definition_file_name task1)"
     assertEquals "function2" "$(project:task.get_function_name task1)"
-    assertEquals 0 "$(project:task.get_argument_count task1)"
+    assertEquals 3 "$(project:task.get_argument_count task1)"
+    assertEquals 0 "$(project:task.get_argument_index task1)"
+    arguments=()
     result=0
-    project:task.get_argument_index task1 || result="${?}"
-    assertFalse "Getting task1 argument index should fail" "${result}"
+    project:task.get_arguments task1 arguments || result="${?}"
+    assertTrue "Getting task1 arguments should succeed" "${result}"
+    assertEquals 3 "${#arguments[@]}"
+    assertEquals "arg1" "${arguments[0]}"
+    assertEquals "arg2" "${arguments[1]}"
+    assertEquals "arg3" "${arguments[2]}"
 
     result=0
     project:task.execute task1 || result="${?}"

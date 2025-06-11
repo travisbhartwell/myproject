@@ -121,7 +121,9 @@ function project:task_registry.new_task() {
     local -r task_definition_file_name="${1}"
     local -r fully_qualified_task_name="${2}"
     local -r task_function_name="${3}"
-    local -r argc=0
+    shift 3
+
+    local -r argc="$#"
 
     mycmd.trace "Attempting to register task '${fully_qualified_task_name}' with function '${task_function_name}'."
 
@@ -140,6 +142,16 @@ function project:task_registry.new_task() {
     _MYPROJECT_TASKS["${fully_qualified_task_name}"]="${task_function_name}"
     _MYPROJECT_TASKS_TASK_DEFINITION_FILES["${fully_qualified_task_name}"]="${task_definition_file_name}"
     _MYPROJECT_TASKS_ARGUMENT_COUNTS["${fully_qualified_task_name}"]="${argc}"
+
+    if ((argc > 0)); then
+        local index="${#_MYPROJECT_TASKS_ARGUMENTS[@]}"
+        _MYPROJECT_TASKS_ARGUMENTS+=("${@}")
+        _MYPROJECT_TASKS_ARGUMENT_INDICES["${fully_qualified_task_name}"]="${index}"
+
+        mycmd.trace "Created task arguments for task '${fully_qualified_task_name}' at index ${index} with argument count ${argc}."
+    else
+        mycmd.trace "Registered 0 arguments for task '${fully_qualified_task_name}'."
+    fi
 
     mycmd.trace "Successfully registered task '${fully_qualified_task_name}' from task definition file '${task_definition_file_name}' with function '${task_function_name}' with ${argc} arguments."
     return 0
@@ -328,6 +340,37 @@ function project:task._get_field_from_struct() {
         mycmd.debug "Missing required task field '${field_name}'."
         return 1
     fi
+}
+
+function project:task.get_arguments() {
+    # shellcheck disable=SC2178
+    local -n task_struct_ref="${1}"
+    local -n arguments_ref="${2}"
+
+    local fully_qualified_task_name
+    fully_qualified_task_name="$(project:task.get_fully_qualified_name "${!task_struct_ref}")"
+    readonly fully_qualified_task_name
+
+    local -i argc
+    argc="$(project:task.get_argument_count "${!task_struct_ref}")"
+    readonly argc
+
+    if ((argc == 0)); then
+        mycmd.trace "No arguments defined for task '${fully_qualified_task_name}'."
+        # shellcheck disable=SC2034
+        arguments_ref=()
+        return 0
+    fi
+
+    local -i index
+    if ! index="$(project:task.get_argument_index "${!task_struct_ref}")"; then
+        mycmd.log "Unexpected error: index should be set for task '${fully_qualified_task_name}'."
+        return 1
+    fi
+    readonly index
+
+    arguments_ref=("${_MYPROJECT_TASKS_ARGUMENTS[@]:index:argc}")
+    mycmd.trace "Set arguments for '${fully_qualified_task_name}' in ${!arguments_ref} as ${arguments_ref[*]}."
 }
 
 function project:task.function_exists() {
