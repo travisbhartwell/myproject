@@ -497,8 +497,10 @@ function test_load_task_definition_file() {
     assertEquals "main" "$(project:task.get_task_definition_file_name task2)"
     assertEquals "task_function2" "$(project:task.get_function_name task2)"
     result=0
-    project.execute_task "task2" || result="${?}"
+    project.execute_task "task2" 4 || result="${?}"
     assertTrue "Executing task2 should succeed" "${result}"
+    assertEquals "PROJECT_VARIABLE should now be 4" \
+        4 "${PROJECT_VARIABLE}"
 
     local -A task3=()
     result=0

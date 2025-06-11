@@ -31,11 +31,5 @@ function mycmd.main() {
         mycmd.err_exit 1 "Missing task to execute."
     fi
 
-    local fully_qualified_task_name="${1}"
-    if (($# == 2)); then
-        fully_qualified_task_name="${fully_qualified_task_name}/${2}"
-    fi
-    readonly fully_qualified_task_name
-
-    project.execute_task "${fully_qualified_task_name}"
+    project.execute_task "${@}"
 }
