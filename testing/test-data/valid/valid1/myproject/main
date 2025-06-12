@@ -21,6 +21,9 @@ function task_function2() {
 myproject.register_task task2 task_function2
 
 function task_function3() {
-    mycmd.output "Running task_function3"
+    local -r arg1="${1}"
+    local -r arg2="${2}"
+    mycmd.output "Running task_function3, with argument '${arg1}', setting PROJECT_VARIABLE to '${arg2}'."
+    PROJECT_VARIABLE="${arg2}"
 }
-myproject.register_task task3 task_function3
+myproject.register_task task3 task_function3 this-is-a-test 10
