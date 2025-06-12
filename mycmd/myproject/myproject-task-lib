@@ -414,6 +414,10 @@ function project:task.execute() {
     task_definition_file_name="$(project:task.get_task_definition_file_name "${!task_struct_ref}")"
     readonly task_definition_file_name
 
+    local -a task_arguments=()
+    project:task.get_arguments "${!task_struct_ref}" task_arguments
+    set -- "${task_arguments[@]}" "${@}"
+
     declare -gx MYPROJECT_CURRENT_TASK_FILE="${task_definition_file_name}"
 
     mycmd.output "➡️ Executing task '${namespaced_parts_string}'..."
