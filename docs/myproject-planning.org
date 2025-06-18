@@ -40,25 +40,27 @@ SCHEDULED: <2025-01-17 Fri>
 SCHEDULED: <2025-01-24 Fri>
 ** DONE Weekly Progress Report with weekly demo
 SCHEDULED: <2025-06-06 Fri>
+** DONE Weekly Progress Report with weekly demo
+SCHEDULED: <2025-06-13 Fri>
 ** TODO Introduction to MyProject
 ** TODO Weekly Progress Report with weekly demo
-SCHEDULED: <2025-06-13 Fri>
+SCHEDULED: <2025-06-20 Fri>
 
 * Next Steps
 ** DONE Add more details to [[file:~/Developer/Personal/myproject/main/README.md][README]]
 ** DONE Freewrite about design of out of band =myproject= directories and configuration
 ** Task Registry
 The following steps in the implementation should be done:
-*** Initial Implementation to Support =mycmd myproject list-tasks=
+*** DONE Initial Implementation to Support =mycmd myproject list-tasks=
 **** Only fields are the name fields and the function name, no arguments or filesets
 **** Only loads =myproject/main=, with a simple =myproject.register_task= available.
-*** Initial Implementation of =mycmd myproject run=
+*** DONE Initial Implementation of =mycmd myproject run=
 **** Simplest version of =run=: no arguments to tasks, only executing a single task
-*** Argument Support
+*** DONE Argument Support
 **** Both in the task definition and in =run= in execution
+*** DONE Multiple task definition file support
 *** Fileset definition and support
 **** Implement =myproject.register_fileset= and related methods
-*** Multiple task definition file support
 
 * Next Demo
 ** DONE Minimal =mycmd myproject list-tasks= that prints project root and MyProject task definition root
@@ -108,14 +110,24 @@ SCHEDULED: <2025-06-13 Fri>
 
 
 ** TODO Working =mycmd myproject run= with arguments for a single task
-SCHEDULED: <2025-06-13 Fri>
+SCHEDULED: <2025-06-20 Fri>
 
 This task will first focus on arguments coming from =mycmd myproject run=, and then arguments defined with =myproject.register_task=.
 
 *** TODO Modify =project.execute_task= to validate a project task definition has been loaded
-*** TODO Update =run= to parse the command line to get task arguments
-*** TODO Add tasks in test data that take arguments
 *** TODO Write in the [[file:myproject-design.org][MyProject Design Document]] and the [[file:myproject-concepts-and-conventions.org][Concepts and Conventions Document]] about changes to the registry and tasks to support arguments
+*** DONE Update =run= to parse the command line to get task arguments
+*** DONE Add tasks in test data that take arguments
+
+** TODO Update Testing Infrastructure and Tests
+SCHEDULED: <2025-06-20 Fri>
+*** DONE Create test output directory for all output from one test run
+*** DONE Pass =_TEST_TRACE_FILE= environment variable to test scripts
+*** TODO Create =testing-support-lib= with common variable and setup and tear-down routines
+*** TODO Recreate existing test suite, split up by functionality
+*** TODO Capture shell trace logs to =_TEST_TRACE_FILE=
+*** TODO Implement function to aggregate coverage files
+*** TODO Implement function to render code with coverage
 
 * Strategies and Goals
 
