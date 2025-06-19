@@ -14,11 +14,11 @@ if ! TEST_VENDOR_DIRECTORY=$(cd "${TEST_DIRECTORY}/../vendor" &>/dev/null && pwd
 fi
 readonly TEST_VENDOR_DIRECTORY
 
-if ! [[ -v MYCMD_SYSTEM_BASE_DIR ]]; then
-    echo >&2 "Error fetching MyCmd lib directory."
-    exit 1
-fi
+# shellcheck source=./testing-support-lib
+source "${TEST_DIRECTORY}/testing-support-lib"
 
+# --------------------------------------------------------------------------------------------------
+# Project Library Loading Tests
 function test_mycmd_lib_is_loaded() {
     assertTrue 'MyCmd Lib is loaded' '[ -v _MYCMD_LIB ]'
 }
@@ -26,6 +26,7 @@ function test_mycmd_lib_is_loaded() {
 function test_project_lib_is_loaded() {
     assertTrue 'Project Lib is loaded' '[ -v _MYPROJECT_LIB ]'
     assertTrue 'Project Tasks Support Lib is loaded' '[ -v _MYPROJECT_TASK_LIB ]'
+    assertTrue 'Project User Support Lib is loaded' '[ -v _MYPROJECT_USER_LIB ]'
 }
 
 # --------------------------------------------------------------------------------------------------
@@ -159,10 +160,14 @@ function test_task_definition() {
     unset TEST_VARIABLE
 }
 
+# --------------------------------------------------------------------------------------------------
+# Test Helper Functions
 function oneTimeSetUp() {
-    # shellcheck source=/dev/null
-    . "${MYCMD_SYSTEM_BASE_DIR}/mycmd-lib"
-    mycmd.source_mycmd_lib "myproject"
+    load_myproject_lib_and_start_tracing
+}
+
+function oneTimeTearDown() {
+    cleanup_tracing
 }
 
 # shellcheck source=../vendor/shunit2

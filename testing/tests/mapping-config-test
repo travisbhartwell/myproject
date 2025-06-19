@@ -14,48 +14,24 @@ if ! TEST_VENDOR_DIRECTORY=$(cd "${TEST_DIRECTORY}/../vendor" &>/dev/null && pwd
 fi
 readonly TEST_VENDOR_DIRECTORY
 
-if ! TEST_DATA_SRC_DIRECTORY=$(cd "${TEST_DIRECTORY}/../test-data" &>/dev/null && pwd -P); then
-    echo >&2 "Error fetching test data source directory."
-    exit 1
-fi
-readonly TEST_DATA_SRC_DIRECTORY
-
-if ! [[ -v MYCMD_SYSTEM_BASE_DIR ]]; then
-    echo >&2 "Error fetching MyCmd lib directory."
-    exit 1
-fi
-
-if ! TEST_DATA_DIRECTORY="$(mktemp -q -d -t "test-data-XXXXXX")"; then
-    echo >&2 "Error getting temporary directory for test data."
-    exit 1
-fi
-
-# On Mac OS, the TMPDIR is a symlink, so this gets the resolved path
-if ! TEST_DATA_DIRECTORY=$(cd "${TEST_DATA_DIRECTORY}" &>/dev/null && pwd -P); then
-    echo >&2 "Error fetching test data directory."
-    exit 1
-fi
-readonly TEST_DATA_DIRECTORY
-
-readonly TEST_MAPPING_CONFIG_DIRECTORY="${TEST_DATA_DIRECTORY}/mapping-configs"
-if ! mkdir -p "${TEST_MAPPING_CONFIG_DIRECTORY}"; then
-    echo >&2 "Error creating test mapping config dir, '${TEST_MAPPING_CONFIG_DIRECTORY}'."
-fi
-
-export _MYCMD_TEST_USER_CONFIG_HOME="${TEST_DATA_DIRECTORY}/user-config/mycmd"
+# shellcheck source=./testing-support-lib
+source "${TEST_DIRECTORY}/testing-support-lib"
 
 # Common constants for paths used in tests
+# shellcheck disable=SC2154
 readonly USER_MAPPING_CONFIG="${_MYCMD_TEST_USER_CONFIG_HOME}/myproject/mapping-config"
+# shellcheck disable=SC2154
 readonly INVALID_NO_TASK_DEFINITION_DIRECTORY="${TEST_DATA_DIRECTORY}/invalid/no-myproject"
 readonly INVALID_NO_MYPROJECT_MAIN_DIRECTORY="${TEST_DATA_DIRECTORY}/invalid/no-myproject-main"
-readonly VALID_PROJECT_DIRECTORY1="${TEST_DATA_DIRECTORY}/valid/valid1"
-readonly VALID_TASK_DEFINITION_DIRECTORY1="${VALID_PROJECT_DIRECTORY1}/myproject"
 readonly VALID_PROJECT_DIRECTORY2="${TEST_DATA_DIRECTORY}/valid/valid2"
 readonly VALID_TASK_DEFINITION_DIRECTORY2="${VALID_PROJECT_DIRECTORY2}/myproject"
 readonly VALID_PROJECT_DIRECTORY3="${TEST_DATA_DIRECTORY}/valid/valid3"
 readonly VALID_TASK_DEFINITION_DIRECTORY3="${VALID_PROJECT_DIRECTORY3}/myproject"
+# shellcheck disable=SC2154
 readonly MAPPING_CONFIG_FILE1="${TEST_MAPPING_CONFIG_DIRECTORY}/config1"
 
+# --------------------------------------------------------------------------------------------------
+# Project Library Loading Tests
 function test_mycmd_lib_is_loaded() {
     assertTrue 'MyCmd Lib is loaded' '[ -v _MYCMD_LIB ]'
 }
@@ -94,6 +70,7 @@ function test_find_up_valid_projects() {
     local -a project_directories=()
     local result=0
 
+    # shellcheck disable=SC2153,SC2154
     project.find_up project_directories "${VALID_PROJECT_DIRECTORY1}" || result="${?}"
     assertTrue "'${VALID_PROJECT_DIRECTORY1}' is a valid project" \
         "${result}"
@@ -117,6 +94,7 @@ function test_find_up_valid_projects() {
         2 "${#project_directories[@]}"
     assertEquals "${VALID_PROJECT_DIRECTORY1} is the project root directory" \
         "${VALID_PROJECT_DIRECTORY1}" "${project_directories["${_PROJECT_ROOT_DIRECTORY}"]}"
+    # shellcheck disable=SC2153,SC2154
     assertEquals "${VALID_PROJECT_DIRECTORY1}/myproject is the task definition directory" \
         "${VALID_TASK_DEFINITION_DIRECTORY1}" "${project_directories["${_PROJECT_TASK_DEFINITION_DIRECTORY}"]}"
 }
@@ -446,142 +424,6 @@ function test_is_valid_task_definition_directory() {
 }
 
 # --------------------------------------------------------------------------------------------------
-# project.load_task_definition_file tests
-
-# shellcheck disable=SC2034,SC2154,SC2312
-function test_load_task_definition_file() {
-    project:task_registry._reset_registry
-
-    local result=0
-    project:task_registry.load_task_definition_file \
-        "${VALID_PROJECT_DIRECTORY1}" \
-        "${VALID_TASK_DEFINITION_DIRECTORY1}" \
-        "main" || result="${?}"
-    assertTrue "The main task definition file successfully loads" \
-        "${result}"
-    assertEquals "There should be 3 tasks registered." \
-        3 "${#_MYPROJECT_TASKS[@]}"
-    assertEquals "PROJECT_VARIABLE should be 1" 1 "${PROJECT_VARIABLE}"
-
-    result=0
-    project:task_registry.load_task_definition_file \
-        "${VALID_PROJECT_DIRECTORY1}" \
-        "${VALID_TASK_DEFINITION_DIRECTORY1}" \
-        "sub" || result="${?}"
-    assertTrue "The sub task definition file successfully loads" \
-        "${result}"
-    assertEquals "There should be 6 tasks registered." \
-        6 "${#_MYPROJECT_TASKS[@]}"
-
-    local -A task1=()
-    result=0
-    project:task_registry.get_task "task1" task1 || result="${?}"
-    assertTrue "Getting task1 should succeed" "${result}"
-    assertEquals "task1" "$(project:task.get_fully_qualified_name task1)"
-    assertEquals "task1" "$(project:task.get_name task1)"
-    assertEquals "task1" "$(project:task.get_namespaced_parts_as_string task1)"
-    assertEquals "main" "$(project:task.get_task_definition_file_name task1)"
-    assertEquals "task_function1" "$(project:task.get_function_name task1)"
-    assertEquals 0 "$(project:task.get_argument_count task1)"
-    result=0
-    project:task.get_argument_index task1 || result="${?}"
-    assertFalse "Getting task1 argument index should fail" "${result}"
-    result=0
-    project.execute_task "task1" || result="${?}"
-    assertTrue "Executing task1 should succeed" "${result}"
-    assertEquals "PROJECT_VARIABLE should now be 2" \
-        2 "${PROJECT_VARIABLE}"
-
-    local -A task2=()
-    result=0
-    project:task_registry.get_task "task2" task2 || result="${?}"
-    assertTrue "Getting task2 should succeed" "${result}"
-    assertEquals "task2" "$(project:task.get_fully_qualified_name task2)"
-    assertEquals "task2" "$(project:task.get_name task2)"
-    assertEquals "task2" "$(project:task.get_namespaced_parts_as_string task2)"
-    assertEquals "main" "$(project:task.get_task_definition_file_name task2)"
-    assertEquals "task_function2" "$(project:task.get_function_name task2)"
-    assertEquals 0 "$(project:task.get_argument_count task2)"
-    result=0
-    project:task.get_argument_index task2 || result="${?}"
-    assertFalse "Getting task2 argument index should fail" "${result}"
-    result=0
-    project.execute_task "task2" 4 || result="${?}"
-    assertTrue "Executing task2 should succeed" "${result}"
-    assertEquals "PROJECT_VARIABLE should now be 4" \
-        4 "${PROJECT_VARIABLE}"
-
-    local -A task3=()
-    result=0
-    project:task_registry.get_task "task3" task3 || result="${?}"
-    assertTrue "Getting task3 should succeed" "${result}"
-    assertEquals "task3" "$(project:task.get_fully_qualified_name task3)"
-    assertEquals "task3" "$(project:task.get_name task3)"
-    assertEquals "task3" "$(project:task.get_namespaced_parts_as_string task3)"
-    assertEquals "main" "$(project:task.get_task_definition_file_name task3)"
-    assertEquals "task_function3" "$(project:task.get_function_name task3)"
-    assertEquals 2 "$(project:task.get_argument_count task3)"
-    assertEquals 0 "$(project:task.get_argument_index task3)"
-    result=0
-    project.execute_task "task3" || result="${?}"
-    assertTrue "Executing task3 should succeed" "${result}"
-    assertEquals "PROJECT_VARIABLE should now be 10" \
-        10 "${PROJECT_VARIABLE}"
-
-    local -A sub_task1=()
-    result=0
-    project:task_registry.get_task "sub/task1" sub_task1 || result="${?}"
-    assertTrue "Getting sub/task1 should succeed" "${result}"
-    assertEquals "sub/task1" "$(project:task.get_fully_qualified_name sub_task1)"
-    assertEquals "task1" "$(project:task.get_name sub_task1)"
-    assertEquals "sub task1" "$(project:task.get_namespaced_parts_as_string sub_task1)"
-    assertEquals "sub" "$(project:task.get_task_definition_file_name sub_task1)"
-    assertEquals "sub_task_function1" "$(project:task.get_function_name sub_task1)"
-    assertEquals 0 "$(project:task.get_argument_count sub_task1)"
-    result=0
-    project:task.get_argument_index sub_task1 || result="${?}"
-    assertFalse "Getting sub/task1 argument index should fail" "${result}"
-    result=0
-    project.execute_task "sub/task1" || result="${?}"
-    assertTrue "Executing sub/task1 should succeed" "${result}"
-
-    local -A sub_task2=()
-    result=0
-    project:task_registry.get_task "sub/task2" sub_task2 || result="${?}"
-    assertTrue "Getting sub/task2 should succeed" "${result}"
-    assertEquals "sub/task2" "$(project:task.get_fully_qualified_name sub_task2)"
-    assertEquals "task2" "$(project:task.get_name sub_task2)"
-    assertEquals "sub task2" "$(project:task.get_namespaced_parts_as_string sub_task2)"
-    assertEquals "sub" "$(project:task.get_task_definition_file_name sub_task2)"
-    assertEquals "sub_task_function2" "$(project:task.get_function_name sub_task2)"
-    assertEquals 0 "$(project:task.get_argument_count sub_task2)"
-    result=0
-    project:task.get_argument_index sub_task2 || result="${?}"
-    assertFalse "Getting sub/task2 argument index should fail" "${result}"
-    result=0
-    project.execute_task "sub/task2" || result="${?}"
-    assertTrue "Executing sub/task2 should succeed" "${result}"
-
-    local -A sub_task3=()
-    result=0
-    project:task_registry.get_task "sub/task3" sub_task3 || result="${?}"
-    assertTrue "Getting sub/task3 should succeed" "${result}"
-    assertEquals "sub/task3" "$(project:task.get_fully_qualified_name sub_task3)"
-    assertEquals "task3" "$(project:task.get_name sub_task3)"
-    assertEquals "sub task3" "$(project:task.get_namespaced_parts_as_string sub_task3)"
-    assertEquals "sub" "$(project:task.get_task_definition_file_name sub_task3)"
-    assertEquals "sub_task_function3" "$(project:task.get_function_name sub_task3)"
-    assertEquals 0 "$(project:task.get_argument_count sub_task3)"
-    result=0
-    project:task.get_argument_index sub_task3 || result="${?}"
-    assertFalse "Getting sub/task3 argument index should fail" "${result}"
-    result=0
-    project.execute_task "sub/task3" || result="${?}"
-    assertTrue "Executing sub/task3 should succeed" "${result}"
-
-}
-
-# --------------------------------------------------------------------------------------------------
 # Test Helper Functions
 
 function generate_mapping_config1() {
@@ -611,23 +453,17 @@ function generate_mapping_config2() {
 }
 
 function oneTimeSetUp() {
-    # Copy the test data into a new directory in TMPDIR so there won't be a `myproject` directory above them
-    if ! cp -R "${TEST_DATA_SRC_DIRECTORY}"/* "${TEST_DATA_DIRECTORY}"; then
-        echo >&2 "Error copying test data into '${TEST_DATA_DIRECTORY}'."
-        exit 1
-    fi
+    copy_test_source_data
 
     generate_mapping_config1 "${MAPPING_CONFIG_FILE1}"
 
-    # shellcheck source=/dev/null
-    . "${MYCMD_SYSTEM_BASE_DIR}/mycmd-lib"
-    mycmd.source_mycmd_lib "myproject"
+    load_myproject_lib_and_start_tracing
 }
 
 function oneTimeTearDown() {
-    if [[ -d "${TEST_DATA_DIRECTORY}" ]]; then
-        rm -rf "${TEST_DATA_DIRECTORY}" || true
-    fi
+    cleanup_test_data
+
+    cleanup_tracing
 }
 
 # shellcheck source=../vendor/shunit2

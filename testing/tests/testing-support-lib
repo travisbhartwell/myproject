@@ -1,0 +1,107 @@
+# -*- mode: shell-script; sh-shell: bash; sh-basic-offset: 4; sh-indentation: 4; coding: utf-8 -*-
+# shellcheck shell=bash
+
+## Common routines and variables across test suites
+
+[[ -n "${_MYPROJECT_TEST_SUPPORT_LIB:-}" ]] && return
+readonly _MYPROEJCT_TEST_SUPPORT_LIB=1
+
+if [[ ! -v TEST_DIRECTORY ]]; then
+    if ! TEST_DIRECTORY=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P); then
+        echo >&2 "Error fetching test directory."
+        exit 1
+    fi
+    readonly TEST_DIRECTORY
+fi
+
+if [[ ! -v TEST_VENDOR_DIRECTORY ]]; then
+    if ! TEST_VENDOR_DIRECTORY=$(cd "${TEST_DIRECTORY}/../vendor" &>/dev/null && pwd -P); then
+        echo >&2 "Error fetching test vendor directory."
+        exit 1
+    fi
+    readonly TEST_VENDOR_DIRECTORY
+fi
+
+## Common Variables and Setup
+if ! TEST_DATA_SRC_DIRECTORY=$(cd "${TEST_DIRECTORY}/../test-data" &>/dev/null && pwd -P); then
+    echo >&2 "Error fetching test data source directory."
+    exit 1
+fi
+readonly TEST_DATA_SRC_DIRECTORY
+
+if ! [[ -v MYCMD_SYSTEM_BASE_DIR ]]; then
+    echo >&2 "Error fetching MyCmd lib directory."
+    exit 1
+fi
+
+if ! TEST_DATA_DIRECTORY="$(mktemp -q -d -t "test-data-XXXXXX")"; then
+    echo >&2 "Error getting temporary directory for test data."
+    exit 1
+fi
+
+# On Mac OS, the TMPDIR is a symlink, so this gets the resolved path
+if ! TEST_DATA_DIRECTORY=$(cd "${TEST_DATA_DIRECTORY}" &>/dev/null && pwd -P); then
+    echo >&2 "Error fetching test data directory."
+    exit 1
+fi
+readonly TEST_DATA_DIRECTORY
+
+readonly TEST_MAPPING_CONFIG_DIRECTORY="${TEST_DATA_DIRECTORY}/mapping-configs"
+if ! mkdir -p "${TEST_MAPPING_CONFIG_DIRECTORY}"; then
+    echo >&2 "Error creating test mapping config dir, '${TEST_MAPPING_CONFIG_DIRECTORY}'."
+fi
+
+export _MYCMD_TEST_USER_CONFIG_HOME="${TEST_DATA_DIRECTORY}/user-config/mycmd"
+
+readonly VALID_PROJECT_DIRECTORY1="${TEST_DATA_DIRECTORY}/valid/valid1"
+# shellcheck disable=SC2034
+readonly VALID_TASK_DEFINITION_DIRECTORY1="${VALID_PROJECT_DIRECTORY1}/myproject"
+
+function copy_test_source_data() {
+    # Copy the test data into a new directory in TMPDIR so there won't be a `myproject` directory above them
+    if ! cp -R "${TEST_DATA_SRC_DIRECTORY}"/* "${TEST_DATA_DIRECTORY}"; then
+        echo >&2 "Error copying test data into '${TEST_DATA_DIRECTORY}'."
+        exit 1
+    fi
+}
+
+function load_myproject_lib_and_start_tracing() {
+    # shellcheck source=/dev/null
+    . "${MYCMD_SYSTEM_BASE_DIR}/mycmd-lib"
+
+    if [[ -v _TEST_TRACE_FILE ]]; then
+        mycmd.trace "Tracing execution in '${_TEST_TRACE_FILE}'."
+
+        PS4='+${BASH_SOURCE}:${LINENO}# '
+        export PS4
+
+        shopt -s varredir_close
+        exec {_trace_log_fd}>>"${_TEST_TRACE_FILE}"
+        export _trace_log_fd
+        BASH_XTRACEFD="${_trace_log_fd}"
+        export BASH_XTRACEFD
+
+        set -o xtrace
+    else
+        mycmd.trace "Missing environment variable _TEST_TRACE_FILE, skipping tracing."
+    fi
+
+    mycmd.source_mycmd_lib "myproject"
+}
+
+function cleanup_tracing() {
+    if [[ -v _TEST_TRACE_FILE ]]; then
+        mycmd.trace "Cleaning up tracing in '${_TEST_TRACE_FILE}'."
+
+        set +o xtrace
+        # Relying on varredir_close to automatically close the fd on exit
+        unset PS4
+        unset BASH_XTRACEFD
+    fi
+}
+
+function cleanup_test_data() {
+    if [[ -d "${TEST_DATA_DIRECTORY}" ]]; then
+        rm -rf "${TEST_DATA_DIRECTORY}" || true
+    fi
+}

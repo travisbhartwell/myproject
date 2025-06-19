@@ -277,6 +277,15 @@ function remove-test-output() {
 }
 project.register_task remove-test-output
 
+readonly TEST_TEMPLATE_FILE="${SUPPORT_DIR}/test-template-file"
+
+function new-test-file() {
+    local -r test_file="${TEST_FILES_BASE}/${1}"
+
+    cp "${TEST_TEMPLATE_FILE}" "${test_file}"
+}
+project.register_task new-test-file
+
 #----------------------------------------
 # Code formatting
 project.register_task_with_fileset format \
