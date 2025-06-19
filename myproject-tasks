@@ -155,6 +155,126 @@ function summarize_test_results() {
         "Test File" "Result"
 }
 
+function extglob_set_wrapper() {
+    local extglob_set
+    if shopt -q extglob; then
+        extglob_set=0
+    else
+        extglob_set=1
+        shopt -s extglob
+    fi
+    readonly extglob_set
+
+    result=0
+    "${@}" || result=$?
+
+    # unset extglob if it wasn't originally set
+    if ((extglob_set == 1)); then
+        shopt -u extglob
+    fi
+
+    return "${result}"
+}
+
+function extract_filename_and_line_number() {
+    local line="${1}"
+
+    # Strip the code executed from the trace
+    line="${line%%#*}"
+    # Then the leading +'s
+    line="${line##+(+)}"
+
+    echo "${line}"
+}
+
+function generate-coverage-reports() {
+    local -r test_output_directory="${1}"
+    # shellcheck disable=SC2178
+    local -n covered_files_ref="${2}"
+    # shellcheck disable=SC2178
+    local -n covered_lines_ref="${3}"
+
+    local file_name
+    local base_file_name
+    local base_directory
+    local coverage_file_name
+    local coverage_directory
+    local line
+    local line_number
+
+    for file_name in "${!covered_files_ref[@]}"; do
+        base_directory=$(dirname "${file_name}")
+        coverage_directory="${test_output_directory}/${base_directory}"
+        mkdir -p "${coverage_directory}" &>/dev/null || true
+
+        base_file_name="$(basename "${file_name}")"
+        coverage_file_name="${coverage_directory}/${base_file_name}.coverage"
+
+        line_number=0
+
+        while IFS= read -r line; do
+            line_number=$((line_number + 1))
+            printf "%5s: %s\\n" "${covered_lines_ref["${file_name}:${line_number}"]:--}" "${line}"
+        done <"${MYPROJECT_LIB_BASE_DIR}/${file_name}" >"${coverage_file_name}"
+    done
+}
+
+mycmd.defer_at_startup mycmd.init_bin realpath
+function get-coverage-data-from-trace() {
+    local -r test_output_directory="${1}"
+    local -r test_trace_log_file="${test_output_directory}/test-trace.log"
+
+    if [[ ! -e "${test_trace_log_file}" ]]; then
+        mycmd.log "Trace log file '${test_trace_log_file}' not found."
+        return 1
+    fi
+
+    # Based on bashcov:
+    # https://github.com/zyga/bashcov/blob/7e4c7a23cdea6f80562ea4b206cb19d862bd7b38/bashcov#L18-L55
+    local -A -i covered_files=()
+    local -A -i covered_lines=()
+
+    local line
+    local file_and_line_number
+    local file_name
+    local relative_file_name
+    local current_count
+    local line_number
+
+    while IFS= read -r line; do
+        if ! file_and_line_number=$(extglob_set_wrapper extract_filename_and_line_number "${line}"); then
+            mycmd.log "Error getting file and line number from line: '${line}'"
+            continue
+        fi
+
+        file_name="${file_and_line_number%%:*}"
+
+        if [[ "${file_name}" != "${MYPROJECT_LIB_BASE_DIR}"/* ]]; then
+            mycmd.trace "Skipping non-project implementation file '${file_name}'."
+            continue
+        fi
+
+        if ! relative_file_name="$(mycmd.bin_execute realpath --relative-to="${MYPROJECT_LIB_BASE_DIR}" "${file_name}")"; then
+            mycmd.log "Error getting relative file name: '${file_name}'."
+            continue
+        fi
+
+        # shellcheck disable=SC2034
+        covered_files["${relative_file_name}"]=1
+        line_number="${file_and_line_number##*:}"
+
+        if [[ -v covered_lines["${relative_file_name}:${line_number}"] ]]; then
+            current_count="${covered_lines["${relative_file_name}:${line_number}"]}"
+        else
+            current_count=0
+        fi
+
+        covered_lines["${relative_file_name}:${line_number}"]=$((current_count + 1))
+    done < <(grep -E "^[+]+${MYPROJECT_LIB_BASE_DIR}/.*:" "${test_trace_log_file}" || true)
+
+    generate-coverage-reports "${test_output_directory}" covered_files covered_lines
+}
+
 function get-test-output-directory() {
     local description
     description="$(date '+%Y-%m-%d-%H%M%S')"
@@ -240,7 +360,9 @@ function execute-all-tests() {
         fi
     done
 
+    get-coverage-data-from-trace "${test_output_directory}"
     summarize_test_results results
+
     return "${final_result}"
 }
 project.register_task_with_fileset execute-all-tests \
