@@ -126,8 +126,11 @@ SCHEDULED: <2025-06-20 Fri>
 *** DONE Create =testing-support-lib= with common variable and setup and tear-down routines
 *** DONE Recreate existing test suite, split up by functionality
 *** DONE Capture shell trace logs to =_TEST_TRACE_FILE=
-*** TODO Implement function to aggregate coverage files
-*** TODO Implement function to render code with coverage
+*** DONE Implement function to aggregate coverage files
+*** DONE Implement function to render code with coverage
+*** TODO Improve coverage output
+*** TODO Output test reports to a reports directory
+*** TODO Add junit XML production for tests
 
 * Strategies and Goals
 

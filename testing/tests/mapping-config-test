@@ -49,6 +49,15 @@ function test_find_up_invalid_projects() {
     local -a project_directories=()
     local result=0
 
+    project.find_up project_directories "/invalid-directory" || result="${?}"
+    assertFalse "'/invalid-directory' does not exist," \
+        "${result}"
+    assertEquals "project_directories should be empty" \
+        0 "${#project_directories[@]}"
+
+    project_directories=()
+    result=0
+
     project.find_up project_directories "${INVALID_NO_TASK_DEFINITION_DIRECTORY}" || result="${?}"
     assertFalse "'${INVALID_NO_TASK_DEFINITION_DIRECTORY}' does not have a corresponding MyProject Task Defintion directory" \
         "${result}"

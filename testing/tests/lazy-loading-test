@@ -82,10 +82,18 @@ function test_execute_task() {
     assertEquals 0 "$(project:task.get_argument_count sub_task1)"
     result=0
     project:task.get_argument_index sub_task1 || result="${?}"
-    assertFalse "Getting sub/task1 argument index should fail" "${result}"
+    assertFalse "Getting 'sub/task1' argument index should fail" "${result}"
     result=0
-    project.execute_task "sub/task1" || result="${?}"
-    assertTrue "Executing sub/task1 should succeed" "${result}"
+    project.execute_task "sub" "task1" || result="${?}"
+    assertFalse "Executing 'sub/task1' should fail" "${result}"
+
+    result=0
+    project.execute_task "invalid-task" || result="${?}"
+    assertFalse "Executing 'invalid-task' should fail" "${result}"
+
+    result=0
+    project.execute_task "sub" "invalid-task" || result="${?}"
+    assertFalse "Executing 'sub invalid-task' should fail" "${result}"
 
     popd &>/dev/null || true
 }
