@@ -230,7 +230,7 @@ function generate-coverage-reports() {
                 status="F"
             fi
 
-            if [[ "${status}" == "-" ]]; then
+            if [[ ! -v _COVERAGE_NO_ANSI ]] && [[ "${status}" == "-" ]]; then
                 # shellcheck disable=SC2312
                 line="$(mycmd.ansi red)${line}$(mycmd.ansi resetForeground)"
             fi
