@@ -230,6 +230,11 @@ function generate-coverage-reports() {
                 status="F"
             fi
 
+            if [[ "${status}" == "-" ]]; then
+                # shellcheck disable=SC2312
+                line="$(mycmd.ansi red)${line}$(mycmd.ansi resetForeground)"
+            fi
+
             printf "%5s: %s\\n" "${status}" "${line}"
         done <"${MYPROJECT_LIB_BASE_DIR}/${file_name}" >"${coverage_file_name}"
     done
