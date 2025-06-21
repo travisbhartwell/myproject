@@ -201,6 +201,7 @@ function generate-coverage-reports() {
     local coverage_directory
     local line
     local line_number
+    local status
 
     for file_name in "${!covered_files_ref[@]}"; do
         base_directory=$(dirname "${file_name}")
@@ -214,7 +215,22 @@ function generate-coverage-reports() {
 
         while IFS= read -r line; do
             line_number=$((line_number + 1))
-            printf "%5s: %s\\n" "${covered_lines_ref["${file_name}:${line_number}"]:--}" "${line}"
+
+            status="-"
+
+            if [[ -v covered_lines_ref["${file_name}:${line_number}"] ]]; then
+                status="${covered_lines_ref["${file_name}:${line_number}"]}"
+            elif [[ "${line}" =~ ^$ ]]; then
+                status=" "
+            elif [[ "${line}" =~ ^[[:space:]]*# ]]; then
+                status="#"
+            elif [[ "${line}" =~ ^[[:space:]]*(fi|else|done|esac|\}) ]]; then
+                status=" "
+            elif [[ "${line}" =~ ^[[:space:]]*function ]]; then
+                status="F"
+            fi
+
+            printf "%5s: %s\\n" "${status}" "${line}"
         done <"${MYPROJECT_LIB_BASE_DIR}/${file_name}" >"${coverage_file_name}"
     done
 }
