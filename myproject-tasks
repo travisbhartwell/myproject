@@ -78,13 +78,13 @@ function _update_vendored_file_for_vendor_base_dir() {
     fi
 
     if [[ -e "${dest_path}" ]]; then
-        if diff -q "${source_path}" "${dest_path}"; then
-            mycmd.log "Vendored file '${dest_path}' is up to date."
+        if diff -q "${source_path}" "${dest_path}" &>/dev/null; then
+            mycmd.output "Vendored file '${dest_path}' is up to date."
             return 0
         fi
     fi
 
-    mycmd.log "Updating vendor destination '${dest_path}'."
+    mycmd.output "Updating vendor destination '${dest_path}'."
     cp -a "${source_path}" "${dest_path}"
 }
 
