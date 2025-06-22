@@ -155,38 +155,6 @@ function summarize_test_results() {
         "Test File" "Result"
 }
 
-function extglob_set_wrapper() {
-    local extglob_set
-    if shopt -q extglob; then
-        extglob_set=0
-    else
-        extglob_set=1
-        shopt -s extglob
-    fi
-    readonly extglob_set
-
-    result=0
-    "${@}" || result=$?
-
-    # unset extglob if it wasn't originally set
-    if ((extglob_set == 1)); then
-        shopt -u extglob
-    fi
-
-    return "${result}"
-}
-
-function extract_filename_and_line_number() {
-    local line="${1}"
-
-    # Strip the code executed from the trace
-    line="${line%%#*}"
-    # Then the leading +'s
-    line="${line##+(+)}"
-
-    echo "${line}"
-}
-
 function generate-coverage-reports() {
     local -r test_output_directory="${1}"
     # shellcheck disable=SC2178
@@ -240,7 +208,7 @@ function generate-coverage-reports() {
     done
 }
 
-mycmd.defer_at_startup mycmd.init_bin realpath
+mycmd.defer_at_startup mycmd.init_bin sed
 function get-coverage-data-from-trace() {
     local -r test_output_directory="${1}"
     local -r test_trace_log_file="${test_output_directory}/test-trace.log"
@@ -255,43 +223,31 @@ function get-coverage-data-from-trace() {
     local -A -i covered_files=()
     local -A -i covered_lines=()
 
-    local line
-    local file_and_line_number
-    local file_name
-    local relative_file_name
-    local current_count
+    local filename
     local line_number
+    local count
 
-    while IFS= read -r line; do
-        if ! file_and_line_number=$(extglob_set_wrapper extract_filename_and_line_number "${line}"); then
-            mycmd.log "Error getting file and line number from line: '${line}'"
-            continue
-        fi
-
-        file_name="${file_and_line_number%%:*}"
-
-        if [[ "${file_name}" != "${MYPROJECT_LIB_BASE_DIR}"/* ]]; then
-            mycmd.trace "Skipping non-project implementation file '${file_name}'."
-            continue
-        fi
-
-        if ! relative_file_name="$(mycmd.bin_execute realpath --relative-to="${MYPROJECT_LIB_BASE_DIR}" "${file_name}")"; then
-            mycmd.log "Error getting relative file name: '${file_name}'."
-            continue
-        fi
-
+    while IFS=: read -r filename line_number count; do
         # shellcheck disable=SC2034
-        covered_files["${relative_file_name}"]=1
-        line_number="${file_and_line_number##*:}"
+        covered_files["${filename}"]=1
+        # shellcheck disable=SC2034
+        covered_lines["${filename}:${line_number}"]="${count}"
+    done < <(
+        grep -E "^[+]+${MYPROJECT_LIB_BASE_DIR}/.*:" "${test_trace_log_file}" \
+            | mycmd.bin_execute sed -r \
+                -e "s%${MYPROJECT_LIB_BASE_DIR}/%%" \
+                -e 's/^[+]*//' \
+                -e 's/\#.*//' \
+            | sort \
+            | uniq -c \
+            | mycmd.bin_execute sed -E \
+                's/^[[:space:]]*([0-9]+)[[:space:]]+([^:]+):([0-9]+)/\2:\3:\1/' || true
+    )
 
-        if [[ -v covered_lines["${relative_file_name}:${line_number}"] ]]; then
-            current_count="${covered_lines["${relative_file_name}:${line_number}"]}"
-        else
-            current_count=0
-        fi
-
-        covered_lines["${relative_file_name}:${line_number}"]=$((current_count + 1))
-    done < <(grep -E "^[+]+${MYPROJECT_LIB_BASE_DIR}/.*:" "${test_trace_log_file}" || true)
+    if (("${#covered_files[@]}" == 0 || "${#covered_lines[@]}" == 0)); then
+        mycmd.log "Error getting coverage data"
+        return 1
+    fi
 
     generate-coverage-reports "${test_output_directory}" covered_files covered_lines
 }
