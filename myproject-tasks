@@ -162,6 +162,8 @@ function generate-coverage-reports() {
     # shellcheck disable=SC2178
     local -n covered_lines_ref="${3}"
 
+    local -A coverage_summary=()
+
     local file_name
     local base_file_name
     local base_directory
@@ -170,6 +172,9 @@ function generate-coverage-reports() {
     local line
     local line_number
     local status
+    local counted_lines
+    local missed_lines
+    local covered_lines_count
 
     for file_name in "${!covered_files_ref[@]}"; do
         base_directory=$(dirname "${file_name}")
@@ -180,6 +185,8 @@ function generate-coverage-reports() {
         coverage_file_name="${coverage_directory}/${base_file_name}.coverage"
 
         line_number=0
+        counted_lines=0
+        missed_lines=0
 
         while IFS= read -r line; do
             line_number=$((line_number + 1))
@@ -188,6 +195,7 @@ function generate-coverage-reports() {
 
             if [[ -v covered_lines_ref["${file_name}:${line_number}"] ]]; then
                 status="${covered_lines_ref["${file_name}:${line_number}"]}"
+                counted_lines=$((counted_lines + 1))
             elif [[ "${line}" =~ ^$ ]]; then
                 status=" "
             elif [[ "${line}" =~ ^[[:space:]]*# ]]; then
@@ -198,14 +206,27 @@ function generate-coverage-reports() {
                 status="F"
             fi
 
-            if [[ ! -v _COVERAGE_NO_ANSI ]] && [[ "${status}" == "-" ]]; then
-                # shellcheck disable=SC2312
-                line="$(mycmd.ansi red)${line}$(mycmd.ansi resetForeground)"
+            if [[ "${status}" == "-" ]]; then
+                missed_lines=$((missed_lines + 1))
+                counted_lines=$((counted_lines + 1))
+                if [[ ! -v _COVERAGE_NO_ANSI ]]; then
+                    # shellcheck disable=SC2312
+                    line="$(mycmd.ansi red)${line}$(mycmd.ansi resetForeground)"
+                fi
             fi
 
             printf "%5s: %s\\n" "${status}" "${line}"
         done <"${MYPROJECT_LIB_BASE_DIR}/${file_name}" >"${coverage_file_name}"
+
+        covered_lines_count=$((counted_lines - missed_lines))
+        # shellcheck disable=SC2034
+        coverage_summary["${file_name}"]="${covered_lines_count} / ${counted_lines}"
     done
+
+    mycmd.print_table coverage_summary \
+        "Code Coverage Summary:" \
+        "Implementation File" "Covered Lines / Counted Lines"
+
 }
 
 mycmd.defer_at_startup mycmd.init_bin sed
