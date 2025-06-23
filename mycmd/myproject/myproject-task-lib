@@ -7,6 +7,7 @@
 set -o nounset -o errexit -o errtrace -o pipefail
 
 (return 0 >/dev/null 2>&1) || {
+    # coverage skip: 2
     echo >&2 "$0 is a library only meant to be sourced."
     exit 1
 }
@@ -83,6 +84,7 @@ function project:task_registry.load_all_task_definition_files() {
 
 function project:task_registry._load_task_definition_file() {
     if [[ ! -v MYPROJECT_ROOT_DIRECTORY && ! -v MYPROJECT_TASK_DEFINITION_DIRECTORY ]]; then
+        # coverage skip: 2
         mycmd.debug "Error: MYPROJECT_ROOT DIRECTORY and MYPROJECT_TASK_DEFINITION_DIRECTORY must be set."
         return 1
     fi
@@ -201,6 +203,7 @@ function project:task_registry.get_task() {
 
     if (("${argc}" > 0)); then
         if ! [[ -v _MYPROJECT_TASKS_ARGUMENT_INDICES["${fully_qualified_task_name}"] ]]; then
+            # coverage skip: 2
             mycmd.debug "Required argument indices data missing for '${fully_qualified_task_name}'."
             return 1
         fi
@@ -263,6 +266,7 @@ function project:task_registry._get_all_task_namespaced_parts() {
         task=()
 
         if ! project:task_registry.get_task "${fully_qualified_task_name}" task; then
+            # coverage skip: 2
             mycmd.debug "Unexpected error getting task '${fully_qualified_task_name}'."
             return 1
         fi
@@ -374,6 +378,7 @@ function project:task.get_arguments() {
 
     local -i index
     if ! index="$(project:task.get_argument_index "${!task_struct_ref}")"; then
+        # coverage skip: 2
         mycmd.log "Unexpected error: index should be set for task '${fully_qualified_task_name}'."
         return 1
     fi

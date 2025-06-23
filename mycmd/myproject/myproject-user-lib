@@ -7,6 +7,7 @@
 set -o nounset -o errexit -o errtrace -o pipefail
 
 (return 0 >/dev/null 2>&1) || {
+    # coverage skip: 2
     echo >&2 "$0 is a library only meant to be sourced."
     exit 1
 }
@@ -22,6 +23,7 @@ function myproject.register_task() {
     shift 2
 
     if ! [[ -v MYPROJECT_CURRENT_TASK_FILE ]]; then
+        # coverage skip: 2
         mycmd.debug "Required variable MYPROJECT_CURRENT_TASK_FILE is not set"
         return 1
     fi

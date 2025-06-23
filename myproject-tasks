@@ -175,6 +175,8 @@ function generate-coverage-reports() {
     local counted_lines
     local missed_lines
     local covered_lines_count
+    local skip_lines
+    local -r coverage_re="^[[:space:]]*# coverage skip: *"
 
     for file_name in "${!covered_files_ref[@]}"; do
         base_directory=$(dirname "${file_name}")
@@ -184,20 +186,65 @@ function generate-coverage-reports() {
         base_file_name="$(basename "${file_name}")"
         coverage_file_name="${coverage_directory}/${base_file_name}.coverage"
 
-        line_number=0
         counted_lines=0
         missed_lines=0
+        skip_lines=0
 
-        while IFS= read -r line; do
-            line_number=$((line_number + 1))
+        local -a lines=()
+        # Read the lines into a 1-based array
+        readarray -t -O 1 lines <"${MYPROJECT_LIB_BASE_DIR}/${file_name}"
+
+        local cover_count=0
+        local in_multi_line_statement="no"
+        local -a group=()
+        local group_line_number
+
+        for ((line_number = 1; line_number <= "${#lines[@]}"; line_number++)); do
+            line="${lines[${line_number}]}"
+
+            if [[ -v covered_lines_ref["${file_name}:${line_number}"] ]]; then
+                cover_count="${covered_lines_ref["${file_name}:${line_number}"]}"
+            fi
+
+            if [[ "${line}" == *\\ ]]; then
+                in_multi_line_statement="yes"
+                group+=("${line_number}")
+            elif [[ "${in_multi_line_statement}" == "yes" ]]; then
+                group+=("${line_number}")
+
+                # We are in the final line of the multi-line statement
+                if ((cover_count > 0)); then
+                    for group_line_number in "${group[@]}"; do
+                        covered_lines_ref["${file_name}:${group_line_number}"]="${cover_count}"
+                    done
+
+                    cover_count=0
+                fi
+
+                group=()
+                in_multi_line_statement="no"
+            elif ((cover_count > 0)); then
+                cover_count=0
+            fi
+        done
+
+        for ((line_number = 1; line_number <= "${#lines[@]}"; line_number++)); do
+            line="${lines[${line_number}]}"
 
             status="-"
 
             if [[ -v covered_lines_ref["${file_name}:${line_number}"] ]]; then
                 status="${covered_lines_ref["${file_name}:${line_number}"]}"
                 counted_lines=$((counted_lines + 1))
+                skip_lines=0
+            elif ((skip_lines > 0)); then
+                skip_lines=$((skip_lines - 1))
+                status="S"
             elif [[ "${line}" =~ ^$ ]]; then
                 status=" "
+            elif [[ "${line}" =~ ${coverage_re} ]]; then
+                status="#"
+                skip_lines="${line##*: }"
             elif [[ "${line}" =~ ^[[:space:]]*# ]]; then
                 status="#"
             elif [[ "${line}" =~ ^[[:space:]]*(fi|else|done|esac|\}) ]]; then
@@ -216,7 +263,7 @@ function generate-coverage-reports() {
             fi
 
             printf "%5s: %s\\n" "${status}" "${line}"
-        done <"${MYPROJECT_LIB_BASE_DIR}/${file_name}" >"${coverage_file_name}"
+        done >"${coverage_file_name}"
 
         covered_lines_count=$((counted_lines - missed_lines))
         # shellcheck disable=SC2034
@@ -226,7 +273,6 @@ function generate-coverage-reports() {
     mycmd.print_table coverage_summary \
         "Code Coverage Summary:" \
         "Implementation File" "Covered Lines / Counted Lines"
-
 }
 
 mycmd.defer_at_startup mycmd.init_bin sed
