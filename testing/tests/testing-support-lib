@@ -53,9 +53,15 @@ fi
 
 export _MYCMD_TEST_USER_CONFIG_HOME="${TEST_DATA_DIRECTORY}/user-config/mycmd"
 
+# shellcheck disable=SC2034
+readonly INVALID_NO_TASK_DEFINITION_DIRECTORY="${TEST_DATA_DIRECTORY}/invalid/no-myproject"
 readonly VALID_PROJECT_DIRECTORY1="${TEST_DATA_DIRECTORY}/valid/valid1"
 # shellcheck disable=SC2034
 readonly VALID_TASK_DEFINITION_DIRECTORY1="${VALID_PROJECT_DIRECTORY1}/myproject"
+# shellcheck disable=SC2034
+readonly VALID_PROJECT_DIRECTORY2="${TEST_DATA_DIRECTORY}/valid/valid2"
+# shellcheck disable=SC2034
+readonly VALID_PROJECT_DIRECTORY3="${TEST_DATA_DIRECTORY}/valid/valid3"
 
 function copy_test_source_data() {
     # Copy the test data into a new directory in TMPDIR so there won't be a `myproject` directory above them

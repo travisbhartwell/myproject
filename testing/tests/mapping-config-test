@@ -21,11 +21,10 @@ source "${TEST_DIRECTORY}/testing-support-lib"
 # shellcheck disable=SC2154
 readonly USER_MAPPING_CONFIG="${_MYCMD_TEST_USER_CONFIG_HOME}/myproject/mapping-config"
 # shellcheck disable=SC2154
-readonly INVALID_NO_TASK_DEFINITION_DIRECTORY="${TEST_DATA_DIRECTORY}/invalid/no-myproject"
 readonly INVALID_NO_MYPROJECT_MAIN_DIRECTORY="${TEST_DATA_DIRECTORY}/invalid/no-myproject-main"
-readonly VALID_PROJECT_DIRECTORY2="${TEST_DATA_DIRECTORY}/valid/valid2"
+# shellcheck disable=SC2153,SC2154
 readonly VALID_TASK_DEFINITION_DIRECTORY2="${VALID_PROJECT_DIRECTORY2}/myproject"
-readonly VALID_PROJECT_DIRECTORY3="${TEST_DATA_DIRECTORY}/valid/valid3"
+# shellcheck disable=SC2153,SC2154
 readonly VALID_TASK_DEFINITION_DIRECTORY3="${VALID_PROJECT_DIRECTORY3}/myproject"
 # shellcheck disable=SC2154
 readonly MAPPING_CONFIG_FILE1="${TEST_MAPPING_CONFIG_DIRECTORY}/config1"
@@ -58,6 +57,7 @@ function test_find_up_invalid_projects() {
     project_directories=()
     result=0
 
+    # shellcheck disable=SC2154
     project.find_up project_directories "${INVALID_NO_TASK_DEFINITION_DIRECTORY}" || result="${?}"
     assertFalse "'${INVALID_NO_TASK_DEFINITION_DIRECTORY}' does not have a corresponding MyProject Task Defintion directory" \
         "${result}"

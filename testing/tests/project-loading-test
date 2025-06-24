@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+# -*- mode: shell-script; sh-shell: bash; sh-basic-offset: 4; sh-indentation: 4; coding: utf-8 -*-
+# shellcheck shell=bash
+
+if ! TEST_DIRECTORY=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P); then
+    echo >&2 "Error fetching test directory."
+    exit 1
+fi
+readonly TEST_DIRECTORY
+
+if ! TEST_VENDOR_DIRECTORY=$(cd "${TEST_DIRECTORY}/../vendor" &>/dev/null && pwd -P); then
+    echo >&2 "Error fetching test vendor directory."
+    exit 1
+fi
+readonly TEST_VENDOR_DIRECTORY
+
+# shellcheck source=./testing-support-lib
+source "${TEST_DIRECTORY}/testing-support-lib"
+
+# --------------------------------------------------------------------------------------------------
+# Project Library Loading Tests
+function test_mycmd_lib_is_loaded() {
+    assertTrue 'MyCmd Lib is loaded' '[ -v _MYCMD_LIB ]'
+}
+
+function test_project_lib_is_loaded() {
+    assertTrue 'Project Lib is loaded' '[ -v _MYPROJECT_LIB ]'
+    assertTrue 'Project Tasks Support Lib is loaded' '[ -v _MYPROJECT_TASK_LIB ]'
+    assertTrue 'Project User Support Lib is loaded' '[ -v _MYPROJECT_USER_LIB ]'
+}
+
+# --------------------------------------------------------------------------------------------------
+# project.load_closest_task_definition tests
+function test_load_closest_task_definition_failures() {
+    project:task_registry._reset_registry
+
+    local result=0
+    # shellcheck disable=SC2154
+    pushd "${INVALID_NO_TASK_DEFINITION_DIRECTORY}" &>/dev/null || true
+    project.load_closest_task_definition || result="${?}"
+    assertFalse "Loading closest task definition directory fails for invalid project directory." \
+        "${result}"
+    popd &>/dev/null || true
+
+    result=0
+    project:task_registry._reset_registry
+    # shellcheck disable=SC2154
+    pushd "${VALID_PROJECT_DIRECTORY2}" &>/dev/null || true
+    project.load_closest_task_definition || result="${?}"
+    assertFalse "Loading closest task definition directory fails for failure to load main." \
+        "${result}"
+    popd &>/dev/null || true
+}
+
+# --------------------------------------------------------------------------------------------------
+# project.load_all_task_definition_files tests
+function test_load_all_task_definition_files_failures() {
+    project:task_registry._reset_registry
+
+    local result=0
+    # shellcheck disable=SC2154
+    pushd "${INVALID_NO_TASK_DEFINITION_DIRECTORY}" &>/dev/null || true
+    project.load_all_task_definition_files || result="${?}"
+    assertFalse "Loading all task definition files fails for invalid project directory." \
+        "${result}"
+    popd &>/dev/null || true
+
+    result=0
+    project:task_registry._reset_registry
+    pushd "${VALID_PROJECT_DIRECTORY2}" &>/dev/null || true
+    project.load_all_task_definition_files || result="${?}"
+    assertFalse "Loading all task definition files fails for failure to load main." \
+        "${result}"
+    popd &>/dev/null || true
+
+    result=0
+    project:task_registry._reset_registry
+    # shellcheck disable=SC2154
+    pushd "${VALID_PROJECT_DIRECTORY3}" &>/dev/null || true
+    project.load_all_task_definition_files || result="${?}"
+    assertFalse "Loading all task definition files fails for failure to load sub." \
+        "${result}"
+    popd &>/dev/null || true
+}
+
+# --------------------------------------------------------------------------------------------------
+# Test Helper Functions
+function oneTimeSetUp() {
+    copy_test_source_data
+
+    load_myproject_lib_and_start_tracing
+}
+
+function oneTimeTearDown() {
+    cleanup_test_data
+
+    cleanup_tracing
+}
+
+# shellcheck source=../vendor/shunit2
+. "${TEST_VENDOR_DIRECTORY}/shunit2"
