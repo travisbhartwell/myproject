@@ -30,9 +30,40 @@ function test_project_lib_is_loaded() {
 }
 
 # --------------------------------------------------------------------------------------------------
+# project.get_task tests
+function test_lazy_load_get_task_fails() {
+    project:task_registry._reset_registry
+
+    local result=0
+    # shellcheck disable=SC2154
+    pushd "${VALID_PROJECT_DIRECTORY3}" &>/dev/null || true
+    project.load_closest_task_definition || result="${?}"
+    assertTrue "The main task definition file successfully loads" \
+        "${result}"
+    # shellcheck disable=SC2154
+    assertEquals "There should be 0 tasks registered." \
+        0 "${#_MYPROJECT_TASKS[@]}"
+    # shellcheck disable=SC2154
+    assertEquals "There should be 1 task definition file loaded." \
+        1 "${#_MYPROJECT_LOADED_TASK_DEFINITION_FILES[@]}"
+
+    local -A task1=()
+    result=0
+    project:task_registry.get_task "sub/task1" task1 || result="${?}"
+    assertFalse "Getting sub/task1 should fail as sub should fail to load" "${result}"
+    assertEquals "The task1 array should be empty" \
+        0 "${#task1[@]}"
+    assertEquals "There should still be 0 tasks registered." \
+        0 "${#_MYPROJECT_TASKS[@]}"
+    assertEquals "There should still be 1 task definition file loaded." \
+        1 "${#_MYPROJECT_LOADED_TASK_DEFINITION_FILES[@]}"
+    popd &>/dev/null || true
+}
+
+# --------------------------------------------------------------------------------------------------
 # project.execute_task tests
 # shellcheck disable=SC2034,SC2154,SC2312
-function test_execute_task() {
+function test_lazy_load_and_execute_task() {
     project:task_registry._reset_registry
 
     local result=0
