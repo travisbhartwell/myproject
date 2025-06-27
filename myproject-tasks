@@ -319,6 +319,39 @@ function get-coverage-data-from-trace() {
     generate-coverage-reports "${test_output_directory}" covered_files covered_lines
 }
 
+function get-last-test-coverage-dir() {
+    local -a test_coverage_dirs=("${TMP_WORKING_DIR}"/test-output-*/myproject)
+
+    if ((${#test_coverage_dirs[@]} == 0)); then
+        return 1
+    fi
+
+    local -a sorted_dirs
+    readarray -t sorted_dirs < <(printf '%s\n' "${test_coverage_dirs[@]}" | sort -r || true)
+    local -r last_test_coverage_dir="${sorted_dirs[0]}"
+    echo "${last_test_coverage_dir}"
+}
+
+function page-last-test-coverage-reports() {
+    local pager="bat"
+
+    if ! mycmd.init_bin_no_exit "${pager}"; then
+        mycmd.trace "Tool 'bat' not found, falling back to 'less'."
+        pager="less"
+    fi
+    readonly pager
+
+    local last_test_coverage_dir
+    if ! last_test_coverage_dir="$(mycmd.nullglob_set_wrapper get-last-test-coverage-dir)"; then
+        mycmd.output "No test coverage files found."
+        return 1
+    fi
+    readonly last_test_coverage_dir
+
+    "${pager}" "${last_test_coverage_dir}"/*
+}
+project.register_task page-last-test-coverage-reports
+
 function get-test-output-directory() {
     local description
     description="$(date '+%Y-%m-%d-%H%M%S')"
@@ -884,6 +917,25 @@ function git-quick-stats() {
         git quick-stats "${@}"
 }
 project.register_task git-quick-stats
+
+#----------------------------------------
+# Record Demos
+function record-demo() {
+    if ! mycmd.init_bin_no_exit vhs; then
+        mycmd.log "Required tool 'vhs' not found."
+        return 1
+    fi
+
+    local -r demo_source="${1}"
+    local -r output_file="${2}"
+
+    if [[ -e "${output_file}" ]]; then
+        rm "${output_file}" &>/dev/null || true
+    fi
+
+    mycmd.bin_execute vhs "${demo_source}"
+}
+project.register_task record-demo
 
 #----------------------------------------
 # Run everything
