@@ -2,20 +2,20 @@
 # -*- mode: shell-script; sh-shell: bash; sh-basic-offset: 4; sh-indentation: 4; coding: utf-8 -*-
 # shellcheck shell=bash
 
-if ! TEST_DIRECTORY=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P); then
-    echo >&2 "Error fetching test directory."
+if ! TESTS_DIRECTORY=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P); then
+    echo >&2 "Error fetching tests directory."
     exit 1
 fi
-readonly TEST_DIRECTORY
+readonly TESTS_DIRECTORY
 
-if ! TEST_VENDOR_DIRECTORY=$(cd "${TEST_DIRECTORY}/../vendor" &>/dev/null && pwd -P); then
+if ! TEST_VENDOR_DIRECTORY=$(cd "${TESTS_DIRECTORY}/../vendor" &>/dev/null && pwd -P); then
     echo >&2 "Error fetching test vendor directory."
     exit 1
 fi
 readonly TEST_VENDOR_DIRECTORY
 
 # shellcheck source=./testing-support-lib
-source "${TEST_DIRECTORY}/testing-support-lib"
+source "${TESTS_DIRECTORY}/testing-support-lib"
 
 # --------------------------------------------------------------------------------------------------
 # Project Library Loading Tests

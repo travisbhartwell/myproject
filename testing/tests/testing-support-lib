@@ -4,29 +4,32 @@
 ## Common routines and variables across test suites
 
 [[ -n "${_MYPROJECT_TEST_SUPPORT_LIB:-}" ]] && return
-readonly _MYPROEJCT_TEST_SUPPORT_LIB=1
+readonly _MYPROJECT_TEST_SUPPORT_LIB=1
 
-if [[ ! -v TEST_DIRECTORY ]]; then
-    if ! TEST_DIRECTORY=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P); then
-        echo >&2 "Error fetching test directory."
+if [[ ! -v TESTS_DIRECTORY ]]; then
+    if ! TESTS_DIRECTORY=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P); then
+        echo >&2 "Error fetching tests directory."
         exit 1
     fi
-    readonly TEST_DIRECTORY
+    export TESTS_DIRECTORY
+    readonly TESTS_DIRECTORY
 fi
 
 if [[ ! -v TEST_VENDOR_DIRECTORY ]]; then
-    if ! TEST_VENDOR_DIRECTORY=$(cd "${TEST_DIRECTORY}/../vendor" &>/dev/null && pwd -P); then
+    if ! TEST_VENDOR_DIRECTORY=$(cd "${TESTS_DIRECTORY}/../vendor" &>/dev/null && pwd -P); then
         echo >&2 "Error fetching test vendor directory."
         exit 1
     fi
+    export TEST_VENDOR_DIRECTORY
     readonly TEST_VENDOR_DIRECTORY
 fi
 
 ## Common Variables and Setup
-if ! TEST_DATA_SRC_DIRECTORY=$(cd "${TEST_DIRECTORY}/../test-data" &>/dev/null && pwd -P); then
+if ! TEST_DATA_SRC_DIRECTORY=$(cd "${TESTS_DIRECTORY}/../test-data" &>/dev/null && pwd -P); then
     echo >&2 "Error fetching test data source directory."
     exit 1
 fi
+export TEST_DATA_SRC_DIRECTORY
 readonly TEST_DATA_SRC_DIRECTORY
 
 if ! [[ -v MYCMD_SYSTEM_BASE_DIR ]]; then
@@ -44,6 +47,7 @@ if ! TEST_DATA_DIRECTORY=$(cd "${TEST_DATA_DIRECTORY}" &>/dev/null && pwd -P); t
     echo >&2 "Error fetching test data directory."
     exit 1
 fi
+export TEST_DATA_DIRECTORY
 readonly TEST_DATA_DIRECTORY
 
 readonly TEST_MAPPING_CONFIG_DIRECTORY="${TEST_DATA_DIRECTORY}/mapping-configs"
