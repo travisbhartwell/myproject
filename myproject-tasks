@@ -11,6 +11,7 @@ project.load_task_library "git"
 readonly MYPROJECT_LIB_BASE_DIR="${MYPROJECT_BASE_DIR}/mycmd"
 readonly DOCS_DIR="${MYPROJECT_BASE_DIR}/docs"
 readonly SUPPORT_DIR="${MYPROJECT_BASE_DIR}/support"
+readonly TEMPLATES_DIR="${SUPPORT_DIR}/templates"
 readonly TESTING_BASE="${MYPROJECT_BASE_DIR}/testing"
 readonly TEST_FILES_BASE="${TESTING_BASE}/tests"
 readonly TEST_VENDOR_DIR="${TESTING_BASE}/vendor"
@@ -28,6 +29,7 @@ mycmd.trace "Set the following variables:"
 mycmd.trace "- MYPROJECT_LIB_BASE_DIR: ${MYPROJECT_LIB_BASE_DIR}"
 mycmd.trace "- DOCS_DIR:               ${DOCS_DIR}"
 mycmd.trace "- SUPPORT_DIR:            ${SUPPORT_DIR}"
+mycmd.trace "- TEMPLATES_DIR:          ${TEMPLATES_DIR}"
 mycmd.trace "- TESTING_BASE:           ${TESTING_BASE}"
 mycmd.trace "- TEST_FILES_BASE:        ${TEST_FILES_BASE}"
 mycmd.trace "- TEST_VENDOR_DIR:        ${TEST_VENDOR_DIR}"
@@ -476,7 +478,7 @@ function remove-test-output() {
 }
 project.register_task remove-test-output
 
-readonly TEST_TEMPLATE_FILE="${SUPPORT_DIR}/test-template-file"
+readonly TEST_TEMPLATE_FILE="${TEMPLATES_DIR}/test-template-file"
 
 function new-test-file() {
     local -r test_file_name="${1}"
