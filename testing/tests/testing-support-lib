@@ -79,29 +79,29 @@ function load_myproject_lib_and_start_tracing() {
     # shellcheck source=/dev/null
     . "${MYCMD_SYSTEM_BASE_DIR}/mycmd-lib"
 
-    if [[ -v _TEST_TRACE_FILE ]]; then
-        mycmd.trace "Tracing execution in '${_TEST_TRACE_FILE}'."
+    if [[ -v TEST_TRACE_FILE ]]; then
+        mycmd.trace "Tracing execution in '${TEST_TRACE_FILE}'."
 
         PS4='+${BASH_SOURCE}:${LINENO}# '
         export PS4
 
         shopt -s varredir_close
-        exec {_trace_log_fd}>>"${_TEST_TRACE_FILE}"
+        exec {_trace_log_fd}>>"${TEST_TRACE_FILE}"
         export _trace_log_fd
         BASH_XTRACEFD="${_trace_log_fd}"
         export BASH_XTRACEFD
 
         set -o xtrace
     else
-        mycmd.trace "Missing environment variable _TEST_TRACE_FILE, skipping tracing."
+        mycmd.trace "Missing environment variable TEST_TRACE_FILE, skipping tracing."
     fi
 
     mycmd.source_mycmd_lib "myproject"
 }
 
 function cleanup_tracing() {
-    if [[ -v _TEST_TRACE_FILE ]]; then
-        mycmd.trace "Cleaning up tracing in '${_TEST_TRACE_FILE}'."
+    if [[ -v TEST_TRACE_FILE ]]; then
+        mycmd.trace "Cleaning up tracing in '${TEST_TRACE_FILE}'."
 
         set +o xtrace
         # Relying on varredir_close to automatically close the fd on exit

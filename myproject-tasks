@@ -493,7 +493,7 @@ function execute-test() {
         MYCMD_DEBUG=1 \
         MYCMD_LOG_FILE="${test_log_file}" \
         MYCMD_SEARCH_PATH="${MYPROJECT_LIB_BASE_DIR}" \
-        _TEST_TRACE_FILE="${test_trace_log_file}" \
+        TEST_TRACE_FILE="${test_trace_log_file}" \
         "${test_file}" "${@}" || result=$?
 
     mycmd.error_output "Result of ${test_file}: ${result}"
