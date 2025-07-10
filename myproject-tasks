@@ -14,6 +14,7 @@ readonly SUPPORT_DIR="${MYPROJECT_BASE_DIR}/support"
 readonly TEMPLATES_DIR="${SUPPORT_DIR}/templates"
 readonly TESTING_BASE="${MYPROJECT_BASE_DIR}/testing"
 readonly TEST_FILES_BASE="${TESTING_BASE}/tests"
+readonly TEST_SNAPSHOTS_DIR="${TESTING_BASE}/snapshots"
 readonly TEST_VENDOR_DIR="${TESTING_BASE}/vendor"
 readonly VENDOR_WORKING_DIR="${TEST_VENDOR_DIR}/.working"
 readonly TMP_WORKING_DIR="${MYPROJECT_BASE_DIR}/tmp"
@@ -32,6 +33,7 @@ mycmd.trace "- SUPPORT_DIR:            ${SUPPORT_DIR}"
 mycmd.trace "- TEMPLATES_DIR:          ${TEMPLATES_DIR}"
 mycmd.trace "- TESTING_BASE:           ${TESTING_BASE}"
 mycmd.trace "- TEST_FILES_BASE:        ${TEST_FILES_BASE}"
+mycmd.trace "- TEST_SNAPSHOTS_DIR:     ${TEST_SNAPSHOTS_DIR}"
 mycmd.trace "- TEST_VENDOR_DIR:        ${TEST_VENDOR_DIR}"
 mycmd.trace "- VENDOR_WORKING_DIR:     ${VENDOR_WORKING_DIR}"
 mycmd.trace "- TMP_WORKING_DIR:        ${TMP_WORKING_DIR}"
@@ -61,6 +63,20 @@ project.find_files_for_fileset TEST_FILES "${TEST_FILES_BASE}" -type f -name '*-
 project.register_task_with_fileset list-test-files \
     project.list-files \
     TEST_FILES
+
+# Snapshot Test Files Only
+project.register_fileset SNAPSHOT_TEST_FILES
+project.find_files_for_fileset SNAPSHOT_TEST_FILES "${TEST_FILES_BASE}" -type f -name '*-snapshot-test'
+project.register_task_with_fileset list-snapshot-test-files \
+    project.list-files \
+    SNAPSHOT_TEST_FILES
+
+# Snapshot Files Only
+project.register_fileset SNAPSHOT_FILES
+project.find_files_for_fileset SNAPSHOT_FILES "${TEST_SNAPSHOTS_DIR}" -type f
+project.register_task_with_fileset list-snapshot-files \
+    project.list-files \
+    SNAPSHOT_FILES
 
 #----------------------------------------
 # Vendored Code Management
