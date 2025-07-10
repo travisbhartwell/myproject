@@ -61,7 +61,7 @@ function project:task_registry.load_all_task_definition_files() {
 
     # First load main
     if ! project:task_registry.load_task_definition_file "${project_root_directory}" "${task_definition_directory}" main; then
-        mycmd.log "Error loading main task definition file."
+        mycmd.error_output "Error loading main task definition file."
         return 1
     fi
 
@@ -76,7 +76,7 @@ function project:task_registry.load_all_task_definition_files() {
         mycmd.trace "Attempting to load task definition file '${task_definition_file_name}'."
 
         if ! project:task_registry.load_task_definition_file "${project_root_directory}" "${task_definition_directory}" "${task_definition_file_name}"; then
-            mycmd.log "Error loading task definition file name '${task_definition_file_name}'."
+            mycmd.error_output "Error loading task definition file name '${task_definition_file_name}'."
             return 1
         fi
     done
@@ -104,7 +104,7 @@ function project:task_registry._load_task_definition_file() {
 
     local result=0
     if ! mycmd.source_lib_by_path_if_found "${task_definition_file}"; then
-        mycmd.log "Error loading task definition file '${task_definition_file}'."
+        mycmd.error_output "Error loading task definition file '${task_definition_file}'."
         result=1
     fi
 
@@ -241,7 +241,7 @@ function project:task_registry.list_tasks() {
 
     local -a all_tasks_namespaced_parts
     if ! project:task_registry._get_all_task_namespaced_parts all_tasks_namespaced_parts; then
-        mycmd.log "Error getting all task namespaced parts"
+        mycmd.error_output "Error getting all task namespaced parts"
         return 1
     fi
 
@@ -379,7 +379,7 @@ function project:task.get_arguments() {
     local -i index
     if ! index="$(project:task.get_argument_index "${!task_struct_ref}")"; then
         # coverage skip: 2
-        mycmd.log "Unexpected error: index should be set for task '${fully_qualified_task_name}'."
+        mycmd.error_output "Unexpected error: index should be set for task '${fully_qualified_task_name}'."
         return 1
     fi
     readonly index
@@ -401,7 +401,7 @@ function project:task.function_exists() {
         fully_qualified_task_name="$(project:task.get_fully_qualified_name "${!task_struct_ref}")"
         readonly fully_qualified_task_name
 
-        mycmd.log "Unknown function '${task_function_name}' for task '${fully_qualified_task_name}'."
+        mycmd.error_output "Unknown function '${task_function_name}' for task '${fully_qualified_task_name}'."
         return 1
     fi
 
