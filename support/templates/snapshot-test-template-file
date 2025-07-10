@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# -*- mode: shell-script; sh-shell: bash; sh-basic-offset: 4; sh-indentation: 4; coding: utf-8 -*-
+# shellcheck shell=bash
+
+if ! TESTS_DIRECTORY=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P); then
+    echo >&2 "Error fetching tests directory."
+    exit 1
+fi
+readonly TESTS_DIRECTORY
+
+# shellcheck source=./testing-support-lib
+source "${TESTS_DIRECTORY}/testing-support-lib"
+
+# ------------------------------------------------------------------------------
+# A Snapshot Test Suite
+function test_feature_one() {
+    execute_and_assert_exit_code_and_snapshot 0
+}
+
+function snapshot_feature_one() {
+    echo "Feature One"
+}
+
+function filter_feature_one() {
+    cat
+}
+
+# shellcheck disable=SC2154 source=../vendor/shunit2
+. "${TESTING_VENDOR_DIRECTORY}/shunit2"
