@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# -*- mode: shell-script; sh-shell: bash; sh-basic-offset: 4; sh-indentation: 4; coding: utf-8 -*-
+# shellcheck shell=bash
+
+if ! TESTS_DIRECTORY=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P); then
+    echo >&2 "Error fetching tests directory."
+    exit 1
+fi
+readonly TESTS_DIRECTORY
+
+# shellcheck source=./testing-support-lib
+source "${TESTS_DIRECTORY}/testing-support-lib"
+
+# ------------------------------------------------------------------------------
+# Run valid task Snapshot Test Suite
+function test_run_valid_main_file_task() {
+    execute_and_assert_exit_code_and_snapshot 0
+}
+
+function snapshot_run_valid_main_file_task() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject run task1
+}
+
+function filter_run_valid_main_file_task() {
+    # shellcheck disable=SC2154
+    sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
+# Run with no task Snapshot Test Suite
+function test_run_no_task_specified() {
+    execute_and_assert_exit_code_and_snapshot 1
+}
+
+function snapshot_run_no_task_specified() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject run
+}
+
+function filter_run_no_task_specified() {
+    sed \
+        -e 's/^\[[^]]*\]/[TIMESTAMP]/' \
+        -e "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
+# Run Task Invalid Project Snapshot Test Case
+function test_run_invalid_project() {
+    execute_and_assert_exit_code_and_snapshot 1
+}
+
+function snapshot_run_invalid_project() {
+    # shellcheck disable=SC2154
+    cd "${INVALID_NO_TASK_DEFINITION_DIRECTORY}" && _mycmd myproject run foo
+}
+
+function filter_run_invalid_project() {
+    sed 's/^\[[^]]*\]/[TIMESTAMP]/'
+}
+
+# ------------------------------------------------------------------------------
+# Clean up after every test
+function tearDown() {
+    cd "${TESTS_DIRECTORY}" || true
+}
+
+# ------------------------------------------------------------------------------
+# Test Suite Setup
+function oneTimeSetUp() {
+    copy_test_source_data
+}
+
+function oneTimeTearDown() {
+    cleanup_test_data
+}
+
+# shellcheck disable=SC2154 source=../vendor/shunit2
+. "${TESTING_VENDOR_DIRECTORY}/shunit2"
