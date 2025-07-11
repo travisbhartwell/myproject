@@ -76,6 +76,12 @@ function filter_list_tasks_invalid_project_failing_loading_all() {
 }
 
 # ------------------------------------------------------------------------------
+# Clean up after every test
+function tearDown() {
+    cd "${TESTS_DIRECTORY}" || true
+}
+
+# ------------------------------------------------------------------------------
 # Test Suite Setup
 function oneTimeSetUp() {
     copy_test_source_data
