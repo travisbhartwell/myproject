@@ -301,6 +301,9 @@ function copy_test_source_data() {
 }
 
 function load_myproject_lib_and_start_tracing() {
+    export MYCMD_OUTPUT_FILE="${TEST_OUTPUT_DIR}/test-stdout.log"
+    export MYCMD_ERROR_OUTPUT_FILE="${TEST_OUTPUT_DIR}/test-stderr.log"
+
     # shellcheck source=/dev/null
     . "${MYCMD_SYSTEM_BASE_DIR}/mycmd-lib"
 
