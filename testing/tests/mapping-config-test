@@ -8,11 +8,11 @@ if ! TESTS_DIRECTORY=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P
 fi
 readonly TESTS_DIRECTORY
 
-if ! TEST_VENDOR_DIRECTORY=$(cd "${TESTS_DIRECTORY}/../vendor" &>/dev/null && pwd -P); then
-    echo >&2 "Error fetching test vendor directory."
+if ! TESTING_VENDOR_DIRECTORY=$(cd "${TESTS_DIRECTORY}/../vendor" &>/dev/null && pwd -P); then
+    echo >&2 "Error fetching testing vendor directory."
     exit 1
 fi
-readonly TEST_VENDOR_DIRECTORY
+readonly TESTING_VENDOR_DIRECTORY
 
 # shellcheck source=./testing-support-lib
 source "${TESTS_DIRECTORY}/testing-support-lib"
@@ -476,4 +476,4 @@ function oneTimeTearDown() {
 }
 
 # shellcheck source=../vendor/shunit2
-. "${TEST_VENDOR_DIRECTORY}/shunit2"
+. "${TESTING_VENDOR_DIRECTORY}/shunit2"

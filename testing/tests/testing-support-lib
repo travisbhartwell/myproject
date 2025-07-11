@@ -15,26 +15,75 @@ if [[ ! -v TESTS_DIRECTORY ]]; then
     readonly TESTS_DIRECTORY
 fi
 
-if [[ ! -v TEST_VENDOR_DIRECTORY ]]; then
-    if ! TEST_VENDOR_DIRECTORY=$(cd "${TESTS_DIRECTORY}/../vendor" &>/dev/null && pwd -P); then
-        echo >&2 "Error fetching test vendor directory."
+if [[ ! -v TESTING_VENDOR_DIRECTORY ]]; then
+    if ! TESTING_VENDOR_DIRECTORY=$(cd "${TESTS_DIRECTORY}/../vendor" &>/dev/null && pwd -P); then
+        echo >&2 "Error fetching testing vendor directory."
         exit 1
     fi
-    export TEST_VENDOR_DIRECTORY
-    readonly TEST_VENDOR_DIRECTORY
+    export TESTING_VENDOR_DIRECTORY
+    readonly TESTING_VENDOR_DIRECTORY
+fi
+
+if [[ ! -v TESTING_SNAPSHOTS_DIRECTORY ]]; then
+    if ! TESTING_SNAPSHOTS_DIRECTORY=$(cd "${TESTS_DIRECTORY}/../snapshots" &>/dev/null && pwd -P); then
+        echo >&2 "Error fetching testing snapshots directory."
+        exit 1
+    fi
+    export TESTING_SNAPSHOTS_DIRECTORY
+    readonly TESTING_SNAPSHOTS_DIRECTORY
 fi
 
 ## Common Variables and Setup
-if ! TEST_DATA_SRC_DIRECTORY=$(cd "${TESTS_DIRECTORY}/../test-data" &>/dev/null && pwd -P); then
+if ! TESTING_DATA_SRC_DIRECTORY=$(cd "${TESTS_DIRECTORY}/../test-data" &>/dev/null && pwd -P); then
     echo >&2 "Error fetching test data source directory."
     exit 1
 fi
-export TEST_DATA_SRC_DIRECTORY
-readonly TEST_DATA_SRC_DIRECTORY
+export TESTING_DATA_SRC_DIRECTORY
+readonly TESTING_DATA_SRC_DIRECTORY
 
 if ! [[ -v MYCMD_SYSTEM_BASE_DIR ]]; then
     echo >&2 "Error fetching MyCmd lib directory."
     exit 1
+fi
+
+if [[ ! -v MYCMD_BIN_DIRECTORY ]]; then
+    if ! MYCMD_BIN_DIRECTORY=$(cd "${MYCMD_SYSTEM_BASE_DIR}/../bin" &>/dev/null && pwd -P); then
+        echo >&2 "Error fetching MyCmd bin directory."
+        exit 1
+    fi
+    export MYCMD_BIN_DIRECTORY
+    readonly MYCMD_BIN_DIRECTORY
+fi
+
+if [[ ! -v MYCMD_TESTING_BIN_DIRECTORY ]]; then
+    if ! MYCMD_TESTING_BIN_DIRECTORY=$(cd "${MYCMD_SYSTEM_BASE_DIR}/../testing/bin" &>/dev/null && pwd -P); then
+        echo >&2 "Error fetching MyCmd testing bin directory."
+        exit 1
+    fi
+    export MYCMD_TESTING_BIN_DIRECTORY
+    readonly MYCMD_TESTING_BIN_DIRECTORY
+fi
+
+if [[ -z "${TEST_OUTPUT_DIR-}" ]]; then
+    echo >&2 "Required environment variable TEST_OUTPUT_DIR not set."
+    exit 1
+fi
+
+if [[ -z "${TEST_EXECUTION_SNAPSHOTS_DIR-}" ]]; then
+    TEST_EXECUTION_SNAPSHOTS_DIR="${TEST_OUTPUT_DIR}/snapshots"
+
+    if [[ ! -d "${TEST_EXECUTION_SNAPSHOTS_DIR}" ]]; then
+        mkdir -p "${TEST_EXECUTION_SNAPSHOTS_DIR}" || true
+    fi
+
+    export TEST_EXECUTION_SNAPSHOTS_DIR
+    readonly TEST_EXECUTION_SNAPSHOTS_DIR
+fi
+
+if [[ ! -v "${TEST_FILE}" ]]; then
+    TEST_FILE="$(basename "${0}")"
+    export TEST_FILE
+    readonly TEST_FILE
 fi
 
 if ! TEST_DATA_DIRECTORY="$(mktemp -q -d -t "test-data-XXXXXX")"; then
@@ -66,10 +115,186 @@ readonly VALID_TASK_DEFINITION_DIRECTORY1="${VALID_PROJECT_DIRECTORY1}/myproject
 readonly VALID_PROJECT_DIRECTORY2="${TEST_DATA_DIRECTORY}/valid/valid2"
 # shellcheck disable=SC2034
 readonly VALID_PROJECT_DIRECTORY3="${TEST_DATA_DIRECTORY}/valid/valid3"
+# shellcheck disable=SC2034
+readonly VALID_PROJECT_DIRECTORY4="${TEST_DATA_DIRECTORY}/valid/valid4"
 
+# ------------------------------------------------------------------------------
+# Snapshot Testing Support
+function function_exists() {
+    declare -F "${1}" >/dev/null
+}
+
+readonly STDOUT_SNAPSHOT_EXTENSION="stdout"
+readonly STDERR_SNAPSHOT_EXTENSION="stderr"
+
+function get_test_case_snapshot_filename() {
+    local -r snapshot_directory="${1}"
+    local -r test_case_name="${2}"
+    local -r snapshot_extension="${3}"
+
+    echo "${snapshot_directory}/${TEST_FILE}_${test_case_name}.${snapshot_extension}"
+}
+
+function get_test_case_stdout_file_name() {
+    local -r test_case_name="${1}"
+
+    get_test_case_snapshot_filename "${TEST_EXECUTION_SNAPSHOTS_DIR}" \
+        "${test_case_name}" \
+        "${STDOUT_SNAPSHOT_EXTENSION}"
+}
+
+function get_test_case_stderr_file_name() {
+    local -r test_case_name="${1}"
+
+    get_test_case_snapshot_filename "${TEST_EXECUTION_SNAPSHOTS_DIR}" \
+        "${test_case_name}" \
+        "${STDERR_SNAPSHOT_EXTENSION}"
+}
+
+function get_test_case_snapshot_stdout_file_name() {
+    local -r test_case_name="${1}"
+
+    get_test_case_snapshot_filename "${TESTING_SNAPSHOTS_DIRECTORY}" \
+        "${test_case_name}" \
+        "${STDOUT_SNAPSHOT_EXTENSION}"
+}
+
+function get_test_case_snapshot_stderr_file_name() {
+    local -r test_case_name="${1}"
+
+    get_test_case_snapshot_filename "${TESTING_SNAPSHOTS_DIRECTORY}" \
+        "${test_case_name}" \
+        "${STDERR_SNAPSHOT_EXTENSION}"
+}
+
+function get_test_case_name_from_callstack() {
+    local test_caller="${FUNCNAME[2]}"
+
+    echo "${test_caller##test_}"
+}
+
+function update_snapshot_file() {
+    local -r test_case_name="${1}"
+    local -r test_output_file="${2}"
+
+    if [[ ! -e "${test_output_file}" ]]; then
+        echo >&2 "Expected test output file '${test_output_file}' for test case '${test_case_name}' missing."
+        return 1
+    fi
+
+    local -r filter_fn="filter_${test_case_name}"
+    if ! function_exists "${filter_fn}"; then
+        return 0
+    fi
+
+    local -r tmp_output_file="${test_output_file}.tmp"
+
+    if ! mv "${test_output_file}" "${tmp_output_file}" &>/dev/null; then
+        echo >&2 "Error moving '${test_output_file}' to '${tmp_output_file}'"
+        return 1
+    fi
+
+    "${filter_fn}" <"${tmp_output_file}" >"${test_output_file}"
+
+    rm "${tmp_output_file}" || true
+}
+
+function execute_snapshot_test() {
+    local -r test_case_name="${1}"
+    local -r snapshot_fn="snapshot_${test_case_name}"
+    local -r snapshot_stdout_file_name="${2}"
+    local -r snapshot_stderr_file_name="${3}"
+
+    if ! function_exists "${snapshot_fn}"; then
+        echo >&2 "Snapshot function for test case '${test_case_name}' doesn't exist."
+        return 1
+    fi
+
+    export TEST_OUTPUT_FILE="${snapshot_stdout_file_name}"
+    export TEST_ERROR_OUTPUT_FILE="${snapshot_stderr_file_name}"
+
+    local result=0
+    "${snapshot_fn}" || result="${?}"
+
+    unset TEST_OUTPUT_FILE
+    unset TEST_ERROR_OUTPUT_FILE
+
+    update_snapshot_file "${test_case_name}" "${snapshot_stdout_file_name}" || result="${?}"
+    update_snapshot_file "${test_case_name}" "${snapshot_stderr_file_name}" || result="${?}"
+
+    return "${result}"
+}
+
+function assert_snapshot_file() {
+    local -r snapshot_file_name="${1}"
+    local -r expected_snapshot_file_name="${2}"
+
+    assertTrue "Expected snapshot file '${expected_snapshot_file_name}' exists" \
+        "[[ -e \"${expected_snapshot_file_name}\" ]]"
+
+    local diff_result=0
+    diff "${expected_snapshot_file_name}" "${snapshot_file_name}" || diff_result="${?}"
+    assertEquals "Test execution snapshot file '${snapshot_file_name}' matches '${expected_snapshot_file_name}'" \
+        0 "${diff_result}"
+}
+
+function execute_and_assert_exit_code_and_snapshot() {
+    local -r expected_exit_code="${1}"
+
+    local test_case_name
+    test_case_name="$(get_test_case_name_from_callstack)"
+    readonly test_case_name
+
+    local snapshot_stdout_file_name
+    snapshot_stdout_file_name="$(get_test_case_stdout_file_name "${test_case_name}")"
+    readonly snapshot_stdout_file_name
+
+    local snapshot_stderr_file_name
+    snapshot_stderr_file_name="$(get_test_case_stderr_file_name "${test_case_name}")"
+    readonly snapshot_stderr_file_name
+
+    local exit_code=0
+    execute_snapshot_test "${test_case_name}" \
+        "${snapshot_stdout_file_name}" \
+        "${snapshot_stderr_file_name}" || exit_code="${?}"
+
+    assertEquals "Snapshot test case '${test_case_name}' exits with exit code ${expected_exit_code}" \
+        "${expected_exit_code}" \
+        "${exit_code}"
+
+    local expected_snapshot_stdout_file_name
+    expected_snapshot_stdout_file_name="$(get_test_case_snapshot_stdout_file_name "${test_case_name}")"
+    readonly expected_snapshot_stdout_file_name
+
+    local expected_snapshot_stderr_file_name
+    expected_snapshot_stderr_file_name="$(get_test_case_snapshot_stderr_file_name "${test_case_name}")"
+    readonly expected_snapshot_stderr_file_name
+
+    if [[ -v UPDATE_SNAPSHOTS ]]; then
+        if [[ "${exit_code}" != "${expected_exit_code}" ]]; then
+            fail "Unexpected result from executing snapshot test '${test_case_name}', not updating snapshot."
+        else
+            echo >&2 "Updating the snapshot stdout file for test case '${test_case_name}' to '${expected_snapshot_stdout_file_name}'."
+            cp "${snapshot_stdout_file_name}" "${expected_snapshot_stdout_file_name}" || true
+
+            echo >&2 "Updating the snapshot stderr file for test case '${test_case_name}' to '${expected_snapshot_stderr_file_name}'."
+            cp "${snapshot_stderr_file_name}" "${expected_snapshot_stderr_file_name}" || true
+        fi
+    else
+        assert_snapshot_file "${snapshot_stdout_file_name}" "${expected_snapshot_stdout_file_name}"
+        assert_snapshot_file "${snapshot_stderr_file_name}" "${expected_snapshot_stderr_file_name}"
+    fi
+}
+
+function _mycmd() {
+    "${MYCMD_TESTING_BIN_DIRECTORY}/mycmd-test" "${@}"
+}
+
+# ------------------------------------------------------------------------------
+# Common support functions for test suite setup and tear down
 function copy_test_source_data() {
     # Copy the test data into a new directory in TMPDIR so there won't be a `myproject` directory above them
-    if ! cp -R "${TEST_DATA_SRC_DIRECTORY}"/* "${TEST_DATA_DIRECTORY}"; then
+    if ! cp -R "${TESTING_DATA_SRC_DIRECTORY}"/* "${TEST_DATA_DIRECTORY}"; then
         echo >&2 "Error copying test data into '${TEST_DATA_DIRECTORY}'."
         exit 1
     fi

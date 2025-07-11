@@ -509,6 +509,7 @@ function execute-test() {
         MYCMD_DEBUG=1 \
         MYCMD_LOG_FILE="${test_log_file}" \
         MYCMD_SEARCH_PATH="${MYPROJECT_LIB_BASE_DIR}" \
+        TEST_OUTPUT_DIR="${test_output_directory}" \
         TEST_TRACE_FILE="${test_trace_log_file}" \
         "${test_file}" "${@}" || result=$?
 
@@ -537,7 +538,17 @@ function execute-single-file-tests() {
 }
 project.register_task execute-single-file-tests
 
-function execute-all-tests() {
+function update-single-file-snapshots() {
+    if [[ "${1}" != *-snapshot-test ]]; then
+        mycmd.error_output "Test file must be a snapshot test file."
+        return 1
+    fi
+
+    UPDATE_SNAPSHOTS=1 execute-single-file-tests "${@}"
+}
+project.register_task update-single-file-snapshots
+
+function execute-fileset-tests() {
     local -n test_fileset="${1}"
     local test_file
     local -A results=()
@@ -561,14 +572,28 @@ function execute-all-tests() {
         fi
     done
 
-    get-coverage-data-from-trace "${test_output_directory}"
     summarize_test_results results
+
+    if [[ ! -v UPDATE_SNAPSHOTS ]]; then
+        get-coverage-data-from-trace "${test_output_directory}"
+    fi
 
     return "${final_result}"
 }
 project.register_task_with_fileset execute-all-tests \
-    execute-all-tests \
+    execute-fileset-tests \
     TEST_FILES
+
+function update-all-snapshots() {
+    local final_result=0
+
+    UPDATE_SNAPSHOTS=1 execute-fileset-tests "${@}" || final_result="${?}"
+
+    return "${final_result}"
+}
+project.register_task_with_fileset update-all-snapshots \
+    update-all-snapshots \
+    SNAPSHOT_TEST_FILES
 
 function get-last-test-log() {
     local -a test_log_files=("${TMP_WORKING_DIR}"/test-output-*/test-output.log)
