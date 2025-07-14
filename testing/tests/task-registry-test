@@ -56,6 +56,13 @@ function test_new_task() {
         1 "${#_MYPROJECT_TASKS[@]}"
 
     result=0
+    project:task_registry.new_fileset MY_FILESET || result="${?}"
+    assertTrue 'Registering MY_FILESET should succeed' "${result}"
+    assertTrue 'MY_FILESET should exist' 'declare -p MY_FILESET >/dev/null'
+    assertEquals '_MYPROJECT_FILESETS should have 1 element' \
+        1 "${#_MYPROJECT_FILESETS[@]}"
+
+    result=0
     project:task_registry.new_task_with_fileset "main" "task2" "function1" MY_FILESET || result="${?}"
     assertTrue "Task 'main task2' was successfully registered." "${result}"
     assertEquals "There should be 2 tasks registered." \
@@ -64,7 +71,13 @@ function test_new_task() {
     result=0
     project:task_registry.new_task_with_fileset "main" "task2" "function2" MY_FILESET || result="${?}"
     assertFalse "Registering 'main task2' with the same name but different function should fail" "${result}"
-    assertEquals "There should still be 1 task registered." \
+    assertEquals "There should still be 2 task registered." \
+        2 "${#_MYPROJECT_TASKS[@]}"
+
+    result=0
+    project:task_registry.new_task_with_fileset "main" "task3" "function2" MY_FILESET2 || result="${?}"
+    assertFalse "Registering 'main task3' with non-existing filset should fail" "${result}"
+    assertEquals "There should still be 2 task registered." \
         2 "${#_MYPROJECT_TASKS[@]}"
 }
 

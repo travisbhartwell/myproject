@@ -42,13 +42,13 @@ function project:task_registry._reset_registry() {
     _MYPROJECT_TASKS_ARGUMENTS=()
     _MYPROJECT_TASKS_FILESETS=()
 
-    local fileset
-    for fileset in "${!_MYPROJECT_FILESETS[@]}"; do
-        mycmd.trace "Checking fileset '${fileset}'"
+    local fileset_name
+    for fileset_name in "${!_MYPROJECT_FILESETS[@]}"; do
+        mycmd.trace "Checking fileset '${fileset_name}'"
 
-        if declare -p "${fileset}" >/dev/null; then
-            mycmd.trace "Unsetting fileset '${fileset}'"
-            unset "${fileset}"
+        if project:task_registry._fileset_exists "${fileset_name}"; then
+            mycmd.trace "Unsetting fileset '${fileset_name}'"
+            unset "${fileset_name}"
         fi
     done
 
@@ -59,6 +59,12 @@ function project:task_registry._reset_registry() {
 }
 
 project:task_registry._reset_registry
+
+function project:task_registry._fileset_exists() {
+    local -r fileset_name="${1}"
+
+    declare -p "${fileset_name}" &>/dev/null
+}
 
 function project:task_registry.load_task_definition_file() {
     local -r project_root_directory="${1}"
@@ -181,6 +187,11 @@ function project:task_registry.new_task_with_fileset() {
     local -r task_function_name="${3}"
     local -r fileset_name="${4}"
     shift 4
+
+    if ! project:task_registry._fileset_exists "${fileset_name}"; then
+        mycmd.log "Fileset '${fileset_name}' for task '${fully_qualified_task_name}' does not exist."
+        return 1
+    fi
 
     if ! project:task_registry.new_task \
         "${task_definition_file_name}" \
