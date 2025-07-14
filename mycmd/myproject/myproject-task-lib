@@ -175,6 +175,26 @@ function project:task_registry.new_task() {
     return 0
 }
 
+function project:task_registry.new_task_with_fileset() {
+    local -r task_definition_file_name="${1}"
+    local -r fully_qualified_task_name="${2}"
+    local -r task_function_name="${3}"
+    local -r fileset_name="${4}"
+    shift 4
+
+    if ! project:task_registry.new_task \
+        "${task_definition_file_name}" \
+        "${fully_qualified_task_name}" \
+        "${task_function_name}" \
+        "${@}"; then
+        return 1
+    fi
+
+    _MYPROJECT_TASKS_FILESETS["${fully_qualified_task_name}"]="${fileset_name}"
+
+    mycmd.trace "Successfully registered fileset '${fileset_name}' for task '${fully_qualified_task_name}'."
+}
+
 function project:task_registry.new_fileset() {
     local -r fileset_name="${1}"
 
@@ -481,6 +501,13 @@ function project:task.execute() {
     mycmd.output "➡️ Executing task '${namespaced_parts_string}'..."
 
     local return_code=0
+
+    local fileset_name
+    if fileset_name="$(project:task.get_fileset "${!task_struct_ref}")"; then
+        set -- "${fileset_name}" "${@}"
+    fi
+    readonly fileset_name
+
     "${task_function_name}" "${@}" || return_code="${?}"
 
     if ((return_code == 0)); then

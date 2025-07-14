@@ -34,14 +34,12 @@ function test_project_lib_is_loaded() {
 
 # shellcheck disable=SC2154
 function test_new_task() {
-    local result=0
-    project:task_registry._reset_registry
     assertEquals "There should be no tasks registered." \
         0 "${#_MYPROJECT_TASKS[@]}"
 
-    result=0
+    local result=0
     project:task_registry.new_task "main" "task1" "function1" || result="${?}"
-    assertTrue "Task was successfully registered." "${result}"
+    assertTrue "Task 'main task1' was successfully registered." "${result}"
     assertEquals "There should be 1 task registered." \
         1 "${#_MYPROJECT_TASKS[@]}"
 
@@ -57,7 +55,17 @@ function test_new_task() {
     assertEquals "There should still be 1 task registered." \
         1 "${#_MYPROJECT_TASKS[@]}"
 
-    project:task_registry._reset_registry
+    result=0
+    project:task_registry.new_task_with_fileset "main" "task2" "function1" MY_FILESET || result="${?}"
+    assertTrue "Task 'main task2' was successfully registered." "${result}"
+    assertEquals "There should be 2 tasks registered." \
+        2 "${#_MYPROJECT_TASKS[@]}"
+
+    result=0
+    project:task_registry.new_task_with_fileset "main" "task2" "function2" MY_FILESET || result="${?}"
+    assertFalse "Registering 'main task2' with the same name but different function should fail" "${result}"
+    assertEquals "There should still be 1 task registered." \
+        2 "${#_MYPROJECT_TASKS[@]}"
 }
 
 # --------------------------------------------------------------------------------------------------
@@ -65,8 +73,6 @@ function test_new_task() {
 
 # shellcheck disable=SC2154
 function test_new_fileset() {
-    project:task_registry._reset_registry
-
     assertFalse 'MY_FILESET should not exist' 'declare -p MY_FILESET >/dev/null'
     assertEquals '_MYPROJECT_FILESETS should be empty' \
         0 "${#_MYPROJECT_FILESETS[@]}"
@@ -102,12 +108,23 @@ function function1() {
     assertEquals "arg3" "${3}"
 }
 
+function function3() {
+    local -n fileset="${1}"
+
+    assertEquals "Function is called with 1 argument" \
+        1 $#
+    assertEquals "Fileset has 3 elements" \
+        3 "${#fileset[@]}"
+    assertEquals "a" "${fileset[0]}"
+    assertEquals "b" "${fileset[1]}"
+    assertEquals "c" "${fileset[2]}"
+}
+
 # shellcheck disable=SC2034,SC2154,SC2312
 function test_task_definition() {
     declare -gx TEST_VARIABLE=0
 
     local result=0
-    project:task_registry._reset_registry
     assertEquals "There should be no tasks registered." \
         0 "${#_MYPROJECT_TASKS[@]}"
     assertEquals "TEST_VARIABLE should be 0" 0 "${TEST_VARIABLE}"
@@ -128,6 +145,21 @@ function test_task_definition() {
     assertTrue "Task was successfully registered." "${result}"
     assertEquals "There should be 2 tasks registered." \
         2 "${#_MYPROJECT_TASKS[@]}"
+
+    result=0
+    project:task_registry.new_fileset MY_FILESET || result="${?}"
+    assertTrue 'Registering MY_FILESET should succeed' "${result}"
+    assertTrue 'MY_FILESET should exist' 'declare -p MY_FILESET >/dev/null'
+    assertEquals '_MYPROJECT_FILESETS should have 1 element' \
+        1 "${#_MYPROJECT_FILESETS[@]}"
+    # Manually add entries to the fileset, since these tests don't act on real files
+    MY_FILESET=("a" "b" "c")
+
+    result=0
+    project:task_registry.new_task_with_fileset "main" "task2" "function3" MY_FILESET || result="${?}"
+    assertTrue "Task 'main task2' was successfully registered." "${result}"
+    assertEquals "There should be 3 tasks registered." \
+        3 "${#_MYPROJECT_TASKS[@]}"
 
     local -A task1=()
     result=0
@@ -155,6 +187,9 @@ function test_task_definition() {
     assertEquals "arg1" "${arguments[0]}"
     assertEquals "arg2" "${arguments[1]}"
     assertEquals "arg3" "${arguments[2]}"
+    result=0
+    project:task.get_fileset task1 || result="${?}"
+    assertFalse "Getting file1/task1 fileset should fail" "${result}"
 
     result=0
     project:task.execute task1 || result="${?}"
@@ -180,17 +215,47 @@ function test_task_definition() {
     project:task.get_arguments task1 arguments || result="${?}"
     assertTrue "Getting task1 arguments should succeed" "${result}"
     assertEquals 0 "${#arguments[@]}"
+    result=0
+    project:task.get_fileset task1 || result="${?}"
+    assertFalse "Getting task1 fileset should fail" "${result}"
 
     result=0
     project:task.execute task1 || result="${?}"
     assertFalse "Executing task1 should fail because function2 doesn't exist" "${result}"
 
-    project:task_registry._reset_registry
+    local -A task2=()
+    result=0
+    project:task_registry.get_task "task2" task2 || result="${?}"
+    assertTrue "Getting task2 should succeed" "${result}"
+    assertEquals "task2" "$(project:task.get_fully_qualified_name task2)"
+    assertEquals "task2" "$(project:task.get_name task2)"
+    assertEquals "task2" "$(project:task.get_namespaced_parts_as_string task2)"
+    assertEquals "main" "$(project:task.get_task_definition_file_name task2)"
+    assertEquals "function3" "$(project:task.get_function_name task2)"
+    assertEquals 0 "$(project:task.get_argument_count task1)"
+    result=0
+    project:task.get_argument_index task2 || result="${?}"
+    assertFalse "Getting task2 argument index should fail" "${result}"
+    arguments=()
+    result=0
+    project:task.get_arguments task2 arguments || result="${?}"
+    assertTrue "Getting task2 arguments should succeed" "${result}"
+    assertEquals 0 "${#arguments[@]}"
+    assertEquals "MY_FILESET" "$(project:task.get_fileset task2)"
+
+    result=0
+    project:task.execute task2 || result="${?}"
+    assertTrue "Executing task2 should succeed" "${result}"
+
     unset TEST_VARIABLE
 }
 
 # --------------------------------------------------------------------------------------------------
 # Test Helper Functions
+function setUp() {
+    project:task_registry._reset_registry
+}
+
 function oneTimeSetUp() {
     load_myproject_lib_and_start_tracing
 }
