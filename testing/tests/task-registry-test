@@ -61,6 +61,35 @@ function test_new_task() {
 }
 
 # --------------------------------------------------------------------------------------------------
+# project:task_registry.new_fileset related tests
+
+# shellcheck disable=SC2154
+function test_new_fileset() {
+    project:task_registry._reset_registry
+
+    assertFalse 'MY_FILESET should not exist' 'declare -p MY_FILESET >/dev/null'
+    assertEquals '_MYPROJECT_FILESETS should be empty' \
+        0 "${#_MYPROJECT_FILESETS[@]}"
+
+    assertTrue 'Registering MY_FILESET should succeed' \
+        'project:task_registry.new_fileset MY_FILESET'
+    assertTrue 'MY_FILESET should exist' 'declare -p MY_FILESET >/dev/null'
+    assertEquals '_MYPROJECT_FILESETS should have 1 element' \
+        1 "${#_MYPROJECT_FILESETS[@]}"
+
+    assertTrue 'Registering MY_FILESET again should succeed' \
+        'project:task_registry.new_fileset MY_FILESET'
+    assertEquals '_MYPROJECT_FILESETS should still have 1 element' \
+        1 "${#_MYPROJECT_FILESETS[@]}"
+
+    project:task_registry._reset_registry
+
+    assertFalse 'MY_FILESET should not exist after resetting' 'declare -p MY_FILESET >/dev/null'
+    assertEquals '_MYPROJECT_FILESETS should be empty after resetting' \
+        0 "${#_MYPROJECT_FILESETS[@]}"
+}
+
+# --------------------------------------------------------------------------------------------------
 # project:task_registry.get_task related tests
 
 # shellcheck disable=SC2034

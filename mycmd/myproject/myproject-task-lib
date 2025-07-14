@@ -20,6 +20,8 @@ declare -Agx _MYPROJECT_TASKS_TASK_DEFINITION_FILES
 declare -Agx _MYPROJECT_TASKS_ARGUMENT_COUNTS
 declare -Agx _MYPROJECT_TASKS_ARGUMENT_INDICES
 declare -agx _MYPROJECT_TASKS_ARGUMENTS
+declare -Agx _MYPROJECT_TASKS_FILESETS
+declare -Agx _MYPROJECT_FILESETS
 declare -Agx _MYPROJECT_LOADED_TASK_DEFINITION_FILES
 
 readonly _TASK_FULLY_QUALIFIED_NAME_FIELD='task-fully-qualified-name'
@@ -29,6 +31,7 @@ readonly _TASK_TASK_DEFINITION_FILE_FIELD='task-definition-file'
 readonly _TASK_FUNCTION_FIELD='task-function'
 readonly _TASK_ARGUMENT_COUNT_FIELD='task-argument-count'
 readonly _TASK_ARGUMENT_INDEX_FIELD='task-argument-index'
+readonly _TASK_FILESET_FIELD='task-fileset'
 
 function project:task_registry._reset_registry() {
     mycmd.trace "Resetting the MyProject Task Registry."
@@ -37,6 +40,19 @@ function project:task_registry._reset_registry() {
     _MYPROJECT_TASKS_ARGUMENT_COUNTS=()
     _MYPROJECT_TASKS_ARGUMENT_INDICES=()
     _MYPROJECT_TASKS_ARGUMENTS=()
+    _MYPROJECT_TASKS_FILESETS=()
+
+    local fileset
+    for fileset in "${!_MYPROJECT_FILESETS[@]}"; do
+        mycmd.trace "Checking fileset '${fileset}'"
+
+        if declare -p "${fileset}" >/dev/null; then
+            mycmd.trace "Unsetting fileset '${fileset}'"
+            unset "${fileset}"
+        fi
+    done
+
+    _MYPROJECT_FILESETS=()
     _MYPROJECT_LOADED_TASK_DEFINITION_FILES=()
     unset MYPROJECT_ROOT_DIRECTORY
     unset MYPROJECT_TASK_DEFINITION_DIRECTORY
@@ -159,6 +175,18 @@ function project:task_registry.new_task() {
     return 0
 }
 
+function project:task_registry.new_fileset() {
+    local -r fileset_name="${1}"
+
+    if [[ -v _MYPROJECT_FILESETS["${fileset_name}"] ]]; then
+        mycmd.trace "Fileset '${fileset_name}' already registered."
+        return 0
+    fi
+
+    declare -agx "${fileset_name}=()"
+    _MYPROJECT_FILESETS["${fileset_name}"]=1
+}
+
 function project:task_registry.get_task() {
     local -r fully_qualified_task_name="${1}"
     local -n task_struct_ref="${2}"
@@ -212,6 +240,14 @@ function project:task_registry.get_task() {
         mycmd.trace "- ${_TASK_ARGUMENT_INDEX_FIELD}: ${task_struct_ref["${_TASK_ARGUMENT_INDEX_FIELD}"]}"
     else
         mycmd.trace "- ${_TASK_ARGUMENT_INDEX_FIELD}: No value set."
+    fi
+
+    if [[ -v _MYPROJECT_TASKS_FILESETS["${fully_qualified_task_name}"] ]]; then
+        local -r fileset="${_MYPROJECT_TASKS_FILESETS["${fully_qualified_task_name}"]}"
+        task_struct_ref["${_TASK_FILESET_FIELD}"]="${fileset}"
+        mycmd.trace "- ${_TASK_FILESET_FIELD}: ${task_struct_ref["${_TASK_FILESET_FIELD}"]}"
+    else
+        mycmd.trace "- ${_TASK_FILESET_FIELD}: No value set."
     fi
 }
 
@@ -340,6 +376,12 @@ function project:task.get_argument_count() {
 function project:task.get_argument_index() {
     project:task._get_field_from_struct \
         "${_TASK_ARGUMENT_INDEX_FIELD}" \
+        "${@}"
+}
+
+function project:task.get_fileset() {
+    project:task._get_field_from_struct \
+        "${_TASK_FILESET_FIELD}" \
         "${@}"
 }
 
