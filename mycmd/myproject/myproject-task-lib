@@ -155,12 +155,17 @@ function project:task_registry.new_task() {
         local existing_task_function_name="${_MYPROJECT_TASKS["${fully_qualified_task_name}"]}"
 
         if [[ "${existing_task_function_name}" != "${task_function_name}" ]]; then
-            mycmd.debug "'${fully_qualified_task_name}' is already registered with function '${existing_task_function_name}', not '${task_function_name}'."
+            mycmd.error_output "'${fully_qualified_task_name}' is already registered with function '${existing_task_function_name}', not '${task_function_name}'."
             return 1
         else
             mycmd.debug "'${fully_qualified_task_name}' is already registered."
             return 0
         fi
+    fi
+
+    if ! mycmd.function_exists "${task_function_name}"; then
+        mycmd.error_output "Task function '${task_function_name}' for '${fully_qualified_task_name}' does not exist."
+        return 1
     fi
 
     _MYPROJECT_TASKS["${fully_qualified_task_name}"]="${task_function_name}"
@@ -462,34 +467,10 @@ function project:task.get_arguments() {
     mycmd.trace "Set arguments for '${fully_qualified_task_name}' in ${!arguments_ref} as ${arguments_ref[*]}."
 }
 
-function project:task.function_exists() {
-    # shellcheck disable=SC2178
-    local -n task_struct_ref="${1}"
-
-    local task_function_name
-    task_function_name="$(project:task.get_function_name "${!task_struct_ref}")"
-    readonly task_function_name
-
-    if ! mycmd.function_exists "${task_function_name}"; then
-        local fully_qualified_task_name
-        fully_qualified_task_name="$(project:task.get_fully_qualified_name "${!task_struct_ref}")"
-        readonly fully_qualified_task_name
-
-        mycmd.error_output "Unknown function '${task_function_name}' for task '${fully_qualified_task_name}'."
-        return 1
-    fi
-
-    return 0
-}
-
 function project:task.execute() {
     # shellcheck disable=SC2178
     local -n task_struct_ref="${1}"
     shift
-
-    if ! project:task.function_exists "${!task_struct_ref}"; then
-        return 1
-    fi
 
     local task_function_name
     task_function_name="$(project:task.get_function_name "${!task_struct_ref}")"
