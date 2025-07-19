@@ -15,13 +15,14 @@ set -o nounset -o errexit -o errtrace -o pipefail
 [[ -n "${_MYPROJECT_TASK_LIB:-}" ]] && return
 readonly _MYPROJECT_TASK_LIB=1
 
+mycmd:command_group.load_support_lib "fileset"
+
 declare -Agx _MYPROJECT_TASKS
 declare -Agx _MYPROJECT_TASKS_TASK_DEFINITION_FILES
 declare -Agx _MYPROJECT_TASKS_ARGUMENT_COUNTS
 declare -Agx _MYPROJECT_TASKS_ARGUMENT_INDICES
 declare -agx _MYPROJECT_TASKS_ARGUMENTS
 declare -Agx _MYPROJECT_TASKS_FILESETS
-declare -Agx _MYPROJECT_FILESETS
 declare -Agx _MYPROJECT_LOADED_TASK_DEFINITION_FILES
 
 readonly _TASK_FULLY_QUALIFIED_NAME_FIELD='task-fully-qualified-name'
@@ -41,30 +42,14 @@ function project:task_registry._reset_registry() {
     _MYPROJECT_TASKS_ARGUMENT_INDICES=()
     _MYPROJECT_TASKS_ARGUMENTS=()
     _MYPROJECT_TASKS_FILESETS=()
-
-    local fileset_name
-    for fileset_name in "${!_MYPROJECT_FILESETS[@]}"; do
-        mycmd.trace "Checking fileset '${fileset_name}'"
-
-        if project:task_registry._fileset_exists "${fileset_name}"; then
-            mycmd.trace "Unsetting fileset '${fileset_name}'"
-            unset "${fileset_name}"
-        fi
-    done
-
-    _MYPROJECT_FILESETS=()
     _MYPROJECT_LOADED_TASK_DEFINITION_FILES=()
     unset MYPROJECT_ROOT_DIRECTORY
     unset MYPROJECT_TASK_DEFINITION_DIRECTORY
+
+    project:fileset_registry._reset_registry
 }
 
 project:task_registry._reset_registry
-
-function project:task_registry._fileset_exists() {
-    local -r fileset_name="${1}"
-
-    declare -p "${fileset_name}" &>/dev/null
-}
 
 function project:task_registry.load_task_definition_file() {
     local -r project_root_directory="${1}"
@@ -193,7 +178,7 @@ function project:task_registry.new_task_with_fileset() {
     local -r fileset_name="${4}"
     shift 4
 
-    if ! project:task_registry._fileset_exists "${fileset_name}"; then
+    if ! project:fileset_registry._fileset_exists "${fileset_name}"; then
         mycmd.log "Fileset '${fileset_name}' for task '${fully_qualified_task_name}' does not exist."
         return 1
     fi
@@ -209,18 +194,6 @@ function project:task_registry.new_task_with_fileset() {
     _MYPROJECT_TASKS_FILESETS["${fully_qualified_task_name}"]="${fileset_name}"
 
     mycmd.trace "Successfully registered fileset '${fileset_name}' for task '${fully_qualified_task_name}'."
-}
-
-function project:task_registry.new_fileset() {
-    local -r fileset_name="${1}"
-
-    if [[ -v _MYPROJECT_FILESETS["${fileset_name}"] ]]; then
-        mycmd.trace "Fileset '${fileset_name}' already registered."
-        return 0
-    fi
-
-    declare -agx "${fileset_name}=()"
-    _MYPROJECT_FILESETS["${fileset_name}"]=1
 }
 
 function project:task_registry.get_task() {

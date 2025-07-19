@@ -1,0 +1,102 @@
+# -*- mode: shell-script; sh-shell: bash; sh-basic-offset: 4; sh-indentation: 4; coding: utf-8 -*-
+# shellcheck shell=bash
+
+# MyProject Fileset Command Group Support Library
+#   Fileset support for MyProject
+
+set -o nounset -o errexit -o errtrace -o pipefail
+
+(return 0 >/dev/null 2>&1) || {
+    # coverage skip: 2
+    echo >&2 "$0 is a library only meant to be sourced."
+    exit 1
+}
+
+[[ -n "${_MYPROJECT_FILESET_LIB:-}" ]] && return
+readonly _MYPROJECT_FILESET_LIB=1
+
+declare -Agx _MYPROJECT_FILESETS
+
+function project:fileset_registry._reset_registry() {
+    mycmd.trace "Resetting the MyProject Fileset Registry."
+
+    local fileset_name
+    for fileset_name in "${!_MYPROJECT_FILESETS[@]}"; do
+        mycmd.trace "Checking fileset '${fileset_name}'"
+
+        if project:fileset_registry._fileset_exists "${fileset_name}"; then
+            mycmd.trace "Unsetting fileset '${fileset_name}'"
+            unset "${fileset_name}"
+        fi
+    done
+
+    _MYPROJECT_FILESETS=()
+}
+
+project:fileset_registry._reset_registry
+
+function project:fileset_registry._fileset_exists() {
+    local -r fileset_name="${1}"
+
+    declare -p "${fileset_name}" &>/dev/null
+}
+
+function project:fileset_registry.new_fileset() {
+    local -r fileset_name="${1}"
+
+    if [[ -v _MYPROJECT_FILESETS["${fileset_name}"] ]]; then
+        mycmd.trace "Fileset '${fileset_name}' already registered."
+        return 0
+    fi
+
+    declare -agx "${fileset_name}=()"
+    _MYPROJECT_FILESETS["${fileset_name}"]=1
+}
+
+mycmd.defer_at_startup mycmd.init_bin realpath
+function project:fileset.add_files_to_fileset() {
+    if [[ ! -v MYPROJECT_ROOT_DIRECTORY ]]; then
+        # coverage skip: 2
+        mycmd.debug "Error: MYPROJECT_ROOT DIRECTORY must be set."
+        return 1
+    fi
+
+    local -n fileset="${1}"
+    shift
+
+    if (($# == 0)); then
+        mycmd.error_output "No files specified to add files to fileset."
+        return 1
+    fi
+
+    local filename
+    local relative_filename
+
+    for filename in "${@}"; do
+        mycmd.trace "Attempting to add '${filename}' to fileset."
+        if relative_filename="$(mycmd.bin_execute realpath --no-symlinks --relative-to="${MYPROJECT_ROOT_DIRECTORY}" "${filename}")"; then
+            mycmd.trace "Adding filename '${relative_filename}' to fileset."
+            fileset+=("${relative_filename}")
+        fi
+    done
+
+    project:fileset._sort_fileset "${!fileset}"
+}
+
+function project:fileset._sort_fileset() {
+    # shellcheck disable=SC2178
+    local -n fileset="${1}"
+
+    if (("${#fileset[@]}" == 0)); then
+        return 0
+    fi
+
+    local -a sorted_fileset=()
+    readarray -t sorted_fileset < \
+        <(printf '%s\n' "${fileset[@]}" | LC_ALL=en_US.UTF-8 sort || true)
+
+    fileset=()
+    fileset=("${sorted_fileset[@]}")
+}
+
+mycmd.trace "The MyProject Fileset command group support library has been sourced."

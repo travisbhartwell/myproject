@@ -25,6 +25,7 @@ function test_mycmd_lib_is_loaded() {
 
 function test_project_lib_is_loaded() {
     assertTrue 'Project Lib is loaded' '[ -v _MYPROJECT_LIB ]'
+    assertTrue 'Project Fileset Support Lib is loaded' '[ -v _MYPROJECT_FILESET_LIB ]'
     assertTrue 'Project Tasks Support Lib is loaded' '[ -v _MYPROJECT_TASK_LIB ]'
     assertTrue 'Project User Support Lib is loaded' '[ -v _MYPROJECT_USER_LIB ]'
 }
@@ -56,7 +57,7 @@ function test_new_task() {
         1 "${#_MYPROJECT_TASKS[@]}"
 
     result=0
-    project:task_registry.new_fileset MY_FILESET || result="${?}"
+    project:fileset_registry.new_fileset MY_FILESET || result="${?}"
     assertTrue 'Registering MY_FILESET should succeed' "${result}"
     assertTrue 'MY_FILESET should exist' 'declare -p MY_FILESET >/dev/null'
     assertEquals '_MYPROJECT_FILESETS should have 1 element' \
@@ -79,33 +80,6 @@ function test_new_task() {
     assertFalse "Registering 'main task3' with non-existing filset should fail" "${result}"
     assertEquals "There should still be 2 task registered." \
         2 "${#_MYPROJECT_TASKS[@]}"
-}
-
-# --------------------------------------------------------------------------------------------------
-# project:task_registry.new_fileset related tests
-
-# shellcheck disable=SC2154
-function test_new_fileset() {
-    assertFalse 'MY_FILESET should not exist' 'declare -p MY_FILESET >/dev/null'
-    assertEquals '_MYPROJECT_FILESETS should be empty' \
-        0 "${#_MYPROJECT_FILESETS[@]}"
-
-    assertTrue 'Registering MY_FILESET should succeed' \
-        'project:task_registry.new_fileset MY_FILESET'
-    assertTrue 'MY_FILESET should exist' 'declare -p MY_FILESET >/dev/null'
-    assertEquals '_MYPROJECT_FILESETS should have 1 element' \
-        1 "${#_MYPROJECT_FILESETS[@]}"
-
-    assertTrue 'Registering MY_FILESET again should succeed' \
-        'project:task_registry.new_fileset MY_FILESET'
-    assertEquals '_MYPROJECT_FILESETS should still have 1 element' \
-        1 "${#_MYPROJECT_FILESETS[@]}"
-
-    project:task_registry._reset_registry
-
-    assertFalse 'MY_FILESET should not exist after resetting' 'declare -p MY_FILESET >/dev/null'
-    assertEquals '_MYPROJECT_FILESETS should be empty after resetting' \
-        0 "${#_MYPROJECT_FILESETS[@]}"
 }
 
 # --------------------------------------------------------------------------------------------------
@@ -161,7 +135,7 @@ function test_task_definition() {
         1 "${#_MYPROJECT_TASKS[@]}"
 
     result=0
-    project:task_registry.new_fileset MY_FILESET || result="${?}"
+    project:fileset_registry.new_fileset MY_FILESET || result="${?}"
     assertTrue 'Registering MY_FILESET should succeed' "${result}"
     assertTrue 'MY_FILESET should exist' 'declare -p MY_FILESET >/dev/null'
     assertEquals '_MYPROJECT_FILESETS should have 1 element' \
