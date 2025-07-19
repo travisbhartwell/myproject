@@ -665,6 +665,29 @@ project.register_task new-snapshot-test-file \
     '-snapshot-test'
 
 #----------------------------------------
+# New Support Library
+readonly SUPPORT_LIBRARY_TEMPLATE_FILE="${TEMPLATES_DIR}/myproject-support-lib-template-file"
+
+function new_support_library_from_template() {
+    local -r support_library_name="${1}"
+
+    if [[ "${support_library_name}" != myproject-*-lib ]]; then
+        mycmd.error_output "Support library name must start with 'myproject-' and end in '-lib'."
+        return 1
+    fi
+
+    local -r support_library_file="${MYPROJECT_LIB_BASE_DIR}/myproject/${support_library_name}"
+
+    if [[ -e "${support_library_file}" ]]; then
+        mycmd.error_output "${support_library_file} already exists, not overwriting"
+        return 1
+    fi
+
+    cp "${SUPPORT_LIBRARY_TEMPLATE_FILE}" "${support_library_file}"
+}
+project.register_task new-support-library-from-template new_support_library_from_template
+
+#----------------------------------------
 # Code formatting
 project.register_task_with_fileset format \
     project:shell.format \

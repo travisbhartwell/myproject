@@ -1,0 +1,18 @@
+# -*- mode: shell-script; sh-shell: bash; sh-basic-offset: 4; sh-indentation: 4; coding: utf-8 -*-
+# shellcheck shell=bash
+
+# MyProject Command Group Support Library
+#   Support Library for MyProject
+
+set -o nounset -o errexit -o errtrace -o pipefail
+
+(return 0 >/dev/null 2>&1) || {
+    # coverage skip: 2
+    echo >&2 "$0 is a library only meant to be sourced."
+    exit 1
+}
+
+[[ -n "${_MYPROJECT_SUPPORT_LIB:-}" ]] && return
+readonly _MYPROJECT_SUPPORT_LIB=1
+
+mycmd.trace "The MyProject Support command group support library has been sourced."
