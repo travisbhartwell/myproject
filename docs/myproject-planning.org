@@ -128,7 +128,7 @@ SCHEDULED: <2025-06-20 Fri>
 *** DONE Capture shell trace logs to =_TEST_TRACE_FILE=
 *** DONE Implement function to aggregate coverage files
 *** DONE Implement function to render code with coverage
-*** TODO Improve coverage output
+*** DONE Improve coverage output
 *** TODO Output test reports to a reports directory
 *** TODO Add junit XML production for tests
 

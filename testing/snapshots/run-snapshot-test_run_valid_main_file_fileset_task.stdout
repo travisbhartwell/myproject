@@ -1,0 +1,11 @@
+Using project root at 'TEST_DATA_DIRECTORY/valid/valid1'.
+
+Using task definition directory at 'TEST_DATA_DIRECTORY/valid/valid1/myproject'.
+
+➡️ Executing task 'fileset-task'...
+module1/dir1/file1
+module1/dir1/sub1/file3
+module1/dir2/file1
+module1/file1
+module1/file2
+✅ Task 'fileset-task' succeeded.

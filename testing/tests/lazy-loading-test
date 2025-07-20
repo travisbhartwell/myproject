@@ -72,8 +72,8 @@ function test_lazy_load_and_execute_task() {
     project.load_closest_task_definition || result="${?}"
     assertTrue "The main task definition file successfully loads" \
         "${result}"
-    assertEquals "There should be 3 tasks registered." \
-        3 "${#_MYPROJECT_TASKS[@]}"
+    assertEquals "There should be 4 tasks registered." \
+        4 "${#_MYPROJECT_TASKS[@]}"
     assertEquals "There should be 1 task definition file loaded." \
         1 "${#_MYPROJECT_LOADED_TASK_DEFINITION_FILES[@]}"
     assertEquals "PROJECT_VARIABLE should be 1" 1 "${PROJECT_VARIABLE}"
@@ -102,8 +102,8 @@ function test_lazy_load_and_execute_task() {
     result=0
     project:task_registry.get_task "sub/task1" sub_task1 || result="${?}"
     assertTrue "Getting sub/task1 should succeed" "${result}"
-    assertEquals "There should now be 6 tasks registered." \
-        6 "${#_MYPROJECT_TASKS[@]}"
+    assertEquals "There should now be 7 tasks registered." \
+        7 "${#_MYPROJECT_TASKS[@]}"
     assertEquals "There should now be 2 task definition file loaded." \
         2 "${#_MYPROJECT_LOADED_TASK_DEFINITION_FILES[@]}"
     assertEquals "sub/task1" "$(project:task.get_fully_qualified_name sub_task1)"

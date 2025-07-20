@@ -28,6 +28,22 @@ function filter_run_valid_main_file_task() {
 }
 
 # ------------------------------------------------------------------------------
+# Run valid fileset task Snapshot Test Suite
+function test_run_valid_main_file_fileset_task() {
+    execute_and_assert_exit_code_and_snapshot 0
+}
+
+function snapshot_run_valid_main_file_fileset_task() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject run fileset-task
+}
+
+function filter_run_valid_main_file_fileset_task() {
+    # shellcheck disable=SC2154
+    sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
 # Run with no task Snapshot Test Suite
 function test_run_no_task_specified() {
     execute_and_assert_exit_code_and_snapshot 1

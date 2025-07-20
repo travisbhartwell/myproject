@@ -3,6 +3,7 @@ Using project root at 'TEST_DATA_DIRECTORY/valid/valid1'.
 Using task definition directory at 'TEST_DATA_DIRECTORY/valid/valid1/myproject'.
 
 The following tasks are registered:
+fileset-task
 task1
 task2
 task3

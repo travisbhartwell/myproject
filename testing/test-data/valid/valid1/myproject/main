@@ -27,3 +27,25 @@ function task_function3() {
     PROJECT_VARIABLE="${arg2}"
 }
 myproject.register_task task3 task_function3 this-is-a-test 10
+
+readonly MODULE1_DIR="${MYPROJECT_ROOT_DIRECTORY}/module1"
+
+myproject.register_fileset DATA_FILES
+myproject.add_files_to_fileset DATA_FILES \
+    "${MODULE1_DIR}/file2" \
+    "${MODULE1_DIR}/dir2/file1" \
+    "${MODULE1_DIR}/file1" \
+    "${MODULE1_DIR}/dir1/sub1/file3" \
+    "${MODULE1_DIR}/dir1/file1"
+
+function fileset_task_function1() {
+    local -n fileset="${1}"
+
+    local f
+    for f in "${fileset[@]}"; do
+        mycmd.output "${f}"
+    done
+}
+myproject.register_task_with_fileset fileset-task \
+    fileset_task_function1 \
+    DATA_FILES
