@@ -41,11 +41,9 @@ myproject.add_files_to_fileset DATA_FILES \
 function fileset_task_function1() {
     local -n fileset="${1}"
 
-    local f
-    for f in "${fileset[@]}"; do
-        mycmd.output "${f}"
-    done
+    myproject.for_each_in_fileset "${!fileset}" mycmd.output
 }
+
 myproject.register_task_with_fileset fileset-task \
     fileset_task_function1 \
     DATA_FILES

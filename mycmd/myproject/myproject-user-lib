@@ -82,4 +82,14 @@ shopt -s expand_aliases
 alias myproject.register_fileset='project:fileset_registry.new_fileset'
 alias myproject.add_files_to_fileset='project:fileset.add_files_to_fileset'
 
+function myproject.for_each_in_fileset() {
+    local -n fileset="${1}"
+    local -r action="${2}"
+
+    local f
+    for f in "${fileset[@]}"; do
+        "${action}" "${f}"
+    done
+}
+
 mycmd.trace "The MyProject User command group support library has been sourced."
