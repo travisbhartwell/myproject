@@ -9,6 +9,7 @@ project.load_task_library "git"
 
 # shellcheck disable=SC2154
 readonly MYPROJECT_LIB_BASE_DIR="${MYPROJECT_BASE_DIR}/mycmd"
+readonly TASK_DEFINITION_DIR="${MYPROJECT_BASE_DIR}/myproject"
 readonly DOCS_DIR="${MYPROJECT_BASE_DIR}/docs"
 readonly SUPPORT_DIR="${MYPROJECT_BASE_DIR}/support"
 readonly TEMPLATES_DIR="${SUPPORT_DIR}/templates"
@@ -28,6 +29,7 @@ readonly WORKTREES_PARENT_DIR
 
 mycmd.trace "Set the following variables:"
 mycmd.trace "- MYPROJECT_LIB_BASE_DIR: ${MYPROJECT_LIB_BASE_DIR}"
+mycmd.trace "- TASK_DEFINITION_DIR:    ${TASK_DEFINITION_DIR}"
 mycmd.trace "- DOCS_DIR:               ${DOCS_DIR}"
 mycmd.trace "- SUPPORT_DIR:            ${SUPPORT_DIR}"
 mycmd.trace "- TEMPLATES_DIR:          ${TEMPLATES_DIR}"
@@ -43,7 +45,7 @@ mycmd.trace "- WORKTREES_PARENT_DIR:   ${WORKTREES_PARENT_DIR}"
 # Project File Sets
 # All Files
 project.register_fileset ALL_FILES
-project.find_files_for_fileset ALL_FILES "${MYPROJECT_LIB_BASE_DIR}" "${TEST_FILES_BASE}" "${SUPPORT_DIR}" -type f
+project.find_files_for_fileset ALL_FILES "${MYPROJECT_LIB_BASE_DIR}" "${TEST_FILES_BASE}" "${SUPPORT_DIR}" "${TASK_DEFINITION_DIR}" -type f
 # shellcheck disable=SC2154
 project.add_files_to_fileset ALL_FILES "${MYPROJECT_PROJECT_FILE}"
 project.register_task_with_fileset list-all-files \
@@ -1126,6 +1128,15 @@ function record-demo() {
     mycmd.bin_execute vhs "${demo_source}"
 }
 project.register_task record-demo
+
+#----------------------------------------
+# Run Devel
+function mycmd_myproject_devel() {
+    /usr/bin/env \
+        MYCMD_SEARCH_PATH="${MYPROJECT_LIB_BASE_DIR}" \
+        mycmd myproject "${@}"
+}
+project.register_task myproject-devel mycmd_myproject_devel
 
 #----------------------------------------
 # Run everything

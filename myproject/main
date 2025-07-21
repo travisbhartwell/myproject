@@ -1,0 +1,79 @@
+#!/usr/bin/env -S mycmd myproject run
+# -*- mode: shell-script; sh-shell: bash; sh-basic-offset: 4; sh-indentation: 4; coding: utf-8 -*-
+# shellcheck shell=bash
+
+set -o nounset -o errexit -o errtrace -o pipefail
+
+# --------------------------------------------------------------------------------------------------
+# Project-Wide Variables
+
+# shellcheck disable=SC2154
+readonly MYPROJECT_LIB_BASE_DIR="${MYPROJECT_ROOT_DIRECTORY}/mycmd"
+readonly DOCS_DIR="${MYPROJECT_ROOT_DIRECTORY}/docs"
+readonly SUPPORT_DIR="${MYPROJECT_ROOT_DIRECTORY}/support"
+readonly TEMPLATES_DIR="${SUPPORT_DIR}/templates"
+readonly TESTING_BASE="${MYPROJECT_ROOT_DIRECTORY}/testing"
+readonly TEST_FILES_BASE="${TESTING_BASE}/tests"
+readonly TEST_SNAPSHOTS_DIR="${TESTING_BASE}/snapshots"
+readonly TEST_VENDOR_DIR="${TESTING_BASE}/vendor"
+readonly VENDOR_WORKING_DIR="${TEST_VENDOR_DIR}/.working"
+readonly TMP_WORKING_DIR="${MYPROJECT_ROOT_DIRECTORY}/tmp"
+
+if [[ ! -d "${TMP_WORKING_DIR}" ]]; then
+    mkdir -p "${TMP_WORKING_DIR}" || true
+fi
+
+WORKTREES_PARENT_DIR="$(cd "$(dirname "${MYPROJECT_ROOT_DIRECTORY}")" &>/dev/null && pwd -P)"
+readonly WORKTREES_PARENT_DIR
+
+mycmd.trace "Set the following variables:"
+mycmd.trace "- MYPROJECT_LIB_BASE_DIR: ${MYPROJECT_LIB_BASE_DIR}"
+mycmd.trace "- DOCS_DIR:               ${DOCS_DIR}"
+mycmd.trace "- SUPPORT_DIR:            ${SUPPORT_DIR}"
+mycmd.trace "- TEMPLATES_DIR:          ${TEMPLATES_DIR}"
+mycmd.trace "- TESTING_BASE:           ${TESTING_BASE}"
+mycmd.trace "- TEST_FILES_BASE:        ${TEST_FILES_BASE}"
+mycmd.trace "- TEST_SNAPSHOTS_DIR:     ${TEST_SNAPSHOTS_DIR}"
+mycmd.trace "- TEST_VENDOR_DIR:        ${TEST_VENDOR_DIR}"
+mycmd.trace "- VENDOR_WORKING_DIR:     ${VENDOR_WORKING_DIR}"
+mycmd.trace "- TMP_WORKING_DIR:        ${TMP_WORKING_DIR}"
+mycmd.trace "- WORKTREES_PARENT_DIR:   ${WORKTREES_PARENT_DIR}"
+
+# --------------------------------------------------------------------------------------------------
+# Project File Sets
+
+# All Files
+myproject.register_fileset ALL_FILES
+# shellcheck disable=SC2154
+myproject.find_and_add_files_to_fileset ALL_FILES "${MYPROJECT_LIB_BASE_DIR}" "${TEST_FILES_BASE}" "${SUPPORT_DIR}" "${MYPROJECT_TASK_DEFINITION_DIRECTORY}" -type f
+myproject.add_files_to_fileset ALL_FILES myproject-tasks
+
+# Task Definition Files
+myproject.register_fileset TASK_DEFINITION_FILES
+myproject.add_files_to_fileset TASK_DEFINITION_FILES "${MYPROJECT_TASK_DEFINITION_DIRECTORY}"/*
+
+# Implementation Files Only
+myproject.register_fileset IMPLEMENTATION_FILES
+myproject.find_and_add_files_to_fileset IMPLEMENTATION_FILES \
+    "${MYPROJECT_LIB_BASE_DIR}" \
+    -type f
+
+# Test Files Only
+myproject.register_fileset TEST_FILES
+myproject.find_and_add_files_to_fileset TEST_FILES \
+    "${TEST_FILES_BASE}" \
+    -type f -name '*-test'
+
+# Snapshot Test Files Only
+myproject.register_fileset SNAPSHOT_TEST_FILES
+myproject.find_and_add_files_to_fileset SNAPSHOT_TEST_FILES \
+    "${TEST_FILES_BASE}" \
+    -type f -name '*-snapshot-test'
+
+# Snapshot Files Only
+myproject.register_fileset SNAPSHOT_FILES
+myproject.find_and_add_files_to_fileset SNAPSHOT_FILES \
+    "${TEST_SNAPSHOTS_DIR}" \
+    -type f
+
+mycmd.trace "Finished loading the main task definition file."

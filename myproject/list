@@ -1,0 +1,34 @@
+#!/usr/bin/env -S mycmd myproject run
+# -*- mode: shell-script; sh-shell: bash; sh-basic-offset: 4; sh-indentation: 4; coding: utf-8 -*-
+# shellcheck shell=bash
+
+set -o nounset -o errexit -o errtrace -o pipefail
+
+# --------------------------------------------------------------------------------------------------
+# List Fileset Tasks
+
+myproject.register_task_with_fileset all-files \
+    myproject.list_files \
+    ALL_FILES
+
+myproject.register_task_with_fileset task-definition-files \
+    myproject.list_files \
+    TASK_DEFINITION_FILES
+
+myproject.register_task_with_fileset implementation-files \
+    myproject.list_files \
+    IMPLEMENTATION_FILES
+
+myproject.register_task_with_fileset test-files \
+    myproject.list_files \
+    TEST_FILES
+
+myproject.register_task_with_fileset snapshot-test-files \
+    myproject.list_files \
+    SNAPSHOT_TEST_FILES
+
+myproject.register_task_with_fileset snapshot-files \
+    myproject.list_files \
+    SNAPSHOT_FILES
+
+mycmd.trace "Finished loading the list task definition file."

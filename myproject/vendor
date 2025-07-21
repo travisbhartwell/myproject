@@ -1,0 +1,59 @@
+#!/usr/bin/env -S mycmd myproject run
+# -*- mode: shell-script; sh-shell: bash; sh-basic-offset: 4; sh-indentation: 4; coding: utf-8 -*-
+# shellcheck shell=bash
+
+set -o nounset -o errexit -o errtrace -o pipefail
+
+# --------------------------------------------------------------------------------------------------
+# Vendored Code Related Tasks
+function _update_vendored_file_for_vendor_base_dir() {
+    # shellcheck disable=SC2154
+    local -r source_path="${VENDOR_WORKING_DIR}/${1}"
+    local -r vendor_dir="${2}"
+    local -r dest_path="${vendor_dir}/${3}"
+    local -r dest_dir=$(dirname "${dest_path}")
+
+    if [[ ! -e "${source_path}" ]]; then
+        mycmd.error_output "Source file '${source_path}' not found."
+        return 1
+    fi
+
+    if [[ ! -e "${dest_dir}" ]]; then
+        mkdir -p "${dest_dir}"
+    fi
+
+    if [[ -e "${dest_path}" ]]; then
+        if diff -q "${source_path}" "${dest_path}" &>/dev/null; then
+            mycmd.output "Vendored file '${dest_path}' is up to date."
+            return 0
+        fi
+    fi
+
+    mycmd.output "Updating vendor destination '${dest_path}'."
+    cp -a "${source_path}" "${dest_path}"
+}
+
+function _update_vendored_test_file() {
+    # shellcheck disable=SC2154
+    _update_vendored_file_for_vendor_base_dir "${1}" "${TEST_VENDOR_DIR}" "${2}"
+}
+
+function update-shunit2() {
+    # https://github.com/kward/shunit2/tree/master
+    if [[ ! -e "${VENDOR_WORKING_DIR}/shunit2" ]]; then
+        mkdir -p "${VENDOR_WORKING_DIR}" 2>/dev/null || true
+        cd "${VENDOR_WORKING_DIR}"
+        mycmd.output "Cloning shunit2 git repository."
+        git clone --quiet git@github.com:kward/shunit2.git shunit2
+    fi
+
+    cd "${VENDOR_WORKING_DIR}/shunit2"
+    mycmd.output "Pulling latest shunit2 changes from git."
+    git pull --rebase --quiet
+
+    _update_vendored_test_file "shunit2/shunit2" "shunit2"
+    _update_vendored_test_file "shunit2/shunit2_test_helpers" "shunit2_test_helpers"
+}
+myproject.register_task update-shunit2
+
+mycmd.trace "Finished loading the vendor task definition file."
