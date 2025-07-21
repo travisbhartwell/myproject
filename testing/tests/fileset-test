@@ -124,6 +124,59 @@ function test_add_files_to_fileset() {
 }
 
 # --------------------------------------------------------------------------------------------------
+# project:fileset.find_and_add_files related tests
+# shellcheck disable=SC2154
+function test_find_and_add_files() {
+    local result=0
+    project:fileset_registry.new_fileset MY_FILESET || result="${?}"
+    assertTrue 'Registering MY_FILESET should succeed' "${result}"
+    assertTrue 'MY_FILESET should exist' 'declare -p MY_FILESET >/dev/null'
+    assertEquals '_MYPROJECT_FILESETS should have 1 element' \
+        1 "${#_MYPROJECT_FILESETS[@]}"
+
+    # shellcheck disable=SC2034
+    declare -gx MYPROJECT_ROOT_DIRECTORY="${VALID_PROJECT_DIRECTORY1}"
+
+    result=0
+    project:fileset.find_and_add_files NO_FILESET "${VALID_PROJECT_DIRECTORY1}" -type f || result="${?}"
+    assertFalse 'Attempting to find and add files to a non-existing fileset should fail' "${result}"
+
+    result=0
+    project:fileset.find_and_add_files MY_FILESET "${VALID_TASK_DEFINITION_DIRECTORY1}" -name '*.no-files' || result="${?}"
+    assertFalse 'Finding and adding non-existent files to MY_FILESET should fail' "${result}"
+
+    result=0
+    project:fileset.find_and_add_files MY_FILESET "${VALID_TASK_DEFINITION_DIRECTORY1}" -type f || result="${?}"
+    assertTrue 'Finding and adding files to MY_FILESET should succeed' "${result}"
+    assertEquals 'MY_FILESET should have 2 elements' \
+        2 "${#MY_FILESET[@]}"
+    assertEquals "The first element of MY_FILESET should be 'myproject/main'" \
+        'myproject/main' "${MY_FILESET[0]}"
+    assertEquals "The second element of MY_FILESET should be 'myproject/sub'" \
+        'myproject/sub' "${MY_FILESET[1]}"
+
+    result=0
+    project:fileset.find_and_add_files MY_FILESET "${VALID_PROJECT_DIRECTORY1}/module1" -type f || result="${?}"
+    assertTrue 'Finding and adding more files to MY_FILESET should succeed' "${result}"
+    assertEquals 'MY_FILESET should now have 7 elements' \
+        7 "${#MY_FILESET[@]}"
+    assertEquals "The first element of MY_FILESET should be 'module1/dir1/file1'" \
+        'module1/dir1/file1' "${MY_FILESET[0]}"
+    assertEquals "The second element of MY_FILESET should be 'module1/dir1/sub1/file3'" \
+        'module1/dir1/sub1/file3' "${MY_FILESET[1]}"
+    assertEquals "The third element of MY_FILESET should be 'module1/dir2/file1'" \
+        'module1/dir2/file1' "${MY_FILESET[2]}"
+    assertEquals "The fourth element of MY_FILESET should be 'module1/file1'" \
+        'module1/file1' "${MY_FILESET[3]}"
+    assertEquals "The fifth element of MY_FILESET should be 'module1/file2'" \
+        'module1/file2' "${MY_FILESET[4]}"
+    assertEquals "The sixth element of MY_FILESET should be 'myproject/main'" \
+        'myproject/main' "${MY_FILESET[5]}"
+    assertEquals "The seventh element of MY_FILESET should be 'myproject/sub'" \
+        'myproject/sub' "${MY_FILESET[6]}"
+}
+
+# --------------------------------------------------------------------------------------------------
 # Test Helper Functions
 function setUp() {
     project:fileset_registry._reset_registry

@@ -99,6 +99,44 @@ function project:fileset.add_files() {
     return "${result}"
 }
 
+function project:fileset.find_and_add_files() {
+    # shellcheck disable=SC2178
+    local -n fileset="${1}"
+    shift
+
+    if ! project:fileset_registry._fileset_exists "${!fileset}"; then
+        mycmd.error_output "Fileset '${!fileset}' does not exist."
+        return 1
+    fi
+
+    if ! [[ "${*}" =~ .*-print0.* ]]; then
+        set -- "${@}" -print0
+    fi
+
+    local realpath_exe
+    if ! realpath_exe="$(mycmd._locate_bin realpath)"; then
+        # coverage skip: 2
+        mycmd.debug "Unable to find realpath"
+        return 1
+    fi
+    readonly realpath_exe
+
+    local size_so_far="${#fileset[@]}"
+
+    # shellcheck disable=SC2034
+    readarray -t -O "${size_so_far}" fileset < \
+        <(mycmd.bin_execute find "${@}" \
+            | xargs -0 "${realpath_exe}" --no-symlinks --relative-to="${MYPROJECT_ROOT_DIRECTORY}" \
+            || true)
+
+    if (("${#fileset[@]}" == "${size_so_far}")); then
+        mycmd.error_output "No files found to add to fileset '${!fileset}'."
+        return 1
+    fi
+
+    project:fileset._sort "${!fileset}"
+}
+
 function project:fileset._sort() {
     # shellcheck disable=SC2178
     local -n fileset="${1}"

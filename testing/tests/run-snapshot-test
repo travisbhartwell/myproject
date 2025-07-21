@@ -28,17 +28,33 @@ function filter_run_valid_main_file_task() {
 }
 
 # ------------------------------------------------------------------------------
-# Run valid fileset task Snapshot Test Suite
-function test_run_valid_main_file_fileset_task() {
+# Run valid list_data_files task Snapshot Test Suite
+function test_run_valid_main_file_list_data_files_task() {
     execute_and_assert_exit_code_and_snapshot 0
 }
 
-function snapshot_run_valid_main_file_fileset_task() {
+function snapshot_run_valid_main_file_list_data_files_task() {
     # shellcheck disable=SC2154
-    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject run fileset-task
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject run list-data-files
 }
 
-function filter_run_valid_main_file_fileset_task() {
+function filter_run_valid_main_file_list_data_files_task() {
+    # shellcheck disable=SC2154
+    sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
+# Run valid list_task_definition_files task Snapshot Test Suite
+function test_run_valid_main_file_list_task_definition_files_task() {
+    execute_and_assert_exit_code_and_snapshot 0
+}
+
+function snapshot_run_valid_main_file_list_task_definition_files_task() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject run list-task-definition-files
+}
+
+function filter_run_valid_main_file_list_task_definition_files_task() {
     # shellcheck disable=SC2154
     sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
 }

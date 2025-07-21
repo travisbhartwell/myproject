@@ -52,15 +52,16 @@ function test_get_all_task_namespaced_parts() {
     project:task_registry._get_all_task_namespaced_parts all_tasks_namespaced_parts || result="${?}"
     assertTrue "Getting all task namespaced parts succeeds" \
         "${result}"
-    assertEquals "There are 7 tasks listed" \
-        7 "${#all_tasks_namespaced_parts[@]}"
-    assertEquals "fileset-task" "${all_tasks_namespaced_parts[0]}"
-    assertEquals "task1" "${all_tasks_namespaced_parts[1]}"
-    assertEquals "task2" "${all_tasks_namespaced_parts[2]}"
-    assertEquals "task3" "${all_tasks_namespaced_parts[3]}"
-    assertEquals "sub task1" "${all_tasks_namespaced_parts[4]}"
-    assertEquals "sub task2" "${all_tasks_namespaced_parts[5]}"
-    assertEquals "sub task3" "${all_tasks_namespaced_parts[6]}"
+    assertEquals "There are 8 tasks listed" \
+        8 "${#all_tasks_namespaced_parts[@]}"
+    assertEquals "list-data-files" "${all_tasks_namespaced_parts[0]}"
+    assertEquals "list-task-definition-files" "${all_tasks_namespaced_parts[1]}"
+    assertEquals "task1" "${all_tasks_namespaced_parts[2]}"
+    assertEquals "task2" "${all_tasks_namespaced_parts[3]}"
+    assertEquals "task3" "${all_tasks_namespaced_parts[4]}"
+    assertEquals "sub task1" "${all_tasks_namespaced_parts[5]}"
+    assertEquals "sub task2" "${all_tasks_namespaced_parts[6]}"
+    assertEquals "sub task3" "${all_tasks_namespaced_parts[7]}"
 
     popd &>/dev/null || true
 }
