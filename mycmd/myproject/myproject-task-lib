@@ -179,7 +179,7 @@ function project:task_registry.new_task_with_fileset() {
     shift 4
 
     if ! project:fileset_registry._fileset_exists "${fileset_name}"; then
-        mycmd.log "Fileset '${fileset_name}' for task '${fully_qualified_task_name}' does not exist."
+        mycmd.error_output "Fileset '${fileset_name}' for task '${fully_qualified_task_name}' does not exist."
         return 1
     fi
 
