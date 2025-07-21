@@ -13,12 +13,12 @@ function task_function1() {
 }
 myproject.register_task task1 task_function1
 
-function task_function2() {
+function task2() {
     local value="${1:-3}"
     mycmd.output "Running task_function2, setting value to ${value}."
     PROJECT_VARIABLE="${value}"
 }
-myproject.register_task task2 task_function2
+myproject.register_task task2
 
 function task_function3() {
     local -r arg1="${1}"
@@ -36,16 +36,10 @@ readonly MODULE1_DIR="${MYPROJECT_ROOT_DIRECTORY}/module1"
 myproject.register_fileset DATA_FILES
 myproject.find_and_add_files_to_fileset DATA_FILES "${MODULE1_DIR}" -type f
 
-function fileset_task_function1() {
-    local -n fileset="${1}"
-
-    myproject.for_each_in_fileset "${!fileset}" mycmd.output
-}
-
 myproject.register_task_with_fileset list-data-files \
-    fileset_task_function1 \
+    myproject.list_files \
     DATA_FILES
 
 myproject.register_task_with_fileset list-task-definition-files \
-    fileset_task_function1 \
+    myproject.list_files \
     TASK_DEFINITION_FILES
