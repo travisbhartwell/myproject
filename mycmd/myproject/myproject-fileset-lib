@@ -54,7 +54,7 @@ function project:fileset_registry.new_fileset() {
 }
 
 mycmd.defer_at_startup mycmd.init_bin realpath
-function project:fileset.add_files_to_fileset() {
+function project:fileset.add_files() {
     if [[ ! -v MYPROJECT_ROOT_DIRECTORY ]]; then
         # coverage skip: 2
         mycmd.debug "Error: MYPROJECT_ROOT DIRECTORY must be set."
@@ -94,12 +94,12 @@ function project:fileset.add_files_to_fileset() {
         fi
     done
 
-    project:fileset._sort_fileset "${!fileset}"
+    project:fileset._sort "${!fileset}"
 
     return "${result}"
 }
 
-function project:fileset._sort_fileset() {
+function project:fileset._sort() {
     # shellcheck disable=SC2178
     local -n fileset="${1}"
 

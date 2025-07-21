@@ -80,7 +80,7 @@ function myproject._get_fully_qualified_task_name() {
 
 shopt -s expand_aliases
 alias myproject.register_fileset='project:fileset_registry.new_fileset'
-alias myproject.add_files_to_fileset='project:fileset.add_files_to_fileset'
+alias myproject.add_files_to_fileset='project:fileset.add_files'
 
 function myproject.for_each_in_fileset() {
     local -n fileset="${1}"

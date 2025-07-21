@@ -57,7 +57,7 @@ function test_new_fileset() {
 }
 
 # --------------------------------------------------------------------------------------------------
-# project:fileset.add_files_to_fileset related tests
+# project:fileset.add_files related tests
 # shellcheck disable=SC2154
 function test_add_files_to_fileset() {
     local result=0
@@ -71,22 +71,22 @@ function test_add_files_to_fileset() {
     declare -gx MYPROJECT_ROOT_DIRECTORY="${VALID_PROJECT_DIRECTORY1}"
 
     result=0
-    project:fileset.add_files_to_fileset NO_FILESET \
+    project:fileset.add_files NO_FILESET \
         "${VALID_PROJECT_DIRECTORY1}/module1/file1" || result="${?}"
     assertFalse 'Attempting to add a file to a non-existing fileset should fail' "${result}"
 
     result=0
-    project:fileset.add_files_to_fileset MY_FILESET || result="${?}"
+    project:fileset.add_files MY_FILESET || result="${?}"
     assertFalse 'Attempting to add no files to fileset should fail' "${result}"
     assertEquals 'MY_FILESET should still be empty' \
         0 "${#MY_FILESET[@]}"
 
     result=0
-    project:fileset._sort_fileset MY_FILESET || result="${?}"
+    project:fileset._sort MY_FILESET || result="${?}"
     assertTrue 'Sorting an empty fileset should succeed' "${result}"
 
     result=0
-    project:fileset.add_files_to_fileset MY_FILESET \
+    project:fileset.add_files MY_FILESET \
         "${VALID_PROJECT_DIRECTORY1}/module2/file1" \
         "${VALID_PROJECT_DIRECTORY1}/module1/file1" \
         "${VALID_PROJECT_DIRECTORY1}/module1/dir1/file1" \
@@ -102,7 +102,7 @@ function test_add_files_to_fileset() {
         'module1/file1' "${MY_FILESET[2]}"
 
     result=0
-    project:fileset.add_files_to_fileset MY_FILESET \
+    project:fileset.add_files MY_FILESET \
         "${VALID_PROJECT_DIRECTORY1}/module1/dir1/sub1/file3" \
         "${VALID_PROJECT_DIRECTORY1}/module1/file2" || result="${?}"
     assertTrue 'Adding more files to MY_FILESET should succeed' "${result}"
