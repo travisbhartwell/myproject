@@ -71,6 +71,11 @@ function test_add_files_to_fileset() {
     declare -gx MYPROJECT_ROOT_DIRECTORY="${VALID_PROJECT_DIRECTORY1}"
 
     result=0
+    project:fileset.add_files_to_fileset NO_FILESET \
+        "${VALID_PROJECT_DIRECTORY1}/module1/file1" || result="${?}"
+    assertFalse 'Attempting to add a file to a non-existing fileset should fail' "${result}"
+
+    result=0
     project:fileset.add_files_to_fileset MY_FILESET || result="${?}"
     assertFalse 'Attempting to add no files to fileset should fail' "${result}"
     assertEquals 'MY_FILESET should still be empty' \
@@ -82,10 +87,11 @@ function test_add_files_to_fileset() {
 
     result=0
     project:fileset.add_files_to_fileset MY_FILESET \
+        "${VALID_PROJECT_DIRECTORY1}/module2/file1" \
         "${VALID_PROJECT_DIRECTORY1}/module1/file1" \
         "${VALID_PROJECT_DIRECTORY1}/module1/dir1/file1" \
         "${VALID_PROJECT_DIRECTORY1}/module1/dir2/file1" || result="${?}"
-    assertTrue 'Adding files to MY_FILESET should succeed' "${result}"
+    assertFalse 'Adding files to MY_FILESET with a missing file should return non-zero' "${result}"
     assertEquals 'MY_FILESET should have 3 elements' \
         3 "${#MY_FILESET[@]}"
     assertEquals "The first element of MY_FILESET should be 'module1/dir1/file1'" \

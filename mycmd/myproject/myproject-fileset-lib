@@ -38,13 +38,13 @@ project:fileset_registry._reset_registry
 function project:fileset_registry._fileset_exists() {
     local -r fileset_name="${1}"
 
-    declare -p "${fileset_name}" &>/dev/null
+    declare -p "${fileset_name}" &>/dev/null && [[ -v _MYPROJECT_FILESETS["${fileset_name}"] ]]
 }
 
 function project:fileset_registry.new_fileset() {
     local -r fileset_name="${1}"
 
-    if [[ -v _MYPROJECT_FILESETS["${fileset_name}"] ]]; then
+    if project:fileset_registry._fileset_exists "${fileset_name}"; then
         mycmd.trace "Fileset '${fileset_name}' already registered."
         return 0
     fi
@@ -64,6 +64,11 @@ function project:fileset.add_files_to_fileset() {
     local -n fileset="${1}"
     shift
 
+    if ! project:fileset_registry._fileset_exists "${!fileset}"; then
+        mycmd.error_output "Fileset '${!fileset}' does not exist."
+        return 1
+    fi
+
     if (($# == 0)); then
         mycmd.error_output "No files specified to add files to fileset."
         return 1
@@ -71,16 +76,27 @@ function project:fileset.add_files_to_fileset() {
 
     local filename
     local relative_filename
+    local result=0
 
     for filename in "${@}"; do
-        mycmd.trace "Attempting to add '${filename}' to fileset."
-        if relative_filename="$(mycmd.bin_execute realpath --no-symlinks --relative-to="${MYPROJECT_ROOT_DIRECTORY}" "${filename}")"; then
-            mycmd.trace "Adding filename '${relative_filename}' to fileset."
+        mycmd.trace "Attempting to add '${filename}' to fileset '${!fileset}'."
+
+        if [[ ! -e "${filename}" ]]; then
+            mycmd.error_output "Not adding '${filename}' to fileset '${!fileset}' as it doesn't exist."
+            result=1
+        elif relative_filename="$(mycmd.bin_execute realpath --no-symlinks --relative-to="${MYPROJECT_ROOT_DIRECTORY}" "${filename}")"; then
+            mycmd.trace "Adding filename '${relative_filename}' to fileset '${!fileset}'."
             fileset+=("${relative_filename}")
+        else
+            # coverage skip: 2
+            mycmd.error_output "Error while getting relative pathname for '${filename}' for fileset '${!fileset}'."
+            result=1
         fi
     done
 
     project:fileset._sort_fileset "${!fileset}"
+
+    return "${result}"
 }
 
 function project:fileset._sort_fileset() {
