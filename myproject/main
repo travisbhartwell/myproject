@@ -7,7 +7,10 @@ set -o nounset -o errexit -o errtrace -o pipefail
 # --------------------------------------------------------------------------------------------------
 # Project-Wide Variables
 
+mycmd.trace "The following variables set by MyProject are used in the main task definition file:"
 # shellcheck disable=SC2154
+mycmd.trace "- MYPROJECT_ROOT_DIRECTORY: ${MYPROJECT_ROOT_DIRECTORY}"
+
 readonly MYPROJECT_LIB_BASE_DIR="${MYPROJECT_ROOT_DIRECTORY}/mycmd"
 readonly DOCS_DIR="${MYPROJECT_ROOT_DIRECTORY}/docs"
 readonly SUPPORT_DIR="${MYPROJECT_ROOT_DIRECTORY}/support"
@@ -46,6 +49,7 @@ mycmd.trace "- WORKTREES_PARENT_DIR:   ${WORKTREES_PARENT_DIR}"
 myproject.register_fileset ALL_FILES
 # shellcheck disable=SC2154
 myproject.find_and_add_files_to_fileset ALL_FILES "${MYPROJECT_LIB_BASE_DIR}" "${TEST_FILES_BASE}" "${SUPPORT_DIR}" "${MYPROJECT_TASK_DEFINITION_DIRECTORY}" -type f
+myproject.find_and_add_files_to_fileset ALL_FILES "${TESTING_BASE}/test-data/valid" -regex '.*/myproject/[^/]*' -type f
 myproject.add_files_to_fileset ALL_FILES myproject-tasks
 
 # Task Definition Files
@@ -75,5 +79,84 @@ myproject.register_fileset SNAPSHOT_FILES
 myproject.find_and_add_files_to_fileset SNAPSHOT_FILES \
     "${TEST_SNAPSHOTS_DIR}" \
     -type f
+
+# --------------------------------------------------------------------------------------------------
+# Main Tasks
+
+mycmd.defer_at_startup mycmd.init_bin shfmt
+function format_shell_files() {
+    local -n format_fileset="${1}"
+
+    # TODO: myproject.is_verbose_enabled
+    # if myproject.is_verbose_enabled; then
+    #     mycmd.output "Formatting the following files:"
+    #     myproject.list-files "${!format_fileset}"
+    # fi
+
+    mycmd.bin_execute shfmt --language-dialect bash --indent=4 --binary-next-line --case-indent --write "${format_fileset[@]}"
+}
+
+myproject.register_task_with_fileset format format_shell_files ALL_FILES
+
+mycmd.defer_at_startup mycmd.init_bin shellcheck
+function lint_shell_files() {
+    local -n lint_fileset="${1}"
+
+    # TODO: myproject.is_verbose_enabled
+    # if myproject.is_verbose_enabled; then
+    #     mycmd.output "Linting the following files:"
+    #     myproject.list-files "${!lint_fileset}"
+    # fi
+
+    mycmd.output "Running ShellCheck:"
+    mycmd.bin_execute shellcheck --check-sourced "${lint_fileset[@]}"
+}
+
+myproject.register_task_with_fileset lint lint_shell_files ALL_FILES
+
+function record_demo() {
+    if ! mycmd.init_bin_no_exit vhs; then
+        mycmd.error_output "Required tool 'vhs' not found."
+        return 1
+    fi
+
+    local -r demo_source="${1}"
+    local -r output_file="${2}"
+
+    if [[ -e "${output_file}" ]]; then
+        rm "${output_file}" &>/dev/null || true
+    fi
+
+    mycmd.bin_execute vhs "${demo_source}"
+}
+
+myproject.register_task record-demo record_demo
+
+function mycmd_myproject_devel() {
+    /usr/bin/env \
+        MYCMD_SEARCH_PATH="${MYPROJECT_LIB_BASE_DIR}" \
+        mycmd myproject "${@}"
+}
+
+myproject.register_task myproject-devel mycmd_myproject_devel
+
+mycmd.defer_at_startup mycmd.init_bin find
+function clean_up() {
+    mycmd.bin_execute find "${MYPROJECT_ROOT_DIRECTORY}" -type f -name '.DS_Store' -delete
+}
+
+myproject.register_task clean-up clean_up
+
+function all() {
+    mycmd.output "All"
+
+    # TODO: myproject.execute_tasks
+    # myproject.execute_tasks clean-up format lint execute-all-tests
+}
+
+myproject.register_task all
+
+# TODO: myproject.register_default_task
+# myproject.register_default_task all
 
 mycmd.trace "Finished loading the main task definition file."

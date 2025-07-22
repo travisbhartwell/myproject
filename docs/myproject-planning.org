@@ -156,3 +156,8 @@ My development process should follow the following tenants:
 ** Possibly Use a =command_not_found= handler to execute tasks
 
 Similar to what [[https://github.com/aleyan/dela][dela]] does.
+
+* Features Needed for Dog Fooding
+** TODO Output verbosity functions, =myproject.output_only_if_not_quiet=
+** TODO =myproject.execute_tasks=
+** TODO =myproject.register_default_task=

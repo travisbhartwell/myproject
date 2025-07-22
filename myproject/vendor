@@ -6,8 +6,43 @@ set -o nounset -o errexit -o errtrace -o pipefail
 
 # --------------------------------------------------------------------------------------------------
 # Vendored Code Related Tasks
+
+# --------------------------------------------------------------------------------------------------
+# Global Dependencies
+mycmd.trace "The following variables set in main are used in the vendor task definition file:"
+# shellcheck disable=SC2154
+mycmd.trace "- TEST_VENDOR_DIR:        ${TEST_VENDOR_DIR}"
+# shellcheck disable=SC2154
+mycmd.trace "- VENDOR_WORKING_DIR:     ${VENDOR_WORKING_DIR}"
+
+# --------------------------------------------------------------------------------------------------
+# Task Definitions
+function update_shunit2() {
+    # https://github.com/kward/shunit2/tree/master
+    if [[ ! -e "${VENDOR_WORKING_DIR}/shunit2" ]]; then
+        mkdir -p "${VENDOR_WORKING_DIR}" 2>/dev/null || true
+        cd "${VENDOR_WORKING_DIR}"
+        mycmd.output "Cloning shunit2 git repository."
+        git clone --quiet git@github.com:kward/shunit2.git shunit2
+    fi
+
+    cd "${VENDOR_WORKING_DIR}/shunit2"
+    mycmd.output "Pulling latest shunit2 changes from git."
+    git pull --rebase --quiet
+
+    _update_vendored_test_file "shunit2/shunit2" "shunit2"
+    _update_vendored_test_file "shunit2/shunit2_test_helpers" "shunit2_test_helpers"
+}
+
+myproject.register_task update-shunit2 update_shunit2
+
+# --------------------------------------------------------------------------------------------------
+# Vendored Code Tasks Support Functions
+function _update_vendored_test_file() {
+    _update_vendored_file_for_vendor_base_dir "${1}" "${TEST_VENDOR_DIR}" "${2}"
+}
+
 function _update_vendored_file_for_vendor_base_dir() {
-    # shellcheck disable=SC2154
     local -r source_path="${VENDOR_WORKING_DIR}/${1}"
     local -r vendor_dir="${2}"
     local -r dest_path="${vendor_dir}/${3}"
@@ -32,28 +67,5 @@ function _update_vendored_file_for_vendor_base_dir() {
     mycmd.output "Updating vendor destination '${dest_path}'."
     cp -a "${source_path}" "${dest_path}"
 }
-
-function _update_vendored_test_file() {
-    # shellcheck disable=SC2154
-    _update_vendored_file_for_vendor_base_dir "${1}" "${TEST_VENDOR_DIR}" "${2}"
-}
-
-function update-shunit2() {
-    # https://github.com/kward/shunit2/tree/master
-    if [[ ! -e "${VENDOR_WORKING_DIR}/shunit2" ]]; then
-        mkdir -p "${VENDOR_WORKING_DIR}" 2>/dev/null || true
-        cd "${VENDOR_WORKING_DIR}"
-        mycmd.output "Cloning shunit2 git repository."
-        git clone --quiet git@github.com:kward/shunit2.git shunit2
-    fi
-
-    cd "${VENDOR_WORKING_DIR}/shunit2"
-    mycmd.output "Pulling latest shunit2 changes from git."
-    git pull --rebase --quiet
-
-    _update_vendored_test_file "shunit2/shunit2" "shunit2"
-    _update_vendored_test_file "shunit2/shunit2_test_helpers" "shunit2_test_helpers"
-}
-myproject.register_task update-shunit2
 
 mycmd.trace "Finished loading the vendor task definition file."
