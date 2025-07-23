@@ -9,7 +9,9 @@ set -o nounset -o errexit -o errtrace -o pipefail
 
 mycmd.trace "The following variables set by MyProject are used in the main task definition file:"
 # shellcheck disable=SC2154
-mycmd.trace "- MYPROJECT_ROOT_DIRECTORY: ${MYPROJECT_ROOT_DIRECTORY}"
+mycmd.trace "- MYPROJECT_ROOT_DIRECTORY:            ${MYPROJECT_ROOT_DIRECTORY}"
+# shellcheck disable=SC2154
+mycmd.trace "- MYPROJECT_TASK_DEFINITION_DIRECTORY: ${MYPROJECT_TASK_DEFINITION_DIRECTORY}"
 
 readonly MYPROJECT_LIB_BASE_DIR="${MYPROJECT_ROOT_DIRECTORY}/mycmd"
 readonly DOCS_DIR="${MYPROJECT_ROOT_DIRECTORY}/docs"
@@ -47,7 +49,6 @@ mycmd.trace "- WORKTREES_PARENT_DIR:   ${WORKTREES_PARENT_DIR}"
 
 # All Files
 myproject.register_fileset ALL_FILES
-# shellcheck disable=SC2154
 myproject.find_and_add_files_to_fileset ALL_FILES "${MYPROJECT_LIB_BASE_DIR}" "${TEST_FILES_BASE}" "${SUPPORT_DIR}" "${MYPROJECT_TASK_DEFINITION_DIRECTORY}" -type f
 myproject.find_and_add_files_to_fileset ALL_FILES "${TESTING_BASE}/test-data/valid" -regex '.*/myproject/[^/]*' -type f
 myproject.add_files_to_fileset ALL_FILES myproject-tasks

@@ -37,6 +37,7 @@ function test_mycmd_lib_is_loaded() {
 
 function test_project_lib_is_loaded() {
     assertTrue 'Project Lib is loaded' '[ -v _MYPROJECT_LIB ]'
+    assertTrue 'Project Execution Support Lib is loaded' '[ -v _MYPROJECT_EXECUTION_LIB ]'
     assertTrue 'Project Fileset Support Lib is loaded' '[ -v _MYPROJECT_FILESET_LIB ]'
     assertTrue 'Project Tasks Support Lib is loaded' '[ -v _MYPROJECT_TASK_LIB ]'
     assertTrue 'Project User Support Lib is loaded' '[ -v _MYPROJECT_USER_LIB ]'

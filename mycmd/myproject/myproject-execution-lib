@@ -1,0 +1,56 @@
+# -*- mode: shell-script; sh-shell: bash; sh-basic-offset: 4; sh-indentation: 4; coding: utf-8 -*-
+# shellcheck shell=bash
+
+# MyProject Execution Command Group Support Library
+#   Task Execution Support Library
+
+set -o nounset -o errexit -o errtrace -o pipefail
+
+(return 0 >/dev/null 2>&1) || {
+    # coverage skip: 2
+    echo >&2 "$0 is a library only meant to be sourced."
+    exit 1
+}
+
+[[ -n "${_MYPROJECT_EXECUTION_LIB:-}" ]] && return
+readonly _MYPROJECT_EXECUTION_LIB=1
+
+mycmd:command_group.load_support_lib "task"
+
+# --------------------------------------------------------------------------------------------------
+# Task Execution
+function project.execute_task() {
+    local fully_qualified_task_name="${1}"
+    shift
+
+    local return_code=0
+
+    # shellcheck disable=SC2034
+    local -A task
+    if ! project:task_registry.get_task "${fully_qualified_task_name}" task; then
+        mycmd.debug "Task '${fully_qualified_task_name}' is not found"
+        return_code=1
+    fi
+
+    if (($# > 0 && "${return_code}" != 0)); then
+        fully_qualified_task_name="${fully_qualified_task_name}/${1}"
+        shift
+
+        if ! project:task_registry.get_task "${fully_qualified_task_name}" task; then
+            mycmd.error_output "Task '${fully_qualified_task_name}' is not found"
+        else
+            return_code=0
+        fi
+    fi
+
+    if (("${return_code}" != 0)); then
+        mycmd.error_output "Task not found."
+        return 1
+    fi
+
+    project:task.execute task "${@}" || return_code="${?}"
+
+    return "${return_code}"
+}
+
+mycmd.trace "The MyProject Execution command group support library has been sourced."
