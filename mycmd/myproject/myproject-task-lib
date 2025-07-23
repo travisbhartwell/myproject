@@ -204,13 +204,7 @@ function project:task_registry.get_task() {
 
     task_struct_ref=()
 
-    if ! project:task_registry._load_task_definition_file_for_task "${fully_qualified_task_name}"; then
-        mycmd.debug "Error loading task definition file for '${fully_qualified_task_name}'."
-        return 1
-    fi
-
-    if ! [[ -v _MYPROJECT_TASKS["${fully_qualified_task_name}"] ]]; then
-        mycmd.debug "Task '${fully_qualified_task_name}' is not found."
+    if ! project:task_registry.task_exists_with_fully_qualified_task_name "${fully_qualified_task_name}"; then
         return 1
     fi
 
@@ -258,6 +252,24 @@ function project:task_registry.get_task() {
     else
         mycmd.trace "- ${_TASK_FILESET_FIELD}: No value set."
     fi
+}
+
+function project:task_registry.task_exists_with_fully_qualified_task_name() {
+    local -r fully_qualified_task_name="${1}"
+
+    mycmd.trace "Attempting to locate task with fully qualified name '${fully_qualified_task_name}'."
+
+    if ! project:task_registry._load_task_definition_file_for_task "${fully_qualified_task_name}"; then
+        mycmd.debug "Error loading task definition file for '${fully_qualified_task_name}'."
+        return 1
+    fi
+
+    if ! [[ -v _MYPROJECT_TASKS["${fully_qualified_task_name}"] ]]; then
+        mycmd.debug "Task '${fully_qualified_task_name}' is not found."
+        return 1
+    fi
+
+    return 0
 }
 
 function project:task_registry._load_task_definition_file_for_task() {

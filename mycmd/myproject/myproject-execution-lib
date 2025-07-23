@@ -19,38 +19,129 @@ mycmd:command_group.load_support_lib "task"
 
 # --------------------------------------------------------------------------------------------------
 # Task Execution
+
 function project.execute_task() {
-    local fully_qualified_task_name="${1}"
-    shift
-
-    local return_code=0
-
     # shellcheck disable=SC2034
-    local -A task
-    if ! project:task_registry.get_task "${fully_qualified_task_name}" task; then
-        mycmd.debug "Task '${fully_qualified_task_name}' is not found"
-        return_code=1
-    fi
+    local -A execution_task=()
 
-    if (($# > 0 && "${return_code}" != 0)); then
-        fully_qualified_task_name="${fully_qualified_task_name}/${1}"
-        shift
-
-        if ! project:task_registry.get_task "${fully_qualified_task_name}" task; then
-            mycmd.error_output "Task '${fully_qualified_task_name}' is not found"
-        else
-            return_code=0
-        fi
-    fi
-
-    if (("${return_code}" != 0)); then
-        mycmd.error_output "Task not found."
+    if ! project:execution_task.parse_from_arguments execution_task "${@}"; then
+        mycmd.error_output "Task not found for arguments '${*}'"
         return 1
     fi
+
+    local fully_qualified_task_name
+    fully_qualified_task_name="$(project:execution_task.get_fully_qualified_task_name execution_task)"
+    readonly fully_qualified_task_name
+
+    local shift_amount
+    shift_amount="$(project:execution_task.get_shift_amount execution_task)"
+    readonly shift_amount
+    shift "${shift_amount}"
+
+    # shellcheck disable=SC2034
+    local -A task=()
+
+    if ! project:task_registry.get_task "${fully_qualified_task_name}" task; then
+        mycmd.error_output "Error loading task '${fully_qualified_task_name}'."
+        return 1
+    fi
+
+    local return_code=0
 
     project:task.execute task "${@}" || return_code="${?}"
 
     return "${return_code}"
+}
+
+## An execution task object is the result of parsing a task execution argument list, it contains two fields:
+## - the fully qualified task name of the task referenced
+readonly _EXECUTION_TASK_FULLY_QUALIFIED_NAME_FIELD='task-fully-qualified-name'
+## - the amount of arguments to shift in the original argument list to get to the task arguments
+readonly _EXECUTION_TASK_ARGUMENT_SHIFT_AMOUNT_FIELD='argument-shift-amount'
+
+function project:execution_task.parse_from_arguments() {
+    local -n execution_task_struct_ref="${1}"
+    shift
+
+    if (($# == 0)); then
+        mycmd.debug "No arguments received."
+        return 1
+    fi
+
+    # First, try the first argument as the fully qualified task name
+    local fully_qualified_task_name="${1}"
+    shift
+
+    local -i shift_amount=1
+
+    if project:execution_task._check_if_valid "${!execution_task_struct_ref}" "${fully_qualified_task_name}" "${shift_amount}"; then
+        return 0
+    fi
+
+    # Next, try prefixing the MYPROJECT_CURRENT_TASK_FILE, if set --
+    # i.e. we are calling this from a task definition file
+    if [[ -v MYPROJECT_CURRENT_TASK_FILE ]]; then
+        if project:execution_task._check_if_valid "${!execution_task_struct_ref}" \
+            "${MYPROJECT_CURRENT_TASK_FILE}/${fully_qualified_task_name}" \
+            "${shift_amount}"; then
+            return 0
+        fi
+    fi
+
+    # Last, try combining with the second argument, if present
+    if (($# > 0)); then
+        ((shift_amount += 1))
+        fully_qualified_task_name="${fully_qualified_task_name}/${1}"
+
+        if project:execution_task._check_if_valid "${!execution_task_struct_ref}" "${fully_qualified_task_name}" "${shift_amount}"; then
+            return 0
+        fi
+    fi
+
+    return 1
+}
+
+function project:execution_task._check_if_valid() {
+    local -n execution_task_struct="${1}"
+    local -r fully_qualified_task_name="${2}"
+    local -r shift_amount="${3}"
+
+    if project:task_registry.task_exists_with_fully_qualified_task_name "${fully_qualified_task_name}"; then
+        execution_task_struct["${_EXECUTION_TASK_FULLY_QUALIFIED_NAME_FIELD}"]="${fully_qualified_task_name}"
+        mycmd.trace "- ${_EXECUTION_TASK_FULLY_QUALIFIED_NAME_FIELD}: ${execution_task_struct["${_EXECUTION_TASK_FULLY_QUALIFIED_NAME_FIELD}"]}"
+        execution_task_struct["${_EXECUTION_TASK_ARGUMENT_SHIFT_AMOUNT_FIELD}"]="${shift_amount}"
+        mycmd.trace "- ${_EXECUTION_TASK_ARGUMENT_SHIFT_AMOUNT_FIELD}: ${execution_task_struct["${_EXECUTION_TASK_ARGUMENT_SHIFT_AMOUNT_FIELD}"]}"
+
+        return 0
+    else
+        return 1
+    fi
+}
+
+function project:execution_task.get_fully_qualified_task_name() {
+    project:execution_task._get_field_from_struct \
+        "${_EXECUTION_TASK_FULLY_QUALIFIED_NAME_FIELD}" \
+        "${@}"
+}
+
+function project:execution_task.get_shift_amount() {
+    project:execution_task._get_field_from_struct \
+        "${_EXECUTION_TASK_ARGUMENT_SHIFT_AMOUNT_FIELD}" \
+        "${@}"
+}
+
+function project:execution_task._get_field_from_struct() {
+    local -r field_name="${1}"
+    # shellcheck disable=SC2178
+    local -n execution_struct_ref="${2}"
+
+    if [[ -v execution_struct_ref["${field_name}"] ]]; then
+        echo "${execution_struct_ref["${field_name}"]}"
+        return 0
+    else
+        mycmd.debug "Missing required execution field '${field_name}'."
+        return 1
+    fi
 }
 
 mycmd.trace "The MyProject Execution command group support library has been sourced."
