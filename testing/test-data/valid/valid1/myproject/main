@@ -29,8 +29,10 @@ function task_function3() {
 myproject.register_task task3 task_function3 this-is-a-test 10
 
 myproject.register_fileset TASK_DEFINITION_FILES
+# shellcheck disable=SC2154
 myproject.add_files_to_fileset TASK_DEFINITION_FILES "${MYPROJECT_TASK_DEFINITION_DIRECTORY}"/*
 
+# shellcheck disable=SC2154
 readonly MODULE1_DIR="${MYPROJECT_ROOT_DIRECTORY}/module1"
 
 myproject.register_fileset DATA_FILES

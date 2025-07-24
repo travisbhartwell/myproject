@@ -149,10 +149,7 @@ function clean_up() {
 myproject.register_task clean-up clean_up
 
 function all() {
-    mycmd.output "All"
-
-    # TODO: myproject.execute_tasks
-    # myproject.execute_tasks clean-up format lint execute-all-tests
+    myproject.execute_tasks clean-up \; format \; lint \; test execute-all
 }
 
 myproject.register_task all

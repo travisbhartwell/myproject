@@ -1133,6 +1133,8 @@ project.register_task record-demo
 # Run Devel
 function mycmd_myproject_devel() {
     /usr/bin/env \
+        MYCMD_TRACE=1 \
+        MYCMD_LOG_FILE="${TMP_WORKING_DIR}/devel-output.log" \
         MYCMD_SEARCH_PATH="${MYPROJECT_LIB_BASE_DIR}" \
         mycmd myproject "${@}"
 }

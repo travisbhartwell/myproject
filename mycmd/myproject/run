@@ -31,5 +31,5 @@ function mycmd.main() {
         mycmd.err_exit 1 "Missing task to execute."
     fi
 
-    project.execute_task "${@}"
+    project.execute_tasks "${@}"
 }

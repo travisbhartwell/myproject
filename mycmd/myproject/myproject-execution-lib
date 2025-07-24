@@ -19,7 +19,6 @@ mycmd:command_group.load_support_lib "task"
 
 # --------------------------------------------------------------------------------------------------
 # Task Execution
-
 function project.execute_task() {
     # shellcheck disable=SC2034
     local -A execution_task=()
@@ -51,6 +50,54 @@ function project.execute_task() {
     project:task.execute task "${@}" || return_code="${?}"
 
     return "${return_code}"
+}
+
+function project.execute_tasks() {
+    local -a task_positions=()
+    local -a arguments=("${@}")
+
+    if ! project._extract_task_positions task_positions "${arguments[@]}"; then
+        mycmd.error_output "No tasks provided"
+        return 1
+    fi
+
+    local -i max_argument_index="${#arguments[@]}"
+    local -i max_task_index=$((${#task_positions[@]} - 1))
+
+    local -i index
+    local -i next_index
+    local -i start
+    local -i end
+    local -i len
+
+    mycmd.trace "Executing tasks from arguments: '${arguments[*]}'"
+
+    for ((index = 0; index <= max_task_index; index++)); do
+        start="${task_positions["${index}"]}"
+
+        if ((index < max_task_index)); then
+            next_index="$((index + 1))"
+            end=$((${task_positions["${next_index}"]} - 1))
+        else
+            end="${max_argument_index}"
+        fi
+
+        len=$((end - start))
+
+        mycmd.trace "Task ${index} start at ${start}, end at ${end}, argument length '${len}'."
+
+        set -- "${arguments[@]:start:len}"
+
+        mycmd.trace "Task arguments: '${*}'"
+
+        local result=0
+
+        project.execute_task "${@}" || result="${?}"
+
+        if ((result != 0)); then
+            return "${result}"
+        fi
+    done
 }
 
 ## An execution task object is the result of parsing a task execution argument list, it contains two fields:
@@ -142,6 +189,30 @@ function project:execution_task._get_field_from_struct() {
         mycmd.debug "Missing required execution field '${field_name}'."
         return 1
     fi
+}
+
+function project._extract_task_positions() {
+    local -n task_positions_ref="${1}"
+    shift
+
+    if (($# == 0)); then
+        mycmd.debug "No arguments passed."
+        return 1
+    fi
+
+    local -i arg_index=1
+    task_positions_ref+=(0)
+    shift
+
+    while (($# > 0)); do
+        ((arg_index += 1))
+
+        if [[ "${1}" = ";" && $# -gt 0 ]]; then
+            task_positions_ref+=("${arg_index}")
+        fi
+
+        shift
+    done
 }
 
 mycmd.trace "The MyProject Execution command group support library has been sourced."

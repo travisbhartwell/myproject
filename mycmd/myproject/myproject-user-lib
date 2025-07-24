@@ -108,4 +108,7 @@ function myproject.for_each_in_fileset() {
     done
 }
 
+alias myproject.execute_task='project.execute_task'
+alias myproject.execute_tasks='project.execute_tasks'
+
 mycmd.trace "The MyProject User command group support library has been sourced."
