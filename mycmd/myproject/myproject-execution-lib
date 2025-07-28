@@ -24,7 +24,6 @@ function project.execute_task() {
     local -A execution_task=()
 
     if ! project:execution_task.parse_from_arguments execution_task "${@}"; then
-        mycmd.error_output "Task not found for arguments '${*}'"
         return 1
     fi
 
@@ -106,6 +105,10 @@ readonly _EXECUTION_TASK_FULLY_QUALIFIED_NAME_FIELD='task-fully-qualified-name'
 ## - the amount of arguments to shift in the original argument list to get to the task arguments
 readonly _EXECUTION_TASK_ARGUMENT_SHIFT_AMOUNT_FIELD='argument-shift-amount'
 
+readonly _EXECUTION_TASK_MATCH_ARG1_AND_ARG2_NAME='arg1-and-arg2-name-matches'
+readonly _EXECUTION_TASK_MATCH_TASK_FILE_AND_ARG1_NAME='task-file-and-arg1-name-matches'
+readonly _EXECUTION_TASK_MATCH_ARG1_NAME='arg1-name-matches'
+
 function project:execution_task.parse_from_arguments() {
     local -n execution_task_struct_ref="${1}"
     shift
@@ -115,54 +118,90 @@ function project:execution_task.parse_from_arguments() {
         return 1
     fi
 
-    # First, try the first argument as the fully qualified task name
-    local fully_qualified_task_name="${1}"
-    shift
+    local -a matches=()
 
-    local -i shift_amount=1
-
-    if project:execution_task._check_if_valid "${!execution_task_struct_ref}" "${fully_qualified_task_name}" "${shift_amount}"; then
-        return 0
+    if (($# > 1)); then
+        if project:task_registry.task_exists_with_fully_qualified_task_name "${1}/${2}"; then
+            matches+=("${_EXECUTION_TASK_MATCH_ARG1_AND_ARG2_NAME}")
+        fi
     fi
 
-    # Next, try prefixing the MYPROJECT_CURRENT_TASK_FILE, if set --
-    # i.e. we are calling this from a task definition file
     if [[ -v MYPROJECT_CURRENT_TASK_FILE ]]; then
-        if project:execution_task._check_if_valid "${!execution_task_struct_ref}" \
-            "${MYPROJECT_CURRENT_TASK_FILE}/${fully_qualified_task_name}" \
-            "${shift_amount}"; then
-            return 0
+        if project:task_registry.task_exists_with_fully_qualified_task_name "${MYPROJECT_CURRENT_TASK_FILE}/${1}"; then
+            matches+=("${_EXECUTION_TASK_MATCH_TASK_FILE_AND_ARG1_NAME}")
         fi
     fi
 
-    # Last, try combining with the second argument, if present
-    if (($# > 0)); then
-        ((shift_amount += 1))
-        fully_qualified_task_name="${fully_qualified_task_name}/${1}"
-
-        if project:execution_task._check_if_valid "${!execution_task_struct_ref}" "${fully_qualified_task_name}" "${shift_amount}"; then
-            return 0
-        fi
+    if project:task_registry.task_exists_with_fully_qualified_task_name "${1}"; then
+        matches+=("${_EXECUTION_TASK_MATCH_ARG1_NAME}")
     fi
 
-    return 1
-}
+    local total_matches="${#matches[@]}"
+    local match_type
 
-function project:execution_task._check_if_valid() {
-    local -n execution_task_struct="${1}"
-    local -r fully_qualified_task_name="${2}"
-    local -r shift_amount="${3}"
+    if ((total_matches == 0)); then
+        mycmd.error_output "Task not found for arguments '${*}'"
+        return 1
+    elif ((total_matches > 1)); then
+        mycmd.error_output "Ambiguous match for task with arguments '${*}', the following match:"
 
-    if project:task_registry.task_exists_with_fully_qualified_task_name "${fully_qualified_task_name}"; then
-        execution_task_struct["${_EXECUTION_TASK_FULLY_QUALIFIED_NAME_FIELD}"]="${fully_qualified_task_name}"
-        mycmd.trace "- ${_EXECUTION_TASK_FULLY_QUALIFIED_NAME_FIELD}: ${execution_task_struct["${_EXECUTION_TASK_FULLY_QUALIFIED_NAME_FIELD}"]}"
-        execution_task_struct["${_EXECUTION_TASK_ARGUMENT_SHIFT_AMOUNT_FIELD}"]="${shift_amount}"
-        mycmd.trace "- ${_EXECUTION_TASK_ARGUMENT_SHIFT_AMOUNT_FIELD}: ${execution_task_struct["${_EXECUTION_TASK_ARGUMENT_SHIFT_AMOUNT_FIELD}"]}"
+        for match_type in "${matches[@]}"; do
+            case "${match_type}" in
+                "${_EXECUTION_TASK_MATCH_ARG1_AND_ARG2_NAME}")
+                    mycmd.error_output "- '${1} ${2}'"
+                    ;;
 
-        return 0
-    else
+                "${_EXECUTION_TASK_MATCH_TASK_FILE_AND_ARG1_NAME}")
+                    mycmd.error_output "- '${MYPROJECT_CURRENT_TASK_FILE} ${1}'"
+                    ;;
+
+                "${_EXECUTION_TASK_MATCH_ARG1_NAME}")
+                    mycmd.error_output "- '${1}'"
+                    ;;
+
+                *)
+                    # coverage skip: 2
+                    mycmd.debug "Unknown match type: '${match_type}'."
+                    ;;
+            esac
+        done
+
         return 1
     fi
+
+    local fully_qualified_task_name
+    local -i shift_amount
+
+    case "${matches[0]}" in
+        "${_EXECUTION_TASK_MATCH_ARG1_AND_ARG2_NAME}")
+            fully_qualified_task_name="${1}/${2}"
+            shift_amount=2
+            ;;
+
+        "${_EXECUTION_TASK_MATCH_TASK_FILE_AND_ARG1_NAME}")
+            fully_qualified_task_name="${MYPROJECT_CURRENT_TASK_FILE}/${1}"
+            shift_amount=1
+            ;;
+
+        "${_EXECUTION_TASK_MATCH_ARG1_NAME}")
+            fully_qualified_task_name="${1}"
+            shift_amount=1
+            ;;
+
+        *)
+            # coverage skip: 2
+            mycmd.error_output "Unknown match type '${matches[0]}'."
+            return 1
+            ;;
+    esac
+
+    mycmd.trace "Returning execution task information:"
+    execution_task_struct_ref["${_EXECUTION_TASK_FULLY_QUALIFIED_NAME_FIELD}"]="${fully_qualified_task_name}"
+    mycmd.trace "- ${_EXECUTION_TASK_FULLY_QUALIFIED_NAME_FIELD}: ${execution_task_struct_ref["${_EXECUTION_TASK_FULLY_QUALIFIED_NAME_FIELD}"]}"
+    execution_task_struct_ref["${_EXECUTION_TASK_ARGUMENT_SHIFT_AMOUNT_FIELD}"]="${shift_amount}"
+    mycmd.trace "- ${_EXECUTION_TASK_ARGUMENT_SHIFT_AMOUNT_FIELD}: ${execution_task_struct_ref["${_EXECUTION_TASK_ARGUMENT_SHIFT_AMOUNT_FIELD}"]}"
+
+    return 0
 }
 
 function project:execution_task.get_fully_qualified_task_name() {
