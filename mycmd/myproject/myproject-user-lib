@@ -76,13 +76,7 @@ function myproject._get_fully_qualified_task_name() {
         return 1
     fi
 
-    local fully_qualified_task_name
-    if [[ "${MYPROJECT_CURRENT_TASK_FILE}" == "main" ]]; then
-        fully_qualified_task_name="${task_name}"
-    else
-        fully_qualified_task_name="${MYPROJECT_CURRENT_TASK_FILE}/${task_name}"
-    fi
-    readonly fully_qualified_task_name
+    local -r fully_qualified_task_name="${MYPROJECT_CURRENT_TASK_FILE}/${task_name}"
 
     echo "${fully_qualified_task_name}"
 }

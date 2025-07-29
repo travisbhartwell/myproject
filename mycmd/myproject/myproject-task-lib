@@ -51,6 +51,31 @@ function project:task_registry._reset_registry() {
 
 project:task_registry._reset_registry
 
+function project:task_registry._dump_task_registry() {
+    # coverage skip: 20
+    if [[ ! -v MYPROJECT_ROOT_DIRECTORY && ! -v MYPROJECT_TASK_DEFINITION_DIRECTORY ]]; then
+        mycmd.trace "Nothing is loaded in the registry."
+    fi
+
+    mycmd.trace "The project with root at '${MYPROJECT_ROOT_DIRECTORY}' and task definition directory '${MYPROJECT_TASK_DEFINITION_DIRECTORY}' is loaded."
+
+    mycmd.trace "There are ${#_MYPROJECT_TASKS_TASK_DEFINITION_FILES[@]} task definition files loaded."
+
+    local task_definition_file
+    for task_definition_file in "${!_MYPROJECT_LOADED_TASK_DEFINITION_FILES[@]}"; do
+        mycmd.trace "- ${task_definition_file}"
+    done
+
+    mycmd.trace "There are ${#_MYPROJECT_TASKS[@]} tasks registered."
+
+    local fully_qualified_task_name
+    for fully_qualified_task_name in "${!_MYPROJECT_TASKS[@]}"; do
+        mycmd.trace "The task with fully qualified name '${fully_qualified_task_name}' is registered."
+        mycmd.trace "It is registered with task definition file: '${_MYPROJECT_TASKS_TASK_DEFINITION_FILES["${fully_qualified_task_name}"]}'."
+        mycmd.trace "It is registered with task function '${_MYPROJECT_TASKS["${fully_qualified_task_name}"]}'."
+    done
+}
+
 function project:task_registry.load_task_definition_file() {
     local -r project_root_directory="${1}"
     local -r task_definition_directory="${2}"
@@ -128,7 +153,11 @@ function project:task_registry._load_task_definition_file() {
 
 function project:task_registry.new_task() {
     local -r task_definition_file_name="${1}"
-    local -r fully_qualified_task_name="${2}"
+
+    local fully_qualified_task_name
+    fully_qualified_task_name="$(project:task_registry._get_filtered_fully_qualified_task_name "${2}")"
+    readonly fully_qualified_task_name
+
     local -r task_function_name="${3}"
     shift 3
 
@@ -173,7 +202,11 @@ function project:task_registry.new_task() {
 
 function project:task_registry.new_task_with_fileset() {
     local -r task_definition_file_name="${1}"
-    local -r fully_qualified_task_name="${2}"
+
+    local fully_qualified_task_name
+    fully_qualified_task_name="$(project:task_registry._get_filtered_fully_qualified_task_name "${2}")"
+    readonly fully_qualified_task_name
+
     local -r task_function_name="${3}"
     local -r fileset_name="${4}"
     shift 4
@@ -197,7 +230,10 @@ function project:task_registry.new_task_with_fileset() {
 }
 
 function project:task_registry.get_task() {
-    local -r fully_qualified_task_name="${1}"
+    local fully_qualified_task_name
+    fully_qualified_task_name="$(project:task_registry._get_filtered_fully_qualified_task_name "${1}")"
+    readonly fully_qualified_task_name
+
     local -n task_struct_ref="${2}"
 
     mycmd.trace "Attempting to load task with fully qualified name '${fully_qualified_task_name}'."
@@ -254,8 +290,16 @@ function project:task_registry.get_task() {
     fi
 }
 
-function project:task_registry.task_exists_with_fully_qualified_task_name() {
+function project:task_registry._get_filtered_fully_qualified_task_name() {
     local -r fully_qualified_task_name="${1}"
+
+    echo "${fully_qualified_task_name##main/}"
+}
+
+function project:task_registry.task_exists_with_fully_qualified_task_name() {
+    local fully_qualified_task_name
+    fully_qualified_task_name="$(project:task_registry._get_filtered_fully_qualified_task_name "${1}")"
+    readonly fully_qualified_task_name
 
     mycmd.trace "Attempting to locate task with fully qualified name '${fully_qualified_task_name}'."
 

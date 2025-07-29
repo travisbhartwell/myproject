@@ -126,7 +126,7 @@ function project:execution_task.parse_from_arguments() {
         fi
     fi
 
-    if [[ -v MYPROJECT_CURRENT_TASK_FILE ]]; then
+    if [[ -v MYPROJECT_CURRENT_TASK_FILE && "${MYPROJECT_CURRENT_TASK_FILE}" != "main" ]]; then
         if project:task_registry.task_exists_with_fully_qualified_task_name "${MYPROJECT_CURRENT_TASK_FILE}/${1}"; then
             matches+=("${_EXECUTION_TASK_MATCH_TASK_FILE_AND_ARG1_NAME}")
         fi
