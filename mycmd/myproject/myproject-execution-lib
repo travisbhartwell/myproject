@@ -24,6 +24,7 @@ function project.execute_task() {
     local -A execution_task=()
 
     if ! project:execution_task.parse_from_arguments execution_task "${@}"; then
+        mycmd.trace "Error getting task for arguments '${*}'."
         return 1
     fi
 
@@ -112,6 +113,8 @@ readonly _EXECUTION_TASK_MATCH_ARG1_NAME='arg1-name-matches'
 function project:execution_task.parse_from_arguments() {
     local -n execution_task_struct_ref="${1}"
     shift
+
+    mycmd.trace "Attempting to parse task from arguments: '${*}'."
 
     if (($# == 0)); then
         mycmd.debug "No arguments received."
