@@ -18,10 +18,6 @@ mycmd:command.register_help_text "\t-v | --version - Show this command's version
 set -o nounset -o errexit -o errtrace -o pipefail
 
 function mycmd.main() {
-    if ! project.load_closest_task_definition; then
-        exit 1
-    fi
-
     if ! project.load_all_task_definition_files; then
         exit 1
     fi

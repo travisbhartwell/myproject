@@ -23,7 +23,7 @@ mycmd:command.register_help_text "\t-V | --verbose - Show detailed information a
 set -o nounset -o errexit -o errtrace -o pipefail
 
 function mycmd.main() {
-    if ! project.load_closest_task_definition; then
+    if ! project.load_all_task_definition_files; then
         exit 1
     fi
 

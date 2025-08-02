@@ -39,11 +39,6 @@ function test_get_all_task_namespaced_parts() {
     local result=0
     # shellcheck disable=SC2154
     pushd "${VALID_PROJECT_DIRECTORY1}" &>/dev/null || true
-    project.load_closest_task_definition || result="${?}"
-    assertTrue "The main task definition file successfully loads" \
-        "${result}"
-
-    result=0
     project.load_all_task_definition_files || result="${?}"
     assertTrue "Loading all task definition files succeeds" \
         "${result}"

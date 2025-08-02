@@ -32,29 +32,6 @@ function test_project_lib_is_loaded() {
 }
 
 # --------------------------------------------------------------------------------------------------
-# project.load_closest_task_definition tests
-function test_load_closest_task_definition_failures() {
-    project:task_registry._reset_registry
-
-    local result=0
-    # shellcheck disable=SC2154
-    pushd "${INVALID_NO_TASK_DEFINITION_DIRECTORY}" &>/dev/null || true
-    project.load_closest_task_definition || result="${?}"
-    assertFalse "Loading closest task definition directory fails for invalid project directory." \
-        "${result}"
-    popd &>/dev/null || true
-
-    result=0
-    project:task_registry._reset_registry
-    # shellcheck disable=SC2154
-    pushd "${VALID_PROJECT_DIRECTORY2}" &>/dev/null || true
-    project.load_closest_task_definition || result="${?}"
-    assertFalse "Loading closest task definition directory fails for failure to load main." \
-        "${result}"
-    popd &>/dev/null || true
-}
-
-# --------------------------------------------------------------------------------------------------
 # project.load_all_task_definition_files tests
 function test_load_all_task_definition_files_failures() {
     project:task_registry._reset_registry
@@ -69,6 +46,7 @@ function test_load_all_task_definition_files_failures() {
 
     result=0
     project:task_registry._reset_registry
+    # shellcheck disable=SC2154
     pushd "${VALID_PROJECT_DIRECTORY2}" &>/dev/null || true
     project.load_all_task_definition_files || result="${?}"
     assertFalse "Loading all task definition files fails for failure to load main." \
