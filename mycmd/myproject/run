@@ -27,9 +27,5 @@ function mycmd.main() {
         exit 1
     fi
 
-    if (($# == 0)); then
-        mycmd.err_exit 1 "Missing task to execute."
-    fi
-
     project.execute_tasks "${@}"
 }

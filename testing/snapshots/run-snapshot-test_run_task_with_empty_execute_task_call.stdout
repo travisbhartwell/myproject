@@ -1,0 +1,7 @@
+Using project root at 'TEST_DATA_DIRECTORY/valid/valid1'.
+
+Using task definition directory at 'TEST_DATA_DIRECTORY/valid/valid1/myproject'.
+
+➡️ Executing task 'sub task4'...
+Running task_function4
+❌ Task 'sub task4' failed.

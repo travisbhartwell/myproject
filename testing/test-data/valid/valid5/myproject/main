@@ -1,0 +1,10 @@
+#!/usr/bin/env -S mycmd project run
+# -*- mode: shell-script; sh-shell: bash; sh-basic-offset: 4; sh-indentation: 4; coding: utf-8 -*-
+# shellcheck shell=bash
+
+function task1() {
+    mycmd.output "Executing task1"
+}
+
+# This should fail because we have a task definition file named 'sub'
+myproject.register_task sub task1

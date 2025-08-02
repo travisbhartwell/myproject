@@ -28,7 +28,39 @@ function filter_run_valid_main_file_task() {
 }
 
 # ------------------------------------------------------------------------------
-# Run invalid task  Snapshot Test Suite
+# Run failing valid task Snapshot Test Suite
+function test_run_valid_failing_task() {
+    execute_and_assert_exit_code_and_snapshot 1
+}
+
+function snapshot_run_valid_failing_task() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject run sub task1
+}
+
+function filter_run_valid_failing_task() {
+    # shellcheck disable=SC2154
+    sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
+# Run multiple valid task Snapshot Test Suite
+function test_run_multiple_valid_tasks() {
+    execute_and_assert_exit_code_and_snapshot 0
+}
+
+function snapshot_run_multiple_valid_tasks() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject run task1 \; task2 5 \; task3
+}
+
+function filter_run_multiple_valid_tasks() {
+    # shellcheck disable=SC2154
+    sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
+# Run invalid task Snapshot Test Suite
 function test_run_valid_main_invalid_task() {
     execute_and_assert_exit_code_and_snapshot 1
 }
@@ -42,6 +74,22 @@ function filter_run_valid_main_invalid_task() {
     sed \
         -e 's/^\[[^]]*\]/[TIMESTAMP]/' \
         -e "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
+# Run valid task with current file shortcut task Snapshot Test Suite
+function test_run_task_with_current_file_task_shortcut_task() {
+    execute_and_assert_exit_code_and_snapshot 0
+}
+
+function snapshot_run_task_with_current_file_task_shortcut_task() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject run sub task2
+}
+
+function filter_run_task_with_current_file_task_shortcut_task() {
+    # shellcheck disable=SC2154
+    sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
 }
 
 # ------------------------------------------------------------------------------
@@ -74,6 +122,40 @@ function snapshot_run_valid_main_file_list_task_definition_files_task() {
 function filter_run_valid_main_file_list_task_definition_files_task() {
     # shellcheck disable=SC2154
     sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
+# Run task with ambiguous project.execute_task call Snapshot Test Suite
+function test_run_task_with_ambiguous_call() {
+    execute_and_assert_exit_code_and_snapshot 1
+}
+
+function snapshot_run_task_with_ambiguous_call() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject run sub task3
+}
+
+function filter_run_task_with_ambiguous_call() {
+    sed \
+        -e 's/^\[[^]]*\]/[TIMESTAMP]/' \
+        -e "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
+# Run task with empty project.execute_task call Snapshot Test Suite
+function test_run_task_with_empty_execute_task_call() {
+    execute_and_assert_exit_code_and_snapshot 1
+}
+
+function snapshot_run_task_with_empty_execute_task_call() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject run sub task4
+}
+
+function filter_run_task_with_empty_execute_task_call() {
+    sed \
+        -e 's/^\[[^]]*\]/[TIMESTAMP]/' \
+        -e "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
 }
 
 # ------------------------------------------------------------------------------

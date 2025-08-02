@@ -41,7 +41,8 @@ function project.execute_task() {
     local -A task=()
 
     if ! project:task_registry.get_task "${fully_qualified_task_name}" task; then
-        mycmd.error_output "Error loading task '${fully_qualified_task_name}'."
+        # coverage skip: 2
+        mycmd.error_output "Unexpected error loading task '${fully_qualified_task_name}'."
         return 1
     fi
 
@@ -57,7 +58,7 @@ function project.execute_tasks() {
     local -a arguments=("${@}")
 
     if ! project._extract_task_positions task_positions "${arguments[@]}"; then
-        mycmd.error_output "No tasks provided"
+        mycmd.error_output "Missing task(s) to execute."
         return 1
     fi
 
@@ -113,7 +114,7 @@ function project:execution_task.parse_from_arguments() {
     mycmd.trace "Attempting to parse task from arguments: '${*}'."
 
     if (($# == 0)); then
-        mycmd.debug "No arguments received."
+        mycmd.error_output "No arguments received to execute_task."
         return 1
     fi
 
@@ -141,6 +142,7 @@ function project:execution_task.parse_from_arguments() {
         mycmd.error_output "Task not found for arguments '${*}'"
         return 1
     elif ((task_file_and_arg1_matches == 1 && arg1_matches == 1)); then
+        # TODO: Extract and output the line that is cause of the ambiguity
         mycmd.error_output "Ambiguous match for task with arguments '${*}', which could refer to either:"
         mycmd.error_output "- '${MYPROJECT_CURRENT_TASK_FILE} ${1}'; to use this one explicitly reference it with '${MYPROJECT_CURRENT_TASK_FILE} ${1}'."
         mycmd.error_output "- '${1}'; to use this one explicitly reference it with 'main ${1}'."

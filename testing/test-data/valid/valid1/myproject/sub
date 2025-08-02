@@ -10,12 +10,25 @@ function sub_task_function1() {
 }
 myproject.register_task task1 sub_task_function1
 
+function a_sub_task_function() {
+    mycmd.output "Running a_sub_task_function"
+}
+myproject.register_task a-sub-task a_sub_task_function
+
 function sub_task_function2() {
     mycmd.output "Running task_function2"
+    myproject.execute_task a-sub-task
 }
 myproject.register_task task2 sub_task_function2
 
 function sub_task_function3() {
     mycmd.output "Running task_function3"
+    myproject.execute_task task2
 }
 myproject.register_task task3 sub_task_function3
+
+function sub_task_function4() {
+    mycmd.output "Running task_function4"
+    myproject.execute_task
+}
+myproject.register_task task4 sub_task_function4

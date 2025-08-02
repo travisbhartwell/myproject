@@ -117,6 +117,8 @@ readonly VALID_PROJECT_DIRECTORY2="${TEST_DATA_DIRECTORY}/valid/valid2"
 readonly VALID_PROJECT_DIRECTORY3="${TEST_DATA_DIRECTORY}/valid/valid3"
 # shellcheck disable=SC2034
 readonly VALID_PROJECT_DIRECTORY4="${TEST_DATA_DIRECTORY}/valid/valid4"
+# shellcheck disable=SC2034
+readonly VALID_PROJECT_DIRECTORY5="${TEST_DATA_DIRECTORY}/valid/valid5"
 
 # ------------------------------------------------------------------------------
 # Snapshot Testing Support
