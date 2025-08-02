@@ -106,10 +106,6 @@ readonly _EXECUTION_TASK_FULLY_QUALIFIED_NAME_FIELD='task-fully-qualified-name'
 ## - the amount of arguments to shift in the original argument list to get to the task arguments
 readonly _EXECUTION_TASK_ARGUMENT_SHIFT_AMOUNT_FIELD='argument-shift-amount'
 
-readonly _EXECUTION_TASK_MATCH_ARG1_AND_ARG2_NAME='arg1-and-arg2-name-matches'
-readonly _EXECUTION_TASK_MATCH_TASK_FILE_AND_ARG1_NAME='task-file-and-arg1-name-matches'
-readonly _EXECUTION_TASK_MATCH_ARG1_NAME='arg1-name-matches'
-
 function project:execution_task.parse_from_arguments() {
     local -n execution_task_struct_ref="${1}"
     shift
@@ -199,6 +195,7 @@ function project:execution_task._get_field_from_struct() {
         echo "${execution_struct_ref["${field_name}"]}"
         return 0
     else
+        # coverage skip: 2
         mycmd.debug "Missing required execution field '${field_name}'."
         return 1
     fi
