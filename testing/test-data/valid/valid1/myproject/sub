@@ -11,7 +11,9 @@ function sub_task_function1() {
 myproject.register_task task1 sub_task_function1
 
 function a_sub_task_function() {
-    mycmd.output "Running a_sub_task_function"
+    myproject.output_only_if_not_quiet "Running a_sub_task_function"
+
+    myproject.verbose_output "Finishing a_sub_task_function"
 }
 myproject.register_task a-sub-task a_sub_task_function
 
