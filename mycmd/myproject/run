@@ -2,19 +2,22 @@
 # -*- mode: shell-script; sh-shell: bash; sh-basic-offset: 4; sh-indentation: 4; coding: utf-8 -*-
 # shellcheck shell=bash
 
+mycmd.trace "Using the following variables provided by the MyCmd environment:"
+# shellcheck disable=SC2154
+mycmd.trace "- _MYCMD_NAMESPACED_PARTS_STRING: '${_MYCMD_NAMESPACED_PARTS_STRING}'"
+# shellcheck disable=SC2154
+mycmd.trace "- _MYCMD_FULLY_QUALIFIED_NAME:    '${_MYCMD_FULLY_QUALIFIED_NAME}'"
+
 mycmd:command.register_version "0.1"
 mycmd:command.register_short_description "Run one or more tasks defined by the current MyProject task definition directory."
 
-# shellcheck disable=SC2154
-mycmd:command.register_help_text "${_MYCMD_NAMESPACED_PARTS_STRING} [[-v|--verbose] [-q|--quiet] --] <task1> [argument1..] [;]\n"
+mycmd:command.register_help_text "${_MYCMD_NAMESPACED_PARTS_STRING} [[-V|--verbose] [-q|--quiet] --] <task1> [argument1..] [;]\n"
 mycmd:command.register_help_text "Multiple tasks can be specified on one command line with a semi-colon separating them. This usually needs to be escaped so the shell passes it to the command."
 mycmd:command.register_help_text "${_MYCMD_NAMESPACED_PARTS_STRING} -h | --help"
 mycmd:command.register_help_text "${_MYCMD_NAMESPACED_PARTS_STRING} -v | --version"
-mycmd:command.register_help_text "${_MYCMD_NAMESPACED_PARTS_STRING} -p | --prompt"
 mycmd:command.register_help_text "Options:"
 mycmd:command.register_help_text "\t-h | --help    - Show this help"
 mycmd:command.register_help_text "\t-v | --version - Show this command's version"
-mycmd:command.register_help_text "\t-p | --prompt  - Prompt for task to run, even if default is set"
 mycmd:command.register_help_text "\t-q | --quiet   - Only show the names of the tasks"
 mycmd:command.register_help_text "\t-V | --verbose - Show detailed information about the tasks"
 
@@ -22,10 +25,127 @@ mycmd:command.register_help_text "\t-V | --verbose - Show detailed information a
 
 set -o nounset -o errexit -o errtrace -o pipefail
 
+readonly _HELP='help'
+readonly _VERSION='version'
+readonly _QUIET='quiet'
+readonly _VERBOSE='verbose'
+readonly _TASKS_START='tasks-start'
+readonly _UNKNOWN='unknown'
+
+function run::parse_command_line() {
+    local -n arguments_ref="${1}"
+    shift
+
+    local -A errors=()
+
+    # Set defaults
+    arguments_ref["${_HELP}"]=false
+    arguments_ref["${_VERSION}"]=false
+    arguments_ref["${_QUIET}"]=false
+    arguments_ref["${_VERBOSE}"]=false
+
+    local -i arg_index=0
+    local completed_global_arguments=false
+
+    while [[ $# -gt 0 && "${completed_global_arguments}" = "false" ]]; do
+        case "${1}" in
+            "--${_HELP}" | "-h")
+                arguments_ref["${_HELP}"]=true
+                break
+                ;;
+
+            "--${_VERSION}" | "-v")
+                arguments_ref["${_VERSION}"]=true
+                break
+                ;;
+
+            "--${_QUIET}" | "-q")
+                arguments_ref["${_QUIET}"]=true
+                shift
+                ((arg_index += 1))
+                ;;
+
+            "--${_VERBOSE}" | "-V")
+                arguments_ref["${_VERBOSE}"]=true
+                shift
+                ((arg_index += 1))
+                ;;
+
+            "--")
+                mycmd.trace "Switching to tasks since '--' argument separator was found."
+                completed_global_arguments="true"
+                shift
+                ((arg_index += 1))
+                ;;
+
+            "--"* | "-"*)
+                mycmd.error_output "Unknown flag or argument: '${1}'."
+                errors["${_UNKNOWN}"]=1
+                shift
+                ((arg_index += 1))
+                ;;
+
+            *)
+                if [[ "${arguments_ref["${_QUIET}"]}" = "true" || "${arguments_ref["${_VERBOSE}"]}" = "true" ]]; then
+                    mycmd.error_output "Flags and arguments must be separated from tasks by the '--' argument separator."
+                    errors["${_TASKS_START}"]=1
+                    break
+                else
+                    mycmd.trace "Switching to task argument parsing."
+                    completed_global_arguments=true
+                fi
+                ;;
+        esac
+    done
+
+    arguments_ref["${_TASKS_START}"]="${arg_index}"
+
+    mycmd.trace "Parsed command line arguments for run:"
+    local argument
+
+    for argument in \
+        "${_HELP}" \
+        "${_VERSION}" \
+        "${_QUIET}" \
+        "${_VERBOSE}" \
+        "${_TASKS_START}"; do
+        mycmd.trace "${argument} = ${arguments_ref[${argument}]}"
+    done
+
+    (("${#errors[@]}" == 0))
+}
+
 function mycmd.main() {
+    local -A arguments=()
+
+    if ! run::parse_command_line arguments "${@}"; then
+        mycmd.err_exit 1 "Error parsing command line: '${*}'"
+    fi
+
+    if [[ "${arguments["${_HELP}"]}" = "true" ]]; then
+        mycmd:command.print_help_by_name "${_MYCMD_FULLY_QUALIFIED_NAME}"
+        exit 0
+    fi
+
+    if [[ "${arguments["${_VERSION}"]}" = "true" ]]; then
+        mycmd:command.print_version_by_name "${_MYCMD_FULLY_QUALIFIED_NAME}"
+        exit 0
+    fi
+
+    if [[ "${arguments["${_QUIET}"]}" = "true" ]]; then
+        project.enable_quiet_mode
+    fi
+
+    if [[ "${arguments["${_VERBOSE}"]}" = "true" ]]; then
+        project.enable_verbose_mode
+    fi
+
     if ! project.load_all_task_definition_files; then
         exit 1
     fi
+
+    local shift_amount="${arguments["${_TASKS_START}"]}"
+    shift "${shift_amount}"
 
     project.execute_tasks "${@}"
 }

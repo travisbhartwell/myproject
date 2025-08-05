@@ -208,8 +208,8 @@ function project.load_all_task_definition_files() {
     local -r project_root_directory="${project_directories["${_PROJECT_ROOT_DIRECTORY}"]}"
     local -r task_definition_directory="${project_directories["${_PROJECT_TASK_DEFINITION_DIRECTORY}"]}"
 
-    mycmd.output "Using project root at '${project_root_directory}'.\n"
-    mycmd.output "Using task definition directory at '${task_definition_directory}'.\n"
+    project.output_only_if_not_quiet "Using project root at '${project_root_directory}'.\n"
+    project.output_only_if_not_quiet "Using task definition directory at '${task_definition_directory}'.\n"
 
     if ! project:task_registry.load_all_task_definition_files "${project_root_directory}" "${task_definition_directory}"; then
         mycmd.error_output "Error loading project task definition files."

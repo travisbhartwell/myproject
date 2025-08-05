@@ -106,8 +106,13 @@ function myproject.for_each_in_fileset() {
 alias myproject.execute_task='project.execute_task'
 alias myproject.execute_tasks='project.execute_tasks'
 
+alias myproject.enable_quiet_mode='project.enable_quiet_mode'
+alias myproject.disable_quiet_mode='project.disable_quiet_mode'
 alias myproject.is_quiet_enabled='project.is_quiet_enabled'
 alias myproject.output_only_if_not_quiet='project.output_only_if_not_quiet'
+
+alias myproject.enable_verbose_mode='project.enable_verbose_mode'
+alias myproject.disable_verbose_mode='project.disable_verbose_mode'
 alias myproject.is_verbose_enabled='project.is_verbose_enabled'
 alias myproject.verbose_output='project.verbose_output'
 
