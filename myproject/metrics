@@ -9,9 +9,7 @@ set -o nounset -o errexit -o errtrace -o pipefail
 function count_source_lines() {
     local -n fileset="${1}"
 
-    # TODO: myproject.output_only_if_not_quiet
-    # myproject.output_only_if_not_quiet "Counting source lines in fileset '${!fileset}'."
-    mycmd.output "Counting source lines in fileset '${!fileset}'."
+    myproject.output_only_if_not_quiet "Counting source lines in fileset '${!fileset}'."
     wc -l "${fileset[@]}" | sort -nr
 }
 

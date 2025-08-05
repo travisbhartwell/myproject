@@ -22,6 +22,7 @@ mycmd:command_group.register_help_text "The MyProject Project Task Runner"
 readonly _MYPROJECT_LIB=1
 
 mycmd:command_group.load_support_lib "execution"
+mycmd:command_group.load_support_lib "output"
 mycmd:command_group.load_support_lib "task"
 mycmd:command_group.load_support_lib "user"
 
@@ -143,7 +144,7 @@ function project._is_valid_task_definition_directory() {
         return 1
     fi
 
-    if ! [[ "$(basename "${task_definition_directory}")" == "myproject" ]]; then
+    if [[ "$(basename "${task_definition_directory}")" != "myproject" ]]; then
         mycmd.debug "'${task_definition_directory}' is not named 'myproject'."
         return 1
     fi

@@ -17,6 +17,7 @@ readonly _MYPROJECT_USER_LIB=1
 
 mycmd:command_group.load_support_lib "execution"
 mycmd:command_group.load_support_lib "fileset"
+mycmd:command_group.load_support_lib "output"
 mycmd:command_group.load_support_lib "task"
 
 function myproject.register_task() {
@@ -104,5 +105,10 @@ function myproject.for_each_in_fileset() {
 
 alias myproject.execute_task='project.execute_task'
 alias myproject.execute_tasks='project.execute_tasks'
+
+alias myproject.is_quiet_enabled='project.is_quiet_enabled'
+alias myproject.output_only_if_not_quiet='project.output_only_if_not_quiet'
+alias myproject.is_verbose_enabled='project.is_verbose_enabled'
+alias myproject.verbose_output='project.verbose_output'
 
 mycmd.trace "The MyProject User command group support library has been sourced."

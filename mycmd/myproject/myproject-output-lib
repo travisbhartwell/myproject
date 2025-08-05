@@ -1,0 +1,58 @@
+# -*- mode: shell-script; sh-shell: bash; sh-basic-offset: 4; sh-indentation: 4; coding: utf-8 -*-
+# shellcheck shell=bash
+
+# MyProject Output Command Group Support Library
+#   Output Functionality for MyProject
+
+set -o nounset -o errexit -o errtrace -o pipefail
+
+(return 0 >/dev/null 2>&1) || {
+    # coverage skip: 2
+    echo >&2 "$0 is a library only meant to be sourced."
+    exit 1
+}
+
+[[ -n "${_MYPROJECT_OUTPUT_LIB:-}" ]] && return
+readonly _MYPROJECT_OUTPUTLIB=1
+
+function project.enable_quiet_mode() {
+    declare -gx MYPROJECT_QUIET=1
+}
+
+function project.disable_quiet_mode() {
+    if [[ -v MYPROJECT_QUIET ]]; then
+        unset -v MYPROJECT_QUIET
+    fi
+}
+
+function project.is_quiet_enabled() {
+    [[ -n "${MYPROJECT_QUIET-}" ]]
+}
+
+function project.output_only_if_not_quiet() {
+    if ! project.is_quiet_enabled; then
+        mycmd.output "${@}"
+    fi
+}
+
+function project.enable_verbose_mode() {
+    declare -gx MYPROJECT_VERBOSE=1
+}
+
+function project.disable_verbose_mode() {
+    if [[ -v MYPROJECT_VERBOSE ]]; then
+        unset -v MYPROJECT_VERBOSE
+    fi
+}
+
+function project.is_verbose_enabled() {
+    [[ -n "${MYPROJECT_VERBOSE-}" ]]
+}
+
+function project.verbose_output() {
+    if project.is_verbose_enabled; then
+        mycmd.output "[VERBOSE] ${*}"
+    fi
+}
+
+mycmd.trace "The MyProject Output command group support library has been sourced."

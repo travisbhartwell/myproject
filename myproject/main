@@ -88,11 +88,10 @@ mycmd.defer_at_startup mycmd.init_bin shfmt
 function format_shell_files() {
     local -n format_fileset="${1}"
 
-    # TODO: myproject.is_verbose_enabled
-    # if myproject.is_verbose_enabled; then
-    #     mycmd.output "Formatting the following files:"
-    #     myproject.list-files "${!format_fileset}"
-    # fi
+    if myproject.is_verbose_enabled; then
+        mycmd.output "Formatting the following files:"
+        myproject.list_files "${!format_fileset}"
+    fi
 
     mycmd.bin_execute shfmt --language-dialect bash --indent=4 --binary-next-line --case-indent --write "${format_fileset[@]}"
 }
@@ -103,13 +102,13 @@ mycmd.defer_at_startup mycmd.init_bin shellcheck
 function lint_shell_files() {
     local -n lint_fileset="${1}"
 
-    # TODO: myproject.is_verbose_enabled
-    # if myproject.is_verbose_enabled; then
-    #     mycmd.output "Linting the following files:"
-    #     myproject.list-files "${!lint_fileset}"
-    # fi
+    if myproject.is_verbose_enabled; then
+        mycmd.output "Linting the following files:"
+        myproject.list_files "${!lint_fileset}"
+    fi
 
-    mycmd.output "Running ShellCheck:"
+    myproject.output_only_if_not_quiet "Running ShellCheck:"
+
     mycmd.bin_execute shellcheck --check-sourced "${lint_fileset[@]}"
 }
 
