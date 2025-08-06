@@ -1,0 +1,28 @@
+#!/usr/bin/env -S mycmd
+# -*- mode: shell-script; sh-shell: bash; sh-basic-offset: 4; sh-indentation: 4; coding: utf-8 -*-
+# shellcheck shell=bash
+
+mycmd:command.register_version "0.1"
+mycmd:command.register_short_description "Print the project root directory for the current MyProject project."
+
+# shellcheck disable=SC2154
+mycmd:command.register_help_text "${_MYCMD_NAMESPACED_PARTS_STRING}"
+mycmd:command.register_help_text "${_MYCMD_NAMESPACED_PARTS_STRING} -h | --help"
+mycmd:command.register_help_text "${_MYCMD_NAMESPACED_PARTS_STRING} -v | --version"
+mycmd:command.register_help_text "Options:"
+mycmd:command.register_help_text "\t-h | --help    - Show this help"
+mycmd:command.register_help_text "\t-v | --version - Show this command's version"
+
+[[ -n "${_MYCMD_SOURCING_FOR_HELP:-}" ]] && return
+
+set -o nounset -o errexit -o errtrace -o pipefail
+
+function mycmd.main() {
+    local -a project_directories
+    if ! project.find_up project_directories "${PWD}"; then
+        mycmd.error_output "Not located in a MyProject Project."
+        return 1
+    fi
+
+    mycmd.output "${project_directories["${_PROJECT_ROOT_DIRECTORY}"]}"
+}
