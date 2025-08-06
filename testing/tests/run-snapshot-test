@@ -104,6 +104,40 @@ function filter_run_valid_main_invalid_task() {
 }
 
 # ------------------------------------------------------------------------------
+# Run command line with invalid flag Snapshot Test Suite
+function test_run_with_invalid_flag() {
+    execute_and_assert_exit_code_and_snapshot 1
+}
+
+function snapshot_run_with_invalid_flag() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject run --not-a-flag task1
+}
+
+function filter_run_with_invalid_flag() {
+    sed \
+        -e 's/^\[[^]]*\]/[TIMESTAMP]/' \
+        -e "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
+# Run command line with flags not separated from tasks Snapshot Test Suite
+function test_run_with_flags_not_separated_from_tasks() {
+    execute_and_assert_exit_code_and_snapshot 1
+}
+
+function snapshot_run_with_flags_not_separated_from_tasks() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject run --quiet task1
+}
+
+function filter_run_with_flags_not_separated_from_tasks() {
+    sed \
+        -e 's/^\[[^]]*\]/[TIMESTAMP]/' \
+        -e "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
 # Run valid task with current file shortcut task Snapshot Test Suite
 function test_run_task_with_current_file_task_shortcut_task() {
     execute_and_assert_exit_code_and_snapshot 0

@@ -1,0 +1,2 @@
+[TIMESTAMP] Flags and arguments must be separated from tasks by the '--' argument separator.
+[TIMESTAMP] Error parsing command line: '--quiet task1'

@@ -1,0 +1,2 @@
+[TIMESTAMP] Unknown flag or argument: '--not-a-flag'.
+[TIMESTAMP] Error parsing command line: '--not-a-flag task1'
