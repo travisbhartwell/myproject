@@ -326,7 +326,7 @@ function generate_coverage_reports() {
                 skip_lines="${line##*: }"
             elif [[ "${line}" =~ ^[[:space:]]*# ]]; then
                 status="#"
-            elif [[ "${line}" =~ ^[[:space:]]*(fi|else|done|esac|\}) ]]; then
+            elif [[ "${line}" =~ ^[[:space:]]*(fi|else|done|esac|\}|\;\;) ]]; then
                 status=" "
             elif [[ "${line}" =~ ^[[:space:]]*function ]]; then
                 status="F"
