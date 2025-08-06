@@ -19,12 +19,6 @@ function project.enable_quiet_mode() {
     declare -gx MYPROJECT_QUIET=1
 }
 
-function project.disable_quiet_mode() {
-    if [[ -v MYPROJECT_QUIET ]]; then
-        unset -v MYPROJECT_QUIET
-    fi
-}
-
 function project.is_quiet_enabled() {
     [[ -n "${MYPROJECT_QUIET-}" ]]
 }
@@ -37,12 +31,6 @@ function project.output_only_if_not_quiet() {
 
 function project.enable_verbose_mode() {
     declare -gx MYPROJECT_VERBOSE=1
-}
-
-function project.disable_verbose_mode() {
-    if [[ -v MYPROJECT_VERBOSE ]]; then
-        unset -v MYPROJECT_VERBOSE
-    fi
 }
 
 function project.is_verbose_enabled() {
