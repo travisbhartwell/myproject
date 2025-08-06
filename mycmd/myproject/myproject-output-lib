@@ -13,7 +13,7 @@ set -o nounset -o errexit -o errtrace -o pipefail
 }
 
 [[ -n "${_MYPROJECT_OUTPUT_LIB:-}" ]] && return
-readonly _MYPROJECT_OUTPUTLIB=1
+readonly _MYPROJECT_OUTPUT_LIB=1
 
 function project.enable_quiet_mode() {
     declare -gx MYPROJECT_QUIET=1
