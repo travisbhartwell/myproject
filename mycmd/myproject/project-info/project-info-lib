@@ -1,0 +1,17 @@
+# -*- mode: shell-script; sh-shell: bash; sh-basic-offset: 4; sh-indentation: 4; coding: utf-8 -*-
+# shellcheck shell=bash
+
+# MyProject Project Info Project Command Group
+
+set -o nounset -o errexit -o errtrace -o pipefail
+
+(return 0 >/dev/null 2>&1) || {
+    # coverage skip: 2
+    echo >&2 "$0 is a library only meant to be sourced."
+    exit 1
+}
+
+[[ -n "${_PROJECT_INFO_LIB:-}" ]] && return
+readonly _PROJECT_INFO_LIB=1
+
+mycmd.trace "The MyProject Project Info command group library has been sourced."

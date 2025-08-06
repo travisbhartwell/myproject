@@ -13,63 +13,63 @@ source "${TESTS_DIRECTORY}/testing-support-lib"
 
 # ------------------------------------------------------------------------------
 # List Tasks Valid Project Snapshot Test Case
-function test_list_tasks_valid_project() {
+function test_project_info_tasks_valid_project() {
     execute_and_assert_exit_code_and_snapshot 0
 }
 
-function snapshot_list_tasks_valid_project() {
+function snapshot_project_info_tasks_valid_project() {
     # shellcheck disable=SC2154
-    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject list-tasks
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info tasks
 }
 
-function filter_list_tasks_valid_project() {
+function filter_project_info_tasks_valid_project() {
     # shellcheck disable=SC2154
     sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
 }
 
 # ------------------------------------------------------------------------------
 # List Tasks Valid Project No Tasks Snapshot Test Case
-function test_list_tasks_valid_project_no_tasks() {
+function test_project_info_tasks_valid_project_no_tasks() {
     execute_and_assert_exit_code_and_snapshot 0
 }
 
-function snapshot_list_tasks_valid_project_no_tasks() {
+function snapshot_project_info_tasks_valid_project_no_tasks() {
     # shellcheck disable=SC2154
-    cd "${VALID_PROJECT_DIRECTORY4}" && _mycmd myproject list-tasks
+    cd "${VALID_PROJECT_DIRECTORY4}" && _mycmd myproject project-info tasks
 }
 
-function filter_list_tasks_valid_project_no_tasks() {
+function filter_project_info_tasks_valid_project_no_tasks() {
     # shellcheck disable=SC2154
     sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
 }
 
 # ------------------------------------------------------------------------------
 # List Tasks Invalid Project Snapshot Test Case
-function test_list_tasks_invalid_project() {
+function test_project_info_tasks_invalid_project() {
     execute_and_assert_exit_code_and_snapshot 1
 }
 
-function snapshot_list_tasks_invalid_project() {
+function snapshot_project_info_tasks_invalid_project() {
     # shellcheck disable=SC2154
-    cd "${INVALID_NO_TASK_DEFINITION_DIRECTORY}" && _mycmd myproject list-tasks
+    cd "${INVALID_NO_TASK_DEFINITION_DIRECTORY}" && _mycmd myproject project-info tasks
 }
 
-function filter_list_tasks_invalid_project() {
+function filter_project_info_tasks_invalid_project() {
     sed 's/^\[[^]]*\]/[TIMESTAMP]/'
 }
 
 # ------------------------------------------------------------------------------
 # List Tasks Invalid Project Failing Loading All Snapshot Test Case
-function test_list_tasks_invalid_project_failing_loading_all() {
+function test_project_info_tasks_invalid_project_failing_loading_all() {
     execute_and_assert_exit_code_and_snapshot 1
 }
 
-function snapshot_list_tasks_invalid_project_failing_loading_all() {
+function snapshot_project_info_tasks_invalid_project_failing_loading_all() {
     # shellcheck disable=SC2154
-    cd "${VALID_PROJECT_DIRECTORY3}" && _mycmd myproject list-tasks
+    cd "${VALID_PROJECT_DIRECTORY3}" && _mycmd myproject project-info tasks
 }
 
-function filter_list_tasks_invalid_project_failing_loading_all() {
+function filter_project_info_tasks_invalid_project_failing_loading_all() {
     sed \
         -e 's/^\[[^]]*\]/[TIMESTAMP]/' \
         -e "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
@@ -77,16 +77,16 @@ function filter_list_tasks_invalid_project_failing_loading_all() {
 
 # ------------------------------------------------------------------------------
 # List Tasks Invalid Project Failing Loading All Snapshot Test Case
-function test_list_tasks_invalid_project_task_name_conflict() {
+function test_project_info_tasks_invalid_project_task_name_conflict() {
     execute_and_assert_exit_code_and_snapshot 1
 }
 
-function snapshot_list_tasks_invalid_project_task_name_conflict() {
+function snapshot_project_info_tasks_invalid_project_task_name_conflict() {
     # shellcheck disable=SC2154
-    cd "${VALID_PROJECT_DIRECTORY5}" && _mycmd myproject list-tasks
+    cd "${VALID_PROJECT_DIRECTORY5}" && _mycmd myproject project-info tasks
 }
 
-function filter_list_tasks_invalid_project_task_name_conflict() {
+function filter_project_info_tasks_invalid_project_task_name_conflict() {
     sed \
         -e 's/^\[[^]]*\]/[TIMESTAMP]/' \
         -e "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"

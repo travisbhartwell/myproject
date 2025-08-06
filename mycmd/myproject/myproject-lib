@@ -208,6 +208,8 @@ function project.load_all_task_definition_files() {
     local -r project_root_directory="${project_directories["${_PROJECT_ROOT_DIRECTORY}"]}"
     local -r task_definition_directory="${project_directories["${_PROJECT_TASK_DEFINITION_DIRECTORY}"]}"
 
+    cd "${project_root_directory}" || true
+
     project.output_only_if_not_quiet "Using project root at '${project_root_directory}'.\n"
     project.output_only_if_not_quiet "Using task definition directory at '${task_definition_directory}'.\n"
 
