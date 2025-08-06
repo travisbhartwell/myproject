@@ -18,11 +18,11 @@ mycmd:command.register_help_text "\t-v | --version - Show this command's version
 set -o nounset -o errexit -o errtrace -o pipefail
 
 function mycmd.main() {
-    local -a project_directories
-    if ! project.find_up project_directories "${PWD}"; then
-        mycmd.error_output "Not located in a MyProject Project."
-        return 1
+    local project_root_directory
+    if ! project_root_directory="$(project_info.get_project_root_directory)"; then
+        exit 1
     fi
+    readonly project_root_directory
 
-    mycmd.output "${project_directories["${_PROJECT_ROOT_DIRECTORY}"]}"
+    mycmd.output "${project_root_directory}"
 }

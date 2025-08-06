@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+# -*- mode: shell-script; sh-shell: bash; sh-basic-offset: 4; sh-indentation: 4; coding: utf-8 -*-
+# shellcheck shell=bash
+
+if ! TESTS_DIRECTORY=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P); then
+    echo >&2 "Error fetching tests directory."
+    exit 1
+fi
+readonly TESTS_DIRECTORY
+
+# shellcheck source=./testing-support-lib
+source "${TESTS_DIRECTORY}/testing-support-lib"
+
+# ------------------------------------------------------------------------------
+# Project Root Valid Project Snapshot Test Suite
+function test_valid_project_root() {
+    execute_and_assert_exit_code_and_snapshot 0
+}
+
+function snapshot_valid_project_root() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info root
+}
+
+function filter_valid_project_root() {
+    # shellcheck disable=SC2154
+    sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
+# Project Root Invalid Project Snapshot Test Suite
+function test_invalid_project_root() {
+    execute_and_assert_exit_code_and_snapshot 1
+}
+
+function snapshot_invalid_project_root() {
+    # shellcheck disable=SC2154
+    cd "${INVALID_NO_TASK_DEFINITION_DIRECTORY}" && _mycmd myproject project-info root
+}
+
+function filter_invalid_project_root() {
+    sed 's/^\[[^]]*\]/[TIMESTAMP]/'
+}
+
+# ------------------------------------------------------------------------------
+# Project Task Definition Directory Valid Project Snapshot Test Suite
+function test_valid_project_task_definition_directory() {
+    execute_and_assert_exit_code_and_snapshot 0
+}
+
+function snapshot_valid_project_task_definition_directory() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info task-definition-directory
+}
+
+function filter_valid_project_task_definition_directory() {
+    # shellcheck disable=SC2154
+    sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
+# Project Root Invalid Project Snapshot Test Suite
+function test_invalid_project_task_definition_directory() {
+    execute_and_assert_exit_code_and_snapshot 1
+}
+
+function snapshot_invalid_project_task_definition_directory() {
+    # shellcheck disable=SC2154
+    cd "${INVALID_NO_TASK_DEFINITION_DIRECTORY}" && _mycmd myproject project-info task-definition-directory
+}
+
+function filter_invalid_project_task_definition_directory() {
+    sed 's/^\[[^]]*\]/[TIMESTAMP]/'
+}
+
+# ------------------------------------------------------------------------------
+# Clean up after every test
+function tearDown() {
+    cd "${TESTS_DIRECTORY}" || true
+}
+
+# ------------------------------------------------------------------------------
+# Test Suite Setup
+function oneTimeSetUp() {
+    copy_test_source_data
+}
+
+function oneTimeTearDown() {
+    cleanup_test_data
+}
+
+# shellcheck disable=SC2154 source=../vendor/shunit2
+. "${TESTING_VENDOR_DIRECTORY}/shunit2"
