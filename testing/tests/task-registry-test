@@ -121,7 +121,6 @@ function test_task_definition() {
     result=0
     project:task_registry.new_task "file1" "file1/task1" "function1" arg1 arg2 arg3 || result="${?}"
     # Manually set these since we are not actually loading a real task definition file
-    _MYPROJECT_LOADED_TASK_DEFINITION_FILES["file1"]=1
     declare -gx MYPROJECT_ROOT_DIRECTORY="root"
     declare -gx MYPROJECT_TASK_DEFINITION_DIRECTORY="myproject"
     assertTrue "Task 'file1 task1' was successfully registered." "${result}"
@@ -214,6 +213,41 @@ function test_task_definition() {
     assertTrue "Executing task2 should succeed" "${result}"
 
     unset TEST_VARIABLE
+}
+
+# --------------------------------------------------------------------------------------------------
+# project:task_registry.register_task_description related tests
+# shellcheck disable=SC2154
+function test_register_task_description() {
+    assertEquals "There should be no tasks registered." \
+        0 "${#_MYPROJECT_TASKS[@]}"
+    assertEquals "There should be no task descriptions registered." \
+        0 "${#_MYPROJECT_TASKS_DESCRIPTIONS[@]}"
+
+    local result=0
+    project:task_registry.register_task_description "invalid-task" "This is an invalid task" || result="${?}"
+    assertFalse "Registering a description for invalid task 'invalid-task' should fail" "${result}"
+    assertEquals "There should still be no task descriptions registered." \
+        0 "${#_MYPROJECT_TASKS_DESCRIPTIONS[@]}"
+
+    result=0
+    project:task_registry.new_task "main" "task1" "function1" || result="${?}"
+    assertTrue "Task 'main task1' was successfully registered." "${result}"
+    assertEquals "There should be 1 task registered." \
+        1 "${#_MYPROJECT_TASKS[@]}"
+    result=0
+    project:task_registry.register_task_description "task1" "This is a task" || result="${?}"
+    assertTrue "Registering a task description for task 'task1' should succeed." "${result}"
+    assertEquals "There should now be one task description registered." \
+        1 "${#_MYPROJECT_TASKS_DESCRIPTIONS[@]}"
+
+    result=0
+    project:task_registry.register_task_description "task1" "This is a task" || result="${?}"
+    assertTrue "Re-registering the same task description for task 'task1' should succeed." "${result}"
+
+    result=0
+    project:task_registry.register_task_description "task1" "This is another task" || result="${?}"
+    assertFalse "Re-registering with a different task description for task 'task1' should fail." "${result}"
 }
 
 # --------------------------------------------------------------------------------------------------

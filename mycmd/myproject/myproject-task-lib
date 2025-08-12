@@ -20,6 +20,7 @@ mycmd:command_group.load_support_lib "fileset"
 
 declare -Agx _MYPROJECT_TASKS
 declare -Agx _MYPROJECT_TASKS_TASK_DEFINITION_FILES
+declare -Agx _MYPROJECT_TASKS_DESCRIPTIONS
 declare -Agx _MYPROJECT_TASKS_ARGUMENT_COUNTS
 declare -Agx _MYPROJECT_TASKS_ARGUMENT_INDICES
 declare -agx _MYPROJECT_TASKS_ARGUMENTS
@@ -29,6 +30,7 @@ declare -Agx _MYPROJECT_LOADED_TASK_DEFINITION_FILES
 readonly _TASK_FULLY_QUALIFIED_NAME_FIELD='task-fully-qualified-name'
 readonly _TASK_NAME_FIELD='task-name'
 readonly _TASK_NAMESPACED_PARTS_STRING_FIELD='task-namespaced-parts-string'
+readonly _TASK_DESCRIPTION_FIELD='task-description'
 readonly _TASK_TASK_DEFINITION_FILE_FIELD='task-definition-file'
 readonly _TASK_FUNCTION_FIELD='task-function'
 readonly _TASK_ARGUMENT_COUNT_FIELD='task-argument-count'
@@ -39,6 +41,7 @@ function project:task_registry._reset_registry() {
     mycmd.trace "Resetting the MyProject Task Registry."
     _MYPROJECT_TASKS=()
     _MYPROJECT_TASKS_TASK_DEFINITION_FILES=()
+    _MYPROJECT_TASKS_DESCRIPTIONS=()
     _MYPROJECT_TASKS_ARGUMENT_COUNTS=()
     _MYPROJECT_TASKS_ARGUMENT_INDICES=()
     _MYPROJECT_TASKS_ARGUMENTS=()
@@ -53,7 +56,7 @@ function project:task_registry._reset_registry() {
 project:task_registry._reset_registry
 
 function project:task_registry._dump_task_registry() {
-    # coverage skip: 20
+    # coverage skip: 27
     if [[ ! -v MYPROJECT_ROOT_DIRECTORY && ! -v MYPROJECT_TASK_DEFINITION_DIRECTORY ]]; then
         mycmd.trace "Nothing is loaded in the registry."
     fi
@@ -74,6 +77,12 @@ function project:task_registry._dump_task_registry() {
         mycmd.trace "The task with fully qualified name '${fully_qualified_task_name}' is registered."
         mycmd.trace "It is registered with task definition file: '${_MYPROJECT_TASKS_TASK_DEFINITION_FILES["${fully_qualified_task_name}"]}'."
         mycmd.trace "It is registered with task function '${_MYPROJECT_TASKS["${fully_qualified_task_name}"]}'."
+
+        if [[ -v _MYPROJECT_TASKS_DESCRIPTIONS["${fully_qualified_task_name}"] ]]; then
+            mycmd.trace "It is registred with the description '${_MYPROJECT_TASKS_DESCRIPTIONS["${fully_qualified_task_name}"]}'."
+        fi
+
+        mycmd.trace "-------------------------"
     done
 }
 
@@ -251,6 +260,39 @@ function project:task_registry._task_definition_file_exists() {
     [[ -e "${MYPROJECT_TASK_DEFINITION_DIRECTORY}/${task_definition_file_name}" ]]
 }
 
+function project:task_registry.register_task_description() {
+    local fully_qualified_task_name
+    fully_qualified_task_name="$(project:task_registry._get_filtered_fully_qualified_task_name "${1}")"
+    readonly fully_qualified_task_name
+
+    local -r task_description="${2}"
+
+    mycmd.trace "Attempting to register description '${task_description}' for task '${fully_qualified_task_name}'."
+
+    if ! project:task_registry.task_exists_with_fully_qualified_task_name "${fully_qualified_task_name}"; then
+        mycmd.error_output "Task '${fully_qualified_task_name}' does not exist for description registration."
+        return 1
+    fi
+
+    if [[ -v _MYPROJECT_TASKS_DESCRIPTIONS["${fully_qualified_task_name}"] ]]; then
+        local -r existing_task_description="${_MYPROJECT_TASKS_DESCRIPTIONS["${fully_qualified_task_name}"]}"
+
+        if [[ "${existing_task_description}" != "${task_description}" ]]; then
+            mycmd.error_output "Task '${fully_qualified_task_name}' already has description '${existing_task_description}'."
+            return 1
+        else
+            mycmd.trace "Task description '${task_description}' already registered for task '${fully_qualified_task_name}'."
+            return 0
+        fi
+    fi
+
+    _MYPROJECT_TASKS_DESCRIPTIONS["${fully_qualified_task_name}"]="${task_description}"
+
+    mycmd.trace "Successfully registered description '${task_description}' for task '${fully_qualified_task_name}'."
+
+    return 0
+}
+
 function project:task_registry.get_task() {
     local fully_qualified_task_name
     fully_qualified_task_name="$(project:task_registry._get_filtered_fully_qualified_task_name "${1}")"
@@ -279,6 +321,14 @@ function project:task_registry.get_task() {
     local -r namespaced_parts_string="${fully_qualified_task_name//\// }"
     task_struct_ref["${_TASK_NAMESPACED_PARTS_STRING_FIELD}"]="${namespaced_parts_string}"
     mycmd.trace "- ${_TASK_NAMESPACED_PARTS_STRING_FIELD}: ${task_struct_ref["${_TASK_NAMESPACED_PARTS_STRING_FIELD}"]}"
+
+    if [[ -v _MYPROJECT_TASKS_DESCRIPTIONS["${fully_qualified_task_name}"] ]]; then
+        local -r task_description="${_MYPROJECT_TASKS_DESCRIPTIONS["${fully_qualified_task_name}"]}"
+        task_struct_ref["${_TASK_DESCRIPTION_FIELD}"]="${task_description}"
+        mycmd.trace "- ${_TASK_DESCRIPTION_FIELD}: ${task_struct_ref["${_TASK_DESCRIPTION_FIELD}"]}"
+    else
+        mycmd.trace "- ${_TASK_DESCRIPTION_FIELD}: No value set."
+    fi
 
     task_struct_ref["${_TASK_TASK_DEFINITION_FILE_FIELD}"]="${_MYPROJECT_TASKS_TASK_DEFINITION_FILES["${fully_qualified_task_name}"]}"
     mycmd.trace "- ${_TASK_TASK_DEFINITION_FILE_FIELD}: ${task_struct_ref["${_TASK_TASK_DEFINITION_FILE_FIELD}"]}"
@@ -418,6 +468,12 @@ function project:task.get_name() {
 function project:task.get_namespaced_parts_as_string() {
     project:task._get_field_from_struct \
         "${_TASK_NAMESPACED_PARTS_STRING_FIELD}" \
+        "${@}"
+}
+
+function project:task.get_description() {
+    project:task._get_field_from_struct \
+        "${_TASK_DESCRIPTION_FIELD}" \
         "${@}"
 }
 
