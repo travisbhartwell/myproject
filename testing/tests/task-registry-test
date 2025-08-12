@@ -116,20 +116,24 @@ function test_task_definition() {
     local result=0
     assertEquals "There should be no tasks registered." \
         0 "${#_MYPROJECT_TASKS[@]}"
+    assertEquals "There should be no task descriptions registered." \
+        0 "${#_MYPROJECT_TASKS_DESCRIPTIONS[@]}"
+
     assertEquals "TEST_VARIABLE should be 0" 0 "${TEST_VARIABLE}"
 
     result=0
     project:task_registry.new_task "file1" "file1/task1" "function1" arg1 arg2 arg3 || result="${?}"
-    # Manually set these since we are not actually loading a real task definition file
-    declare -gx MYPROJECT_ROOT_DIRECTORY="root"
-    declare -gx MYPROJECT_TASK_DEFINITION_DIRECTORY="myproject"
     assertTrue "Task 'file1 task1' was successfully registered." "${result}"
     assertEquals "There should be 1 task registered." \
         1 "${#_MYPROJECT_TASKS[@]}"
+    result=0
+    project:task_registry.register_task_description "file1/task1" "This is task1 in file1" || result="${?}"
+    assertTrue "Registering a description for 'file1/task1' should succeed." "${result}"
+    assertEquals "There should be one task description registered." \
+        1 "${#_MYPROJECT_TASKS_DESCRIPTIONS[@]}"
 
     result=0
     project:task_registry.new_task "main" "task1" "function2" || result="${?}"
-    _MYPROJECT_LOADED_TASK_DEFINITION_FILES["main"]=1
     assertFalse "Task 'main task1' should fail to register because 'function2' doesn't exist." \
         "${result}"
     assertEquals "There should still be 1 tasks registered." \
@@ -149,6 +153,11 @@ function test_task_definition() {
     assertTrue "Task 'main task2' was successfully registered." "${result}"
     assertEquals "There should be 2 tasks registered." \
         2 "${#_MYPROJECT_TASKS[@]}"
+    result=0
+    project:task_registry.register_task_description "task2" "This is task2 in main" || result="${?}"
+    assertTrue "Registering a description for 'task2' should succeed." "${result}"
+    assertEquals "There should be two task descriptions registered." \
+        2 "${#_MYPROJECT_TASKS_DESCRIPTIONS[@]}"
 
     local -A task1=()
     result=0
@@ -164,6 +173,7 @@ function test_task_definition() {
     assertEquals "file1/task1" "$(project:task.get_fully_qualified_name task1)"
     assertEquals "task1" "$(project:task.get_name task1)"
     assertEquals "file1 task1" "$(project:task.get_namespaced_parts_as_string task1)"
+    assertEquals "This is task1 in file1" "$(project:task.get_description task1)"
     assertEquals "file1" "$(project:task.get_task_definition_file_name task1)"
     assertEquals "function1" "$(project:task.get_function_name task1)"
     assertEquals 3 "$(project:task.get_argument_count task1)"
@@ -193,6 +203,7 @@ function test_task_definition() {
     assertEquals "task2" "$(project:task.get_fully_qualified_name task2)"
     assertEquals "task2" "$(project:task.get_name task2)"
     assertEquals "task2" "$(project:task.get_namespaced_parts_as_string task2)"
+    assertEquals "This is task2 in main" "$(project:task.get_description task2)"
     assertEquals "main" "$(project:task.get_task_definition_file_name task2)"
     assertEquals "function3" "$(project:task.get_function_name task2)"
     assertEquals "There should be 0 arguments defined for task2" \
