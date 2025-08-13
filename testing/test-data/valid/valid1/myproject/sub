@@ -9,6 +9,7 @@ function sub_task_function1() {
     return 1
 }
 myproject.register_task task1 sub_task_function1
+myproject.register_task_description task1 "This task1 in sub."
 
 function a_sub_task_function() {
     myproject.output_only_if_not_quiet "Running a_sub_task_function"
@@ -22,6 +23,7 @@ function sub_task_function2() {
     myproject.execute_task a-sub-task
 }
 myproject.register_task task2 sub_task_function2
+myproject.register_task_description task2 "This is task2 in sub."
 
 function sub_task_function3() {
     mycmd.output "Running task_function3"
@@ -34,3 +36,4 @@ function sub_task_function4() {
     myproject.execute_task
 }
 myproject.register_task task4 sub_task_function4
+myproject.register_task_description task4 "This is task4 in sub."

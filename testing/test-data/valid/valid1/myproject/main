@@ -12,6 +12,7 @@ function task_function1() {
     PROJECT_VARIABLE=2
 }
 myproject.register_task task1 task_function1
+myproject.register_task_description task1 "This is task1 in main."
 
 function task2() {
     local value="${1:-3}"
@@ -27,6 +28,7 @@ function task_function3() {
     PROJECT_VARIABLE="${arg2}"
 }
 myproject.register_task task3 task_function3 this-is-a-test 10
+myproject.register_task_description task3 "This is task3 in main."
 
 myproject.register_fileset TASK_DEFINITION_FILES
 # shellcheck disable=SC2154
@@ -41,7 +43,9 @@ myproject.find_and_add_files_to_fileset DATA_FILES "${MODULE1_DIR}" -type f
 myproject.register_task_with_fileset list-data-files \
     myproject.list_files \
     DATA_FILES
+myproject.register_task_description list-data-files "List all of the data files in the project."
 
 myproject.register_task_with_fileset list-task-definition-files \
     myproject.list_files \
     TASK_DEFINITION_FILES
+myproject.register_task_description list-task-definition-files "List all of the task definition files in the project."
