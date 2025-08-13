@@ -86,6 +86,10 @@ function project:task_registry._dump_task_registry() {
     done
 }
 
+function project:task_registry.get_registered_task_count() {
+    echo "${#_MYPROJECT_TASKS[@]}"
+}
+
 function project:task_registry.load_task_definition_file() {
     local -r project_root_directory="${1}"
     local -r task_definition_directory="${2}"
@@ -379,6 +383,94 @@ function project:task_registry.task_exists_with_fully_qualified_task_name() {
         mycmd.debug "Task '${fully_qualified_task_name}' is not found."
         return 1
     fi
+
+    return 0
+}
+
+function project:task_registry.foreach_task_definition_file() {
+    local -a task_definition_files
+    project:task_registry._get_all_task_definition_files task_definition_files
+
+    local task_definition_file_name
+    for task_definition_file_name in "${task_definition_files[@]}"; do
+        "${@}" "${task_definition_file_name}"
+    done
+
+    return 0
+}
+
+function project:task_registry.foreach_task_by_task_definition_file() {
+    local -a task_definition_files
+    project:task_registry._get_all_task_definition_files task_definition_files
+
+    local task_definition_file_name
+    for task_definition_file_name in "${task_definition_files[@]}"; do
+        project:task_registry.foreach_task_in_task_definition_file "${task_definition_file_name}" "${@}"
+    done
+
+    return 0
+}
+
+function project:task_registry._get_all_task_definition_files() {
+    local -n task_definition_files_ref="${1}"
+
+    if (("${#_MYPROJECT_LOADED_TASK_DEFINITION_FILES[@]}" == 0)); then
+        task_definition_files_ref=()
+        return 0
+    fi
+
+    task_definition_files_ref+=("main")
+
+    local -a other_files=()
+    local task_definition_file_name
+
+    for task_definition_file_name in "${!_MYPROJECT_LOADED_TASK_DEFINITION_FILES[@]}"; do
+        if [[ "${task_definition_file_name}" != "main" ]]; then
+            other_files+=("${task_definition_file_name}")
+        fi
+    done
+
+    readarray -t -O 1 task_definition_files_ref < \
+        <(printf '%s\n' "${other_files[@]}" | LC_ALL=en_US.UTF-8 sort || true)
+
+    return 0
+}
+
+function project:task_registry.foreach_task_in_task_definition_file() {
+    local -r task_definition_file_name="${1}"
+    shift
+
+    local -a tasks
+    project:task_registry._get_all_tasks_for_task_definition_file "${task_definition_file_name}" tasks
+
+    local fully_qualified_task_name
+    for fully_qualified_task_name in "${tasks[@]}"; do
+        "${@}" "${fully_qualified_task_name}"
+    done
+
+    return 0
+}
+
+function project:task_registry._get_all_tasks_for_task_definition_file() {
+    local -r wanted_task_definition_file_name="${1}"
+    local -n tasks_ref="${2}"
+
+    local -a tasks_in_file=()
+
+    local fully_qualified_task_name
+    local task_definition_file_name
+
+    for fully_qualified_task_name in "${!_MYPROJECT_TASKS_TASK_DEFINITION_FILES[@]}"; do
+        task_definition_file_name="${_MYPROJECT_TASKS_TASK_DEFINITION_FILES["${fully_qualified_task_name}"]}"
+
+        if [[ "${task_definition_file_name}" = "${wanted_task_definition_file_name}" ]]; then
+            tasks_in_file+=("${fully_qualified_task_name}")
+        fi
+    done
+
+    # shellcheck disable=SC2034
+    readarray -t tasks_ref < \
+        <(printf '%s\n' "${tasks_in_file[@]}" | LC_ALL=en_US.UTF-8 sort || true)
 
     return 0
 }

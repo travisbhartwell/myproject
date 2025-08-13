@@ -14,6 +14,8 @@ set -o nounset -o errexit -o errtrace -o pipefail
 [[ -n "${_PROJECT_INFO_LIB:-}" ]] && return
 readonly _PROJECT_INFO_LIB=1
 
+mycmd:command_group.load_support_lib "output"
+
 function project_info.get_project_root_directory() {
     local -a project_directories
     if ! project.find_up project_directories "${PWD}"; then
@@ -32,6 +34,84 @@ function project_info.get_project_task_definition_directory() {
     fi
 
     echo "${project_directories["${_PROJECT_TASK_DEFINITION_DIRECTORY}"]}"
+}
+
+function project_info.list_tasks_plain_format() {
+    project_info.list_tasks project:task_registry.foreach_task_by_task_definition_file project_info.print_task_namespaced_parts_string
+}
+
+function project_info.list_tasks_table_format() {
+    project_info.list_tasks project:task_registry.foreach_task_definition_file project_info.summarize_task_definition_file_tasks
+}
+
+function project_info.summarize_task_definition_file_tasks() {
+    local -r task_definition_file_name="${1}"
+
+    # shellcheck disable=SC2034
+    local -A task_summary_table=()
+    project:task_registry.foreach_task_in_task_definition_file "${task_definition_file_name}" \
+        project_info.add_task_summary_to_table task_summary_table
+
+    mycmd.print_table task_summary_table \
+        "The folowing tasks are defined in task definition file '${task_definition_file_name}':" \
+        "Task Name" "Description"
+}
+
+function project_info.add_task_summary_to_table() {
+    local -n task_summary_table_ref="${1}"
+    local -r fully_qualified_task_name="${2}"
+
+    # shellcheck disable=SC2034
+    local -A task
+    if ! project:task_registry.get_task "${fully_qualified_task_name}" task; then
+        # coverage skip: 2
+        mycmd.debug "Unexpected error getting task '${fully_qualified_task_name}'."
+        return 1
+    fi
+
+    local namespaced_parts_string
+    namespaced_parts_string="$(project:task.get_namespaced_parts_as_string task)"
+
+    local task_description
+    if ! task_description="$(project:task.get_description task)"; then
+        task_description=""
+    fi
+    readonly task_description
+
+    # shellcheck disable=SC2034
+    task_summary_table_ref["${namespaced_parts_string}"]="${task_description}"
+}
+
+function project_info.list_tasks() {
+    local registered_task_count
+    registered_task_count="$(project:task_registry.get_registered_task_count)"
+    readonly registered_task_count
+
+    if ((registered_task_count == 0)); then
+        project.output_only_if_not_quiet "There are no registered tasks."
+        return 0
+    fi
+
+    project.output_only_if_not_quiet "The following tasks are registered:"
+
+    "${@}"
+}
+
+function project_info.print_task_namespaced_parts_string() {
+    local -r fully_qualified_task_name="${1}"
+
+    # shellcheck disable=SC2034
+    local -A task
+    if ! project:task_registry.get_task "${fully_qualified_task_name}" task; then
+        # coverage skip: 2
+        mycmd.debug "Unexpected error getting task '${fully_qualified_task_name}'."
+        return 1
+    fi
+
+    local namespaced_parts_string
+    namespaced_parts_string="$(project:task.get_namespaced_parts_as_string task)"
+
+    mycmd.output "${namespaced_parts_string}"
 }
 
 mycmd.trace "The MyProject Project Info command group library has been sourced."

@@ -22,5 +22,5 @@ function mycmd.main() {
         exit 1
     fi
 
-    project:task_registry.list_tasks
+    project_info.list_tasks_plain_format
 }
