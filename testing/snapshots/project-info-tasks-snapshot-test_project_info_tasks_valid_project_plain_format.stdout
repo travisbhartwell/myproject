@@ -1,0 +1,15 @@
+Using project root at 'TEST_DATA_DIRECTORY/valid/valid1'.
+
+Using task definition directory at 'TEST_DATA_DIRECTORY/valid/valid1/myproject'.
+
+The following tasks are registered:
+list-data-files
+list-task-definition-files
+task1
+task2
+task3
+sub a-sub-task
+sub task1
+sub task2
+sub task3
+sub task4

@@ -53,7 +53,7 @@ function project_info.summarize_task_definition_file_tasks() {
         project_info.add_task_summary_to_table task_summary_table
 
     mycmd.print_table task_summary_table \
-        "The folowing tasks are defined in task definition file '${task_definition_file_name}':" \
+        "The folowing tasks are defined in the task definition file '${task_definition_file_name}':" \
         "Task Name" "Description"
 }
 

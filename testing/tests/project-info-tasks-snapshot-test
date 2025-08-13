@@ -28,6 +28,131 @@ function filter_project_info_tasks_valid_project() {
 }
 
 # ------------------------------------------------------------------------------
+# List Tasks Valid Project Plain Format Quiet Flag Snapshot Test Case
+function test_project_info_tasks_valid_project_plain_format() {
+    execute_and_assert_exit_code_and_snapshot 0
+}
+
+function snapshot_project_info_tasks_valid_project_plain_format() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info tasks --format=plain
+}
+
+function filter_project_info_tasks_valid_project_plain_format() {
+    # shellcheck disable=SC2154
+    sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
+# List Tasks Valid Project Table Format Snapshot Test Case
+function test_project_info_tasks_valid_project_table_format() {
+    execute_and_assert_exit_code_and_snapshot 0
+}
+
+function snapshot_project_info_tasks_valid_project_table_format() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info tasks --format=table
+}
+
+function filter_project_info_tasks_valid_project_table_format() {
+    # shellcheck disable=SC2154
+    sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
+# List Tasks Valid Project Table Format With No Equals Snapshot Test Case
+function test_project_info_tasks_valid_project_plain_format_no_equals() {
+    execute_and_assert_exit_code_and_snapshot 0
+}
+
+function snapshot_project_info_tasks_valid_project_plain_format_no_equals() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info tasks -f plain
+}
+
+function filter_project_info_tasks_valid_project_plain_format_no_equals() {
+    # shellcheck disable=SC2154
+    sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
+# List Tasks Valid Project Invalid Format Test Case
+function test_project_info_tasks_valid_project_invalid_format() {
+    execute_and_assert_exit_code_and_snapshot 1
+}
+
+function snapshot_project_info_tasks_valid_project_invalid_format() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info tasks --format=invalid
+}
+
+function filter_project_info_tasks_valid_project_invalid_format() {
+    sed 's/^\[[^]]*\]/[TIMESTAMP]/'
+}
+
+# ------------------------------------------------------------------------------
+# List Tasks Valid Project Format No Argument Test Case
+function test_project_info_tasks_valid_project_format_no_argument() {
+    execute_and_assert_exit_code_and_snapshot 1
+}
+
+function snapshot_project_info_tasks_valid_project_format_no_argument() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info tasks --format
+}
+
+function filter_project_info_tasks_valid_project_format_no_argument() {
+    sed 's/^\[[^]]*\]/[TIMESTAMP]/'
+}
+
+# ------------------------------------------------------------------------------
+# List Tasks Valid Project Invalid Format Test Case
+function test_project_info_tasks_valid_project_invalid_flag() {
+    execute_and_assert_exit_code_and_snapshot 1
+}
+
+function snapshot_project_info_tasks_valid_project_invalid_flag() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info tasks --invalid-flag
+}
+
+function filter_project_info_tasks_valid_project_invalid_flag() {
+    sed 's/^\[[^]]*\]/[TIMESTAMP]/'
+}
+
+# ------------------------------------------------------------------------------
+# List Tasks Valid Project Quiet Flag Snapshot Test Case
+function test_project_info_tasks_valid_project_quiet_flag() {
+    execute_and_assert_exit_code_and_snapshot 0
+}
+
+function snapshot_project_info_tasks_valid_project_quiet_flag() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info tasks --quiet
+}
+
+function filter_project_info_tasks_valid_project_quiet_flag() {
+    # shellcheck disable=SC2154
+    sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
+# List Tasks Valid Project Plain Format Quiet Flag Snapshot Test Case
+function test_project_info_tasks_valid_project_plain_format_quiet_flag() {
+    execute_and_assert_exit_code_and_snapshot 0
+}
+
+function snapshot_project_info_tasks_valid_project_plain_format_quiet_flag() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info tasks --format=plain --quiet
+}
+
+function filter_project_info_tasks_valid_project_plain_format_quiet_flag() {
+    # shellcheck disable=SC2154
+    sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
 # List Tasks Valid Project No Tasks Snapshot Test Case
 function test_project_info_tasks_valid_project_no_tasks() {
     execute_and_assert_exit_code_and_snapshot 0

@@ -9,7 +9,7 @@ function sub_task_function1() {
     return 1
 }
 myproject.register_task task1 sub_task_function1
-myproject.register_task_description task1 "This task1 in sub."
+myproject.register_task_description task1 "This is task1 in sub."
 
 function a_sub_task_function() {
     myproject.output_only_if_not_quiet "Running a_sub_task_function"

@@ -415,6 +415,7 @@ function project:task_registry._get_all_task_definition_files() {
     local -n task_definition_files_ref="${1}"
 
     if (("${#_MYPROJECT_LOADED_TASK_DEFINITION_FILES[@]}" == 0)); then
+        # coverage skip: 2
         task_definition_files_ref=()
         return 0
     fi
@@ -473,76 +474,6 @@ function project:task_registry._get_all_tasks_for_task_definition_file() {
         <(printf '%s\n' "${tasks_in_file[@]}" | LC_ALL=en_US.UTF-8 sort || true)
 
     return 0
-}
-
-function project:task_registry.list_tasks() {
-    if (("${#_MYPROJECT_TASKS[@]}" == 0)); then
-        mycmd.output "There are no registered tasks."
-        return 0
-    fi
-
-    mycmd.output "The following tasks are registered:"
-
-    local -a all_tasks_namespaced_parts
-    if ! project:task_registry._get_all_task_namespaced_parts all_tasks_namespaced_parts; then
-        # coverage skip: 2
-        mycmd.error_output "Error getting all task namespaced parts"
-        return 1
-    fi
-
-    local task
-    for task in "${all_tasks_namespaced_parts[@]}"; do
-        mycmd.output "${task}"
-    done
-}
-
-function project:task_registry._get_all_task_namespaced_parts() {
-    local -n all_tasks_namespaced_parts_ref="${1}"
-
-    local -a main_file_tasks=()
-    local -a other_tasks=()
-
-    local fully_qualified_task_name
-    local task_definition_file_name
-    local namespaced_parts_string
-    local -A task
-
-    for fully_qualified_task_name in "${!_MYPROJECT_TASKS[@]}"; do
-        task=()
-
-        if ! project:task_registry.get_task "${fully_qualified_task_name}" task; then
-            # coverage skip: 2
-            mycmd.debug "Unexpected error getting task '${fully_qualified_task_name}'."
-            return 1
-        fi
-
-        task_definition_file_name="$(project:task.get_task_definition_file_name task)"
-        namespaced_parts_string="$(project:task.get_namespaced_parts_as_string task)"
-
-        mycmd.trace "Found task with fully qualified name '${fully_qualified_task_name}', with namespaced parts string '${namespaced_parts_string}' with task file '${task_definition_file_name}'."
-
-        if [[ "${task_definition_file_name}" == "main" ]]; then
-            main_file_tasks+=("${namespaced_parts_string}")
-        else
-            other_tasks+=("${namespaced_parts_string}")
-        fi
-    done
-
-    all_tasks_namespaced_parts_ref=()
-
-    if (("${#main_file_tasks[@]}" > 0)); then
-        # shellcheck disable=SC2034
-        readarray -t all_tasks_namespaced_parts_ref < \
-            <(printf '%s\n' "${main_file_tasks[@]}" | LC_ALL=en_US.UTF-8 sort || true)
-    fi
-
-    if (("${#other_tasks[@]}" > 0)); then
-        local size_so_far="${#all_tasks_namespaced_parts_ref[@]}"
-
-        # shellcheck disable=SC2034
-        readarray -t -O "${size_so_far}" all_tasks_namespaced_parts_ref < \
-            <(printf '%s\n' "${other_tasks[@]}" | LC_ALL=en_US.UTF-8 sort || true)
-    fi
 }
 
 function project:task.get_fully_qualified_name() {

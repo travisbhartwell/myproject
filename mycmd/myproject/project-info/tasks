@@ -6,21 +6,119 @@ mycmd:command.register_version "0.1"
 mycmd:command.register_short_description "List the tasks defined by the current myproject file."
 
 # shellcheck disable=SC2154
-mycmd:command.register_help_text "${_MYCMD_NAMESPACED_PARTS_STRING}"
+mycmd:command.register_help_text "${_MYCMD_NAMESPACED_PARTS_STRING} [-q|--quiet] [-f|--format=[plain|table]]\n"
 mycmd:command.register_help_text "${_MYCMD_NAMESPACED_PARTS_STRING} -h | --help"
 mycmd:command.register_help_text "${_MYCMD_NAMESPACED_PARTS_STRING} -v | --version"
 mycmd:command.register_help_text "Options:"
 mycmd:command.register_help_text "\t-h | --help    - Show this help"
 mycmd:command.register_help_text "\t-v | --version - Show this command's version"
+mycmd:command.register_help_text "\t-q | --quiet   - Only show names of tasks"
+mycmd:command.register_help_text "\t-f | --format  - Select the output format: plain or table format, table is the default"
 
 [[ -n "${_MYCMD_SOURCING_FOR_HELP:-}" ]] && return
 
 set -o nounset -o errexit -o errtrace -o pipefail
 
+readonly _FORMAT='format'
+readonly _FORMAT_PLAIN='plain'
+readonly _FORMAT_TABLE='table'
+readonly _QUIET='quiet'
+readonly _UNKNOWN='unknown'
+
+declare -Agx _OUTPUT_DISPATCH
+_OUTPUT_DISPATCH["${_FORMAT_PLAIN}"]=project_info.list_tasks_plain_format
+_OUTPUT_DISPATCH["${_FORMAT_TABLE}"]=project_info.list_tasks_table_format
+
+function tasks::print_unknown_format_message() {
+    local -r supplied_format="${1}"
+
+    mycmd.error_output "Unknown output format '${supplied_format}', the following options are available:"
+
+    local format
+    for format in "${!_OUTPUT_DISPATCH[@]}"; do
+        mycmd.error_output "- ${format}"
+    done
+}
+
+function tasks::parse_command_line() {
+    local -n arguments_ref="${1}"
+    shift
+
+    local -A errors=()
+
+    # Set defaults
+    arguments_ref["${_QUIET}"]=false
+    arguments_ref["${_FORMAT}"]="${_FORMAT_TABLE}"
+
+    while (($# > 0)); do
+        case "${1}" in
+            "--${_QUIET}" | "-q")
+                arguments_ref["${_QUIET}"]=true
+                shift
+                ;;
+
+            "--${_FORMAT}"* | "-f")
+                local format
+
+                if [[ "${1}" =~ --${_FORMAT}=.+ ]]; then
+                    format=${1##*"${_FORMAT}"=}
+                    shift
+                elif [[ "${#}" -ge 2 && "${2:0:1}" != "-" ]]; then
+                    format="${2}"
+                    shift 2
+                else
+                    mycmd.error_output "Missing argument for '--${_FORMAT}'."
+                    errors["${_FORMAT}"]=1
+                    shift
+                fi
+
+                if [[ -v format ]]; then
+                    if [[ -v _OUTPUT_DISPATCH["${format}"] ]]; then
+                        arguments_ref["${_FORMAT}"]="${format}"
+                    else
+                        tasks::print_unknown_format_message "${format}"
+                        errors["${_FORMAT}"]=1
+                    fi
+                fi
+                ;;
+
+            *)
+                mycmd.error_output "Unknown flag or argument: '${1}'."
+                errors["${_UNKNOWN}"]=1
+                shift
+                ;;
+        esac
+    done
+
+    mycmd.trace "Parsed command line arguments for tasks:"
+    local argument
+
+    for argument in \
+        "${_QUIET}" \
+        "${_FORMAT}"; do
+        mycmd.trace "${argument} = ${arguments_ref[${argument}]}"
+    done
+
+    (("${#errors[@]}" == 0))
+}
+
 function mycmd.main() {
+    local -A arguments=()
+
+    if ! tasks::parse_command_line arguments "${@}"; then
+        mycmd.err_exit 1 "Error parsing command line: '${*}'"
+    fi
+
+    if [[ "${arguments["${_QUIET}"]}" = "true" ]]; then
+        project.enable_quiet_mode
+    fi
+
     if ! project.load_all_task_definition_files; then
         exit 1
     fi
 
-    project_info.list_tasks_plain_format
+    local -r output_format="${arguments["${_FORMAT}"]}"
+    local -r output_fn="${_OUTPUT_DISPATCH["${output_format}"]}"
+
+    "${output_fn}"
 }
