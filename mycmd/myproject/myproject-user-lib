@@ -68,6 +68,22 @@ function myproject.register_task_with_fileset() {
         "${@}"
 }
 
+function myproject.register_task_description() {
+    local -r task_name="${1}"
+    local -r task_description="${2}"
+
+    local fully_qualified_task_name
+    if ! fully_qualified_task_name="$(myproject._get_fully_qualified_task_name "${task_name}")"; then
+        # coverage skip: 1
+        return 1
+    fi
+    readonly fully_qualified_task_name
+
+    project:task_registry.register_task_description \
+        "${fully_qualified_task_name}" \
+        "${task_description}"
+}
+
 function myproject._get_fully_qualified_task_name() {
     local -r task_name="${1}"
 

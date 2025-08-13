@@ -61,10 +61,12 @@ function execute_fileset_tests() {
 myproject.register_task_with_fileset execute-all \
     execute_fileset_tests \
     TEST_FILES
+myproject.register_task_description execute-all "Execute all test suites."
 
 myproject.register_task_with_fileset execute-snapshots \
     execute_fileset_tests \
     SNAPSHOT_TEST_FILES
+myproject.register_task_description execute-snapshots "Execute all snapshot test suites."
 
 function execute_single_file() {
     local -r test_file="${1}"
@@ -84,6 +86,7 @@ function execute_single_file() {
 }
 
 myproject.register_task execute-single-file execute_single_file
+myproject.register_task_description execute-single-file "Execute the tests in a single test file."
 
 function page_last_coverage_reports() {
     local pager="bat"
@@ -107,6 +110,7 @@ function page_last_coverage_reports() {
 }
 
 myproject.register_task page-last-coverage-reports page_last_coverage_reports
+myproject.register_task_description page-last-coverage-reports "View the latest test coverage reports in a pager."
 
 function page_last_log() {
     local last_test_log
@@ -120,12 +124,14 @@ function page_last_log() {
 }
 
 myproject.register_task page-last-log page_last_log
+myproject.register_task_description page-last-log "View the latest test output log in a pager."
 
 function remove_output() {
     rm -rf "${TMP_WORKING_DIR}"/test-output-* 2>/dev/null || true
 }
 
 myproject.register_task remove-output remove_output
+myproject.register_task_description remove-output "Remove all of the test run output files in '${TMP_WORKING_DIR}'."
 
 function update_all_snapshots() {
     local final_result=0
@@ -138,6 +144,7 @@ function update_all_snapshots() {
 myproject.register_task_with_fileset update-all-snapshots \
     update_all_snapshots \
     SNAPSHOT_TEST_FILES
+myproject.register_task_description update-all-snapshots "Update all snapshot files for snapshot tests."
 
 function update_single_file_snapshots() {
     if [[ "${1}" != *-snapshot-test ]]; then
@@ -149,6 +156,7 @@ function update_single_file_snapshots() {
 }
 
 myproject.register_task update-single-file-snapshots update_single_file_snapshots
+myproject.register_task_description update-single-file-snapshots "Update the snapshot files for a single snapshot test file."
 
 # --------------------------------------------------------------------------------------------------
 # Test Task Support Functions

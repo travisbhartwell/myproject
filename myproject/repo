@@ -54,6 +54,7 @@ function create_local_snapshot() {
 }
 
 myproject.register_task create-local-snapshot create_local_snapshot
+myproject.register_task_description create-local-snapshot "Create a local git snapshot tag."
 
 function list_local_snapshots() {
     local -a tags=()
@@ -70,6 +71,7 @@ function list_local_snapshots() {
 }
 
 myproject.register_task list-local-snapshots list_local_snapshots
+myproject.register_task_description list-local-snapshots "List all locally defined git snapshot tags."
 
 # --------------------------------------------------------------------------------------------------
 # Development Snapshot Task Definitions
@@ -96,6 +98,7 @@ function list_development_snapshots() {
 }
 
 myproject.register_task list-development-snapshots list_development_snapshots
+myproject.register_task_description list-development-snapshots "List all development git snapshot tags."
 
 function promote_local_snapshot_to_development() {
     if (($# == 0)); then
@@ -140,6 +143,7 @@ function promote_local_snapshot_to_development() {
 }
 
 myproject.register_task promote-local-snapshot-to-development promote_local_snapshot_to_development
+myproject.register_task_description promote-local-snapshot-to-development "Promote a locally defined git snapshot tag to a development snapshot tag."
 
 function promote_latest_local_snapshot_tag_to_development() {
     local latest_local_snapshot
@@ -153,6 +157,7 @@ function promote_latest_local_snapshot_tag_to_development() {
 }
 
 myproject.register_task promote-latest-local-snapshot-to-development promote_latest_local_snapshot_tag_to_development
+myproject.register_task_description promote-latest-local-snapshot-to-development "Promote the latest locally defined git snapshot tag to a development snapshot tag."
 
 # --------------------------------------------------------------------------------------------------
 # Worktree Management Task Definitions
@@ -193,6 +198,7 @@ function update_snapshot_worktree_to_snapshot() {
 }
 
 myproject.register_task update-snapshot-worktree-to-snapshot update_snapshot_worktree_to_snapshot
+myproject.register_task_description update-snapshot-worktree-to-snapshot "Update snapshot worktree checkout to specific snapshot git tag."
 
 function update_snapshot_worktree_to_latest_local_snapshot() {
     local latest_local_snapshot
@@ -206,6 +212,7 @@ function update_snapshot_worktree_to_latest_local_snapshot() {
 }
 
 myproject.register_task update-snapshot-worktree-to-latest-local-snapshot update_snapshot_worktree_to_latest_local_snapshot
+myproject.register_task_description update-snapshot-worktree-to-latest-local-snapshot "Update snapshot worktree checkout to the latest local snapshot git tag."
 
 function update_snapshot_worktree_to_latest_development_snapshot() {
     project:git.fetch_tags
@@ -221,6 +228,7 @@ function update_snapshot_worktree_to_latest_development_snapshot() {
 }
 
 myproject.register_task update-snapshot-worktree-to-latest-development-snapshot update_snapshot_worktree_to_latest_development_snapshot
+myproject.register_task_description update-snapshot-worktree-to-latest-development-snapshot "Update snapshot worktree checkout to the latest development snapshot git tag."
 
 readonly SNAPSHOT_WORKTREE_LAST_USED_TAG_FILE="${WORKTREES_PARENT_DIR}/.last-used-snapshot-tag"
 function rollback_snapshot_worktree_to_last_used_snapshot() {
@@ -235,6 +243,7 @@ function rollback_snapshot_worktree_to_last_used_snapshot() {
 }
 
 myproject.register_task rollback-snapshot-worktree-to-last-used-snapshot rollback_snapshot_worktree_to_last_used_snapshot
+myproject.register_task_description rollback-snapshot-worktree-to-last-used-snapshot "Rollback snapshot worktree checkout to the last used snapshot git tag."
 
 function rollback_snapshot_worktree_to_previous_snapshot_in_sequence() {
     local current_worktree_tag
@@ -254,6 +263,7 @@ function rollback_snapshot_worktree_to_previous_snapshot_in_sequence() {
 }
 
 myproject.register_task rollback-snapshot-worktree-to-previous-snapshot-in-sequence rollback_snapshot_worktree_to_previous_snapshot_in_sequence
+myproject.register_task_description rollback-snapshot-worktree-to-previous-snapshot-in-sequence "Rollback the snapshot worktree checkout to the previous in sequence snapshot git tag."
 
 # --------------------------------------------------------------------------------------------------
 # Task Support Functions

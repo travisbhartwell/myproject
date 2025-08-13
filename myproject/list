@@ -10,25 +10,31 @@ set -o nounset -o errexit -o errtrace -o pipefail
 myproject.register_task_with_fileset all-files \
     myproject.list_files \
     ALL_FILES
+myproject.register_task_description all-files "List all files in the project."
 
 myproject.register_task_with_fileset task-definition-files \
     myproject.list_files \
     TASK_DEFINITION_FILES
+myproject.register_task_description task-definition-files "List all of the task definition files in the project."
 
 myproject.register_task_with_fileset implementation-files \
     myproject.list_files \
     IMPLEMENTATION_FILES
+myproject.register_task_description implementation-files "List all of the implementation files in the project."
 
 myproject.register_task_with_fileset test-files \
     myproject.list_files \
     TEST_FILES
+myproject.register_task_description test-files "List all of the test source files in the project."
 
 myproject.register_task_with_fileset snapshot-test-files \
     myproject.list_files \
     SNAPSHOT_TEST_FILES
+myproject.register_task_description snapshot-test-files "List all of the snapshot test source files in the project."
 
 myproject.register_task_with_fileset snapshot-files \
     myproject.list_files \
     SNAPSHOT_FILES
+myproject.register_task_description snapshot-files "List all of the snapshot files in the project."
 
 mycmd.trace "Finished loading the list task definition file."

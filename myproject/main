@@ -97,6 +97,7 @@ function format_shell_files() {
 }
 
 myproject.register_task_with_fileset format format_shell_files ALL_FILES
+myproject.register_task_description format "Format all shell script source files with shfmt."
 
 mycmd.defer_at_startup mycmd.init_bin shellcheck
 function lint_shell_files() {
@@ -113,6 +114,7 @@ function lint_shell_files() {
 }
 
 myproject.register_task_with_fileset lint lint_shell_files ALL_FILES
+myproject.register_task_description lint "Lint all shell script source files with shellcheck."
 
 function record_demo() {
     if ! mycmd.init_bin_no_exit vhs; then
@@ -131,6 +133,7 @@ function record_demo() {
 }
 
 myproject.register_task record-demo record_demo
+myproject.register_task_description record-demo "Record a screencast demo using vhs."
 
 function mycmd_myproject_devel() {
     /usr/bin/env \
@@ -139,6 +142,7 @@ function mycmd_myproject_devel() {
 }
 
 myproject.register_task myproject-devel mycmd_myproject_devel
+myproject.register_task_description myproject-devel "Run the in-development MyProject from this git worktree."
 
 mycmd.defer_at_startup mycmd.init_bin find
 function clean_up() {
@@ -146,11 +150,13 @@ function clean_up() {
 }
 
 myproject.register_task clean-up clean_up
+myproject.register_task_description clean-up "Clean up miscellaneous files."
 
 function all() {
     myproject.execute_tasks clean-up \; format \; lint \; test execute-all
 }
 
 myproject.register_task all
+myproject.register_task_description all "Execute all build tasks: format, lint, and tests."
 
 mycmd.trace "Finished loading the main task definition file."

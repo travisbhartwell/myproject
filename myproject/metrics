@@ -16,18 +16,22 @@ function count_source_lines() {
 myproject.register_task_with_fileset count-all-source-lines \
     count_source_lines \
     ALL_FILES
+myproject.register_task_description count-all-source-lines "Count the lines in all of the source code files."
 
 myproject.register_task_with_fileset count-task-definition-source-lines \
     count_source_lines \
     TASK_DEFINITION_FILES
+myproject.register_task_description count-task-definition-source-lines "Count the lines in all of the MyProject task definition files for the project."
 
 myproject.register_task_with_fileset count-implementation-source-lines \
     count_source_lines \
     IMPLEMENTATION_FILES
+myproject.register_task_description count-implementation-source-lines "Count the lines in all of the implementation source files."
 
 myproject.register_task_with_fileset count-test-source-lines \
     count_source_lines \
     TEST_FILES
+myproject.register_task_description count-test-source-lines "Count the lines in all of the test source files."
 
 function git_quick_stats() {
     if ! mycmd.init_bin_no_exit git-quick-stats; then
@@ -45,5 +49,6 @@ function git_quick_stats() {
 }
 
 myproject.register_task git-quick-stats git_quick_stats
+myproject.register_task_description git-quick-stats "Execute the 'git-quick-stats' utility for the myproject checkout."
 
 mycmd.trace "Finished loading the metrics task definition file."

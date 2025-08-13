@@ -45,12 +45,14 @@ myproject.register_task new-test-file \
     new_test_file_from_template \
     "${TEST_TEMPLATE_FILE}" \
     '-test'
+myproject.register_task_description new-test-file "Create a new test file from the template."
 
 readonly SNAPSHOT_TEST_TEMPLATE_FILE="${TEMPLATES_DIR}/snapshot-test-template-file"
 myproject.register_task new-snapshot-test-file \
     new_test_file_from_template \
     "${SNAPSHOT_TEST_TEMPLATE_FILE}" \
     '-snapshot-test'
+myproject.register_task_description new-snapshot-test-file "Create a new snapshot test file from the template."
 
 readonly SUPPORT_LIBRARY_TEMPLATE_FILE="${TEMPLATES_DIR}/myproject-support-lib-template-file"
 function new_support_library_from_template() {
@@ -72,5 +74,6 @@ function new_support_library_from_template() {
 }
 
 myproject.register_task new-support-library new_support_library_from_template
+myproject.register_task_description new-support-library "Create a new MyProject command group support library from the template."
 
 mycmd.trace "Finished loading the templates task definition file."
