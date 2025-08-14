@@ -189,6 +189,8 @@ function execute_test() {
     echo "Executing test file: ${test_file}" >>"${test_log_file}"
 
     /usr/bin/env \
+        -u MYPROJECT_QUIET \
+        -u MYPROJECT_VERBOSE \
         MYCMD_TRACE=1 \
         MYCMD_DEBUG=1 \
         MYCMD_LOG_FILE="${test_log_file}" \
