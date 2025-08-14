@@ -14,8 +14,6 @@ set -o nounset -o errexit -o errtrace -o pipefail
 [[ -n "${_PROJECT_INFO_LIB:-}" ]] && return
 readonly _PROJECT_INFO_LIB=1
 
-mycmd:command_group.load_support_lib "output"
-
 function project_info.get_project_root_directory() {
     local -a project_directories
     if ! project.find_up project_directories "${PWD}"; then
