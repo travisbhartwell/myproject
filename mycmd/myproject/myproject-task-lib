@@ -17,6 +17,7 @@ readonly _MYPROJECT_TASK_LIB=1
 
 mycmd:command_group.load_support_lib "execution"
 mycmd:command_group.load_support_lib "fileset"
+mycmd:command_group.load_support_lib "output"
 
 declare -Agx _MYPROJECT_TASKS
 declare -Agx _MYPROJECT_TASKS_TASK_DEFINITION_FILES
@@ -599,7 +600,16 @@ function project:task.execute() {
 
     declare -gx MYPROJECT_CURRENT_TASK_FILE="${task_definition_file_name}"
 
-    mycmd.output "➡️ Executing task '${namespaced_parts_string}'..."
+    local task_description
+    if task_description="$(project:task.get_description "${!task_struct_ref}")"; then
+        readonly task_description
+    fi
+
+    if project.is_verbose_enabled && [[ -n "${task_description-}" ]]; then
+        mycmd.output "➡️ Executing task '${namespaced_parts_string}': ${task_description}..."
+    else
+        mycmd.output "➡️ Executing task '${namespaced_parts_string}'..."
+    fi
 
     local return_code=0
 

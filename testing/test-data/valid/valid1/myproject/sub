@@ -17,6 +17,7 @@ function a_sub_task_function() {
     myproject.verbose_output "Finishing a_sub_task_function"
 }
 myproject.register_task a-sub-task a_sub_task_function
+myproject.register_task_description a-sub-task "This is a-sub-task in sub."
 
 function sub_task_function2() {
     mycmd.output "Running task_function2"

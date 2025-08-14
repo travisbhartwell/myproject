@@ -2,7 +2,7 @@ Using project root at 'TEST_DATA_DIRECTORY/valid/valid1'.
 
 Using task definition directory at 'TEST_DATA_DIRECTORY/valid/valid1/myproject'.
 
-➡️ Executing task 'sub a-sub-task'...
+➡️ Executing task 'sub a-sub-task': This is a-sub-task in sub....
 Running a_sub_task_function
 [VERBOSE] Finishing a_sub_task_function
 ✅ Task 'sub a-sub-task' succeeded.

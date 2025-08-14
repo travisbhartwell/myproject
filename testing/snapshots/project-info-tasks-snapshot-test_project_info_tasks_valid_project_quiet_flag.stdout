@@ -11,10 +11,10 @@ task3                           This is task3 in main.
 
 The folowing tasks are defined in the task definition file 'sub':
 
-Task Name           Description               
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
-sub a-sub-task                                
-sub task1           This is task1 in sub.     
-sub task2           This is task2 in sub.     
-sub task3                                     
-sub task4           This is task4 in sub.     
+Task Name           Description                    
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+sub a-sub-task      This is a-sub-task in sub.     
+sub task1           This is task1 in sub.          
+sub task2           This is task2 in sub.          
+sub task3                                          
+sub task4           This is task4 in sub.          
