@@ -1,0 +1,4 @@
+[TIMESTAMP] Unknown output format 'invalid', the following options are available:
+[TIMESTAMP] - table
+[TIMESTAMP] - plain
+[TIMESTAMP] Error parsing command line: '--format=invalid'

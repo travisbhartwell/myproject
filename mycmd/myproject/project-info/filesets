@@ -3,7 +3,7 @@
 # shellcheck shell=bash
 
 mycmd:command.register_version "0.1"
-mycmd:command.register_short_description "List the task definition files defined by the current MyProject project."
+mycmd:command.register_short_description "List the filesets defined by the current MyProject project."
 
 # shellcheck disable=SC2154
 mycmd:command.register_help_text "${_MYCMD_NAMESPACED_PARTS_STRING} [-q|--quiet] [-f|--format=[plain|table]]\n"
@@ -12,7 +12,7 @@ mycmd:command.register_help_text "${_MYCMD_NAMESPACED_PARTS_STRING} -v | --versi
 mycmd:command.register_help_text "Options:"
 mycmd:command.register_help_text "\t-h | --help    - Show this help"
 mycmd:command.register_help_text "\t-v | --version - Show this command's version"
-mycmd:command.register_help_text "\t-q | --quiet   - Only show names of the task definition files"
+mycmd:command.register_help_text "\t-q | --quiet   - Only show names of the filesets"
 mycmd:command.register_help_text "\t-f | --format  - Select the output format: plain or table format, table is the default"
 
 [[ -n "${_MYCMD_SOURCING_FOR_HELP:-}" ]] && return
@@ -26,10 +26,10 @@ readonly _QUIET='quiet'
 readonly _UNKNOWN='unknown'
 
 declare -Agx _OUTPUT_DISPATCH
-_OUTPUT_DISPATCH["${_FORMAT_PLAIN}"]=project_info.list_task_definition_files_plain_format
-_OUTPUT_DISPATCH["${_FORMAT_TABLE}"]=project_info.list_task_definition_files_table_format
+_OUTPUT_DISPATCH["${_FORMAT_PLAIN}"]=project_info.list_filesets_plain_format
+_OUTPUT_DISPATCH["${_FORMAT_TABLE}"]=project_info.list_filesets_table_format
 
-function task_definition_files::print_unknown_format_message() {
+function filesets::print_unknown_format_message() {
     local -r supplied_format="${1}"
 
     mycmd.error_output "Unknown output format '${supplied_format}', the following options are available:"
@@ -40,7 +40,7 @@ function task_definition_files::print_unknown_format_message() {
     done
 }
 
-function task_definition_files::parse_command_line() {
+function filesets::parse_command_line() {
     local -n arguments_ref="${1}"
     shift
 
@@ -76,7 +76,7 @@ function task_definition_files::parse_command_line() {
                     if [[ -v _OUTPUT_DISPATCH["${format}"] ]]; then
                         arguments_ref["${_FORMAT}"]="${format}"
                     else
-                        task_definition_files::print_unknown_format_message "${format}"
+                        filesets::print_unknown_format_message "${format}"
                         errors["${_FORMAT}"]=1
                     fi
                 fi
@@ -90,7 +90,7 @@ function task_definition_files::parse_command_line() {
         esac
     done
 
-    mycmd.trace "Parsed command line arguments for tasks-definition-files:"
+    mycmd.trace "Parsed command line arguments for filesets:"
     local argument
 
     for argument in \
@@ -105,7 +105,7 @@ function task_definition_files::parse_command_line() {
 function mycmd.main() {
     local -A arguments=()
 
-    if ! task_definition_files::parse_command_line arguments "${@}"; then
+    if ! filesets::parse_command_line arguments "${@}"; then
         mycmd.err_exit 1 "Error parsing command line: '${*}'"
     fi
 

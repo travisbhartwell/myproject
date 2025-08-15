@@ -60,7 +60,7 @@ function test_new_fileset() {
 
 # --------------------------------------------------------------------------------------------------
 # project:fileset.add_files related tests
-# shellcheck disable=SC2154
+# shellcheck disable=SC2154,SC2312
 function test_add_files_to_fileset() {
     local result=0
     project:fileset_registry.new_fileset MY_FILESET || result="${?}"
@@ -78,10 +78,14 @@ function test_add_files_to_fileset() {
     assertFalse 'Attempting to add a file to a non-existing fileset should fail' "${result}"
 
     result=0
+    project:fileset.get_file_count NO_FILESET || result="${?}"
+    assertFalse 'Attempting to get the file cound of a non-existing fileset should fail' "${result}"
+
+    result=0
     project:fileset.add_files MY_FILESET || result="${?}"
     assertFalse 'Attempting to add no files to fileset should fail' "${result}"
     assertEquals 'MY_FILESET should still be empty' \
-        0 "${#MY_FILESET[@]}"
+        0 "$(project:fileset.get_file_count MY_FILESET)"
 
     result=0
     project:fileset._sort MY_FILESET || result="${?}"
@@ -95,7 +99,7 @@ function test_add_files_to_fileset() {
         "${VALID_PROJECT_DIRECTORY1}/module1/dir2/file1" || result="${?}"
     assertFalse 'Adding files to MY_FILESET with a missing file should return non-zero' "${result}"
     assertEquals 'MY_FILESET should have 3 elements' \
-        3 "${#MY_FILESET[@]}"
+        3 "$(project:fileset.get_file_count MY_FILESET)"
     assertEquals "The first element of MY_FILESET should be 'module1/dir1/file1'" \
         'module1/dir1/file1' "${MY_FILESET[0]}"
     assertEquals "The second element of MY_FILESET should be 'module1/dir2/file1'" \
@@ -109,7 +113,7 @@ function test_add_files_to_fileset() {
         "${VALID_PROJECT_DIRECTORY1}/module1/file2" || result="${?}"
     assertTrue 'Adding more files to MY_FILESET should succeed' "${result}"
     assertEquals 'MY_FILESET should have 5 elements' \
-        5 "${#MY_FILESET[@]}"
+        5 "$(project:fileset.get_file_count MY_FILESET)"
 
     assertEquals "The first element of MY_FILESET should be 'module1/dir1/file1'" \
         'module1/dir1/file1' "${MY_FILESET[0]}"
@@ -127,7 +131,7 @@ function test_add_files_to_fileset() {
 
 # --------------------------------------------------------------------------------------------------
 # project:fileset.find_and_add_files related tests
-# shellcheck disable=SC2154
+# shellcheck disable=SC2154,SC2312
 function test_find_and_add_files() {
     local result=0
     project:fileset_registry.new_fileset MY_FILESET || result="${?}"
@@ -151,7 +155,7 @@ function test_find_and_add_files() {
     project:fileset.find_and_add_files MY_FILESET "${VALID_TASK_DEFINITION_DIRECTORY1}" -type f || result="${?}"
     assertTrue 'Finding and adding files to MY_FILESET should succeed' "${result}"
     assertEquals 'MY_FILESET should have 2 elements' \
-        2 "${#MY_FILESET[@]}"
+        2 "$(project:fileset.get_file_count MY_FILESET)"
     assertEquals "The first element of MY_FILESET should be 'myproject/main'" \
         'myproject/main' "${MY_FILESET[0]}"
     assertEquals "The second element of MY_FILESET should be 'myproject/sub'" \
@@ -161,7 +165,7 @@ function test_find_and_add_files() {
     project:fileset.find_and_add_files MY_FILESET "${VALID_PROJECT_DIRECTORY1}/module1" -type f || result="${?}"
     assertTrue 'Finding and adding more files to MY_FILESET should succeed' "${result}"
     assertEquals 'MY_FILESET should now have 7 elements' \
-        7 "${#MY_FILESET[@]}"
+        7 "$(project:fileset.get_file_count MY_FILESET)"
     assertEquals "The first element of MY_FILESET should be 'module1/dir1/file1'" \
         'module1/dir1/file1' "${MY_FILESET[0]}"
     assertEquals "The second element of MY_FILESET should be 'module1/dir1/sub1/file3'" \

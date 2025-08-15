@@ -131,8 +131,6 @@ function project_info.list_task_definition_files_plain_format() {
 }
 
 function project_info.list_task_definition_files_table_format() {
-    project.output_only_if_not_quiet
-
     # shellcheck disable=SC2034
     local -A task_definition_files_summary_table=()
     project:task_registry.foreach_task_definition_file \
@@ -156,6 +154,55 @@ function project_info._add_task_definition_file_summary_to_table() {
 
     # shellcheck disable=SC2034
     task_definition_files_summary_table_ref["${task_definition_file_name}"]="${task_definition_file_description}"
+}
+
+readonly FILESETS_HEADLINE="The MyProject project has the following registered filesets:"
+readonly NO_FILESETS_HEADLINE="The MyProject project has no registered filesets."
+
+function project_info.list_filesets_plain_format() {
+    local registered_fileset_count
+    registered_fileset_count="$(project:fileset_registry.get_fileset_count)"
+    readonly registered_fileset_count
+
+    if ((registered_fileset_count == 0)); then
+        project.output_only_if_not_quiet "${NO_FILESETS_HEADLINE}"
+        return 0
+    fi
+
+    project.output_only_if_not_quiet "${FILESETS_HEADLINE}"
+
+    project:fileset_registry.foreach_fileset mycmd.output
+}
+
+function project_info.list_filesets_table_format() {
+    local registered_fileset_count
+    registered_fileset_count="$(project:fileset_registry.get_fileset_count)"
+    readonly registered_fileset_count
+
+    if ((registered_fileset_count == 0)); then
+        project.output_only_if_not_quiet "${NO_FILESETS_HEADLINE}"
+        return 0
+    fi
+
+    # shellcheck disable=SC2034
+    local -A filesets_summary_table=()
+    project:fileset_registry.foreach_fileset project_info._add_fileset_summary_to_table filesets_summary_table
+
+    mycmd.print_table filesets_summary_table \
+        "${FILESETS_HEADLINE}" \
+        "File Set" "File Count"
+}
+
+function project_info._add_fileset_summary_to_table() {
+    local -n filesets_summary_table_ref="${1}"
+    local -r fileset="${2}"
+
+    local file_count
+    file_count="$(project:fileset.get_file_count "${fileset}")"
+    readonly file_count
+
+    # shellcheck disable=SC2034
+    filesets_summary_table_ref["${fileset}"]="${file_count}"
 }
 
 mycmd.trace "The MyProject Project Info command group library has been sourced."

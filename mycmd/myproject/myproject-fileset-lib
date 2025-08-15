@@ -53,6 +53,35 @@ function project:fileset_registry.new_fileset() {
     _MYPROJECT_FILESETS["${fileset_name}"]=1
 }
 
+function project:fileset_registry.get_fileset_count() {
+    echo "${#_MYPROJECT_FILESETS[@]}"
+}
+
+function project:fileset_registry.foreach_fileset() {
+    # shellcheck disable=SC2034
+    local -a sorted_filesets
+    project:fileset_registry._get_sorted_filesets sorted_filesets
+
+    local fileset_name
+    for fileset_name in "${!_MYPROJECT_FILESETS[@]}"; do
+        "${@}" "${fileset_name}"
+    done
+}
+
+function project:fileset_registry._get_sorted_filesets() {
+    local -n sorted_filesets_ref="${1}"
+
+    if (("${#_MYPROJECT_FILESETS[@]}" == 0)); then
+        # coverage skip: 2
+        sorted_filesets_ref=()
+        return 0
+    fi
+
+    # shellcheck disable=SC2034
+    readarray -t sorted_filesets_ref < \
+        <(printf '%s\n' "${!_MYPROJECT_FILESETS[@]}" | LC_ALL=en_US.UTF-8 sort || true)
+}
+
 mycmd.defer_at_startup mycmd.init_bin realpath
 function project:fileset.add_files() {
     if [[ ! -v MYPROJECT_ROOT_DIRECTORY ]]; then
@@ -151,6 +180,19 @@ function project:fileset._sort() {
 
     fileset=()
     fileset=("${sorted_fileset[@]}")
+}
+
+function project:fileset.get_file_count() {
+    # shellcheck disable=SC2178
+    local -n fileset="${1}"
+    shift
+
+    if ! project:fileset_registry._fileset_exists "${!fileset}"; then
+        mycmd.error_output "Fileset '${!fileset}' does not exist."
+        return 1
+    fi
+
+    echo "${#fileset[@]}"
 }
 
 mycmd.trace "The MyProject Fileset command group support library has been sourced."
