@@ -122,4 +122,40 @@ function project_info.print_task_namespaced_parts_string() {
     mycmd.output "${namespaced_parts_string}"
 }
 
+readonly TASK_DEFINITION_FILES_HEADLINE="The MyProject project has the following task definition files:"
+
+function project_info.list_task_definition_files_plain_format() {
+    project.output_only_if_not_quiet "${TASK_DEFINITION_FILES_HEADLINE}"
+
+    project:task_registry.foreach_task_definition_file mycmd.output
+}
+
+function project_info.list_task_definition_files_table_format() {
+    project.output_only_if_not_quiet
+
+    # shellcheck disable=SC2034
+    local -A task_definition_files_summary_table=()
+    project:task_registry.foreach_task_definition_file \
+        project_info._add_task_definition_file_summary_to_table task_definition_files_summary_table
+
+    # TODO Use option when added to not sort the table
+    mycmd.print_table task_definition_files_summary_table \
+        "${TASK_DEFINITION_FILES_HEADLINE}" \
+        "Task Definition File" "Description"
+}
+
+function project_info._add_task_definition_file_summary_to_table() {
+    local -n task_definition_files_summary_table_ref="${1}"
+    local -r task_definition_file_name="${2}"
+
+    local task_definition_file_description
+    if ! task_definition_file_description="$(project:task_definition_file.get_description "${task_definition_file_name}")"; then
+        task_definition_file_description=""
+    fi
+    readonly task_definition_file_description
+
+    # shellcheck disable=SC2034
+    task_definition_files_summary_table_ref["${task_definition_file_name}"]="${task_definition_file_description}"
+}
+
 mycmd.trace "The MyProject Project Info command group library has been sourced."

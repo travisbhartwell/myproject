@@ -1,0 +1,5 @@
+[TIMESTAMP] Cannot name task 'sub' which is the same as an existing task definition file name.
+[TIMESTAMP] Error while sourcing 'TEST_DATA_DIRECTORY/valid/valid5/myproject/main'.
+[TIMESTAMP] Error loading task definition file 'TEST_DATA_DIRECTORY/valid/valid5/myproject/main'.
+[TIMESTAMP] Error loading main task definition file.
+[TIMESTAMP] Error loading project task definition files.

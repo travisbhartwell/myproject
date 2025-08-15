@@ -1,0 +1,4 @@
+[TIMESTAMP] Error while sourcing 'TEST_DATA_DIRECTORY/valid/valid3/myproject/sub'.
+[TIMESTAMP] Error loading task definition file 'TEST_DATA_DIRECTORY/valid/valid3/myproject/sub'.
+[TIMESTAMP] Error loading task definition file name 'sub'.
+[TIMESTAMP] Error loading project task definition files.

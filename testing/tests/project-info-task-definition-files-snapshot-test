@@ -1,0 +1,221 @@
+#!/usr/bin/env bash
+# -*- mode: shell-script; sh-shell: bash; sh-basic-offset: 4; sh-indentation: 4; coding: utf-8 -*-
+# shellcheck shell=bash
+
+if ! TESTS_DIRECTORY=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P); then
+    echo >&2 "Error fetching tests directory."
+    exit 1
+fi
+readonly TESTS_DIRECTORY
+
+# shellcheck source=./testing-support-lib
+source "${TESTS_DIRECTORY}/testing-support-lib"
+
+# ------------------------------------------------------------------------------
+# List Tasks Valid Project Snapshot Test Case
+function test_project_info_task_definition_files_valid_project() {
+    execute_and_assert_exit_code_and_snapshot 0
+}
+
+function snapshot_project_info_task_definition_files_valid_project() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info task-definition-files
+}
+
+function filter_project_info_task_definition_files_valid_project() {
+    # shellcheck disable=SC2154
+    sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
+# List Tasks Valid Project Plain Format Quiet Flag Snapshot Test Case
+function test_project_info_task_definition_files_valid_project_plain_format() {
+    execute_and_assert_exit_code_and_snapshot 0
+}
+
+function snapshot_project_info_task_definition_files_valid_project_plain_format() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info task-definition-files --format=plain
+}
+
+function filter_project_info_task_definition_files_valid_project_plain_format() {
+    # shellcheck disable=SC2154
+    sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
+# List Tasks Valid Project Table Format Snapshot Test Case
+function test_project_info_task_definition_files_valid_project_table_format() {
+    execute_and_assert_exit_code_and_snapshot 0
+}
+
+function snapshot_project_info_task_definition_files_valid_project_table_format() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info task-definition-files --format=table
+}
+
+function filter_project_info_task_definition_files_valid_project_table_format() {
+    # shellcheck disable=SC2154
+    sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
+# List Tasks Valid Project Table Format With No Equals Snapshot Test Case
+function test_project_info_task_definition_files_valid_project_plain_format_no_equals() {
+    execute_and_assert_exit_code_and_snapshot 0
+}
+
+function snapshot_project_info_task_definition_files_valid_project_plain_format_no_equals() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info task-definition-files -f plain
+}
+
+function filter_project_info_task_definition_files_valid_project_plain_format_no_equals() {
+    # shellcheck disable=SC2154
+    sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
+# List Tasks Valid Project Invalid Format Test Case
+function test_project_info_task_definition_files_valid_project_invalid_format() {
+    execute_and_assert_exit_code_and_snapshot 1
+}
+
+function snapshot_project_info_task_definition_files_valid_project_invalid_format() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info task-definition-files --format=invalid
+}
+
+function filter_project_info_task_definition_files_valid_project_invalid_format() {
+    sed 's/^\[[^]]*\]/[TIMESTAMP]/'
+}
+
+# ------------------------------------------------------------------------------
+# List Tasks Valid Project Format No Argument Test Case
+function test_project_info_task_definition_files_valid_project_format_no_argument() {
+    execute_and_assert_exit_code_and_snapshot 1
+}
+
+function snapshot_project_info_task_definition_files_valid_project_format_no_argument() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info task-definition-files --format
+}
+
+function filter_project_info_task_definition_files_valid_project_format_no_argument() {
+    sed 's/^\[[^]]*\]/[TIMESTAMP]/'
+}
+
+# ------------------------------------------------------------------------------
+# List Tasks Valid Project Invalid Format Test Case
+function test_project_info_task_definition_files_valid_project_invalid_flag() {
+    execute_and_assert_exit_code_and_snapshot 1
+}
+
+function snapshot_project_info_task_definition_files_valid_project_invalid_flag() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info task-definition-files --invalid-flag
+}
+
+function filter_project_info_task_definition_files_valid_project_invalid_flag() {
+    sed 's/^\[[^]]*\]/[TIMESTAMP]/'
+}
+
+# ------------------------------------------------------------------------------
+# List Tasks Valid Project Quiet Flag Snapshot Test Case
+function test_project_info_task_definition_files_valid_project_quiet_flag() {
+    execute_and_assert_exit_code_and_snapshot 0
+}
+
+function snapshot_project_info_task_definition_files_valid_project_quiet_flag() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info task-definition-files --quiet
+}
+
+function filter_project_info_task_definition_files_valid_project_quiet_flag() {
+    # shellcheck disable=SC2154
+    sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
+# List Tasks Valid Project Plain Format Quiet Flag Snapshot Test Case
+function test_project_info_task_definition_files_valid_project_plain_format_quiet_flag() {
+    execute_and_assert_exit_code_and_snapshot 0
+}
+
+function snapshot_project_info_task_definition_files_valid_project_plain_format_quiet_flag() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info task-definition-files --format=plain --quiet
+}
+
+function filter_project_info_task_definition_files_valid_project_plain_format_quiet_flag() {
+    # shellcheck disable=SC2154
+    sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
+# List Tasks Invalid Project Snapshot Test Case
+function test_project_info_task_definition_files_invalid_project() {
+    execute_and_assert_exit_code_and_snapshot 1
+}
+
+function snapshot_project_info_task_definition_files_invalid_project() {
+    # shellcheck disable=SC2154
+    cd "${INVALID_NO_TASK_DEFINITION_DIRECTORY}" && _mycmd myproject project-info task-definition-files
+}
+
+function filter_project_info_task_definition_files_invalid_project() {
+    sed 's/^\[[^]]*\]/[TIMESTAMP]/'
+}
+
+# ------------------------------------------------------------------------------
+# List Tasks Invalid Project Failing Loading All Snapshot Test Case
+function test_project_info_task_definition_files_invalid_project_failing_loading_all() {
+    execute_and_assert_exit_code_and_snapshot 1
+}
+
+function snapshot_project_info_task_definition_files_invalid_project_failing_loading_all() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY3}" && _mycmd myproject project-info task-definition-files
+}
+
+function filter_project_info_task_definition_files_invalid_project_failing_loading_all() {
+    sed \
+        -e 's/^\[[^]]*\]/[TIMESTAMP]/' \
+        -e "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
+# List Tasks Invalid Project Failing Loading All Snapshot Test Case
+function test_project_info_task_definition_files_invalid_project_task_name_conflict() {
+    execute_and_assert_exit_code_and_snapshot 1
+}
+
+function snapshot_project_info_task_definition_files_invalid_project_task_name_conflict() {
+    # shellcheck disable=SC2154
+    cd "${VALID_PROJECT_DIRECTORY5}" && _mycmd myproject project-info task-definition-files
+}
+
+function filter_project_info_task_definition_files_invalid_project_task_name_conflict() {
+    sed \
+        -e 's/^\[[^]]*\]/[TIMESTAMP]/' \
+        -e "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
+}
+
+# ------------------------------------------------------------------------------
+# Clean up after every test
+function tearDown() {
+    cd "${TESTS_DIRECTORY}" || true
+}
+
+# ------------------------------------------------------------------------------
+# Test Suite Setup
+function oneTimeSetUp() {
+    copy_test_source_data
+}
+
+function oneTimeTearDown() {
+    cleanup_test_data
+}
+
+# shellcheck disable=SC2154 source=../vendor/shunit2
+. "${TESTING_VENDOR_DIRECTORY}/shunit2"
