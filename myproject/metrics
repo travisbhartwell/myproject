@@ -6,6 +6,8 @@ set -o nounset -o errexit -o errtrace -o pipefail
 
 # --------------------------------------------------------------------------------------------------
 # Metrics Tasks
+myproject.register_task_definition_file_description "Tasks for metrics about the MyProject project"
+
 function count_source_lines() {
     local -n fileset="${1}"
 

@@ -6,6 +6,7 @@ set -o nounset -o errexit -o errtrace -o pipefail
 
 # --------------------------------------------------------------------------------------------------
 # Templates Tasks
+myproject.register_task_definition_file_description "Tasks for generating files from templates"
 
 # --------------------------------------------------------------------------------------------------
 # Global Dependencies

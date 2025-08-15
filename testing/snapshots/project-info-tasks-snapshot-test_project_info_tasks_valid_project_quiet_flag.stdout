@@ -9,7 +9,7 @@ task1                           This is task1 in main.
 task2                                                                                     
 task3                           This is task3 in main.                                    
 
-The folowing tasks are defined in the task definition file 'sub':
+The folowing tasks are defined in the task definition file 'sub': This is a sub task definition file:
 
 Task Name           Description                    
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯

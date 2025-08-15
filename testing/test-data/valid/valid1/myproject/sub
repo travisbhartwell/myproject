@@ -4,6 +4,8 @@
 
 set -o nounset -o errexit -o errtrace -o pipefail
 
+myproject.register_task_definition_file_description "This is a sub task definition file"
+
 function sub_task_function1() {
     mycmd.output "Running task_function1"
     return 1

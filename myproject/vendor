@@ -6,6 +6,7 @@ set -o nounset -o errexit -o errtrace -o pipefail
 
 # --------------------------------------------------------------------------------------------------
 # Vendored Code Related Tasks
+myproject.register_task_definition_file_description "Tasks for handling vendored code for MyProject"
 
 # --------------------------------------------------------------------------------------------------
 # Global Dependencies

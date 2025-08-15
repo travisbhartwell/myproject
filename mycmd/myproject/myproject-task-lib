@@ -27,6 +27,7 @@ declare -Agx _MYPROJECT_TASKS_ARGUMENT_INDICES
 declare -agx _MYPROJECT_TASKS_ARGUMENTS
 declare -Agx _MYPROJECT_TASKS_FILESETS
 declare -Agx _MYPROJECT_LOADED_TASK_DEFINITION_FILES
+declare -Agx _MYPROJECT_TASK_DEFINITION_FILE_DESCRIPTIONS
 
 readonly _TASK_FULLY_QUALIFIED_NAME_FIELD='task-fully-qualified-name'
 readonly _TASK_NAME_FIELD='task-name'
@@ -48,6 +49,7 @@ function project:task_registry._reset_registry() {
     _MYPROJECT_TASKS_ARGUMENTS=()
     _MYPROJECT_TASKS_FILESETS=()
     _MYPROJECT_LOADED_TASK_DEFINITION_FILES=()
+    _MYPROJECT_TASK_DEFINITION_FILE_DESCRIPTIONS=()
     unset MYPROJECT_ROOT_DIRECTORY
     unset MYPROJECT_TASK_DEFINITION_DIRECTORY
 
@@ -57,7 +59,7 @@ function project:task_registry._reset_registry() {
 project:task_registry._reset_registry
 
 function project:task_registry._dump_task_registry() {
-    # coverage skip: 27
+    # coverage skip: 35
     if [[ ! -v MYPROJECT_ROOT_DIRECTORY && ! -v MYPROJECT_TASK_DEFINITION_DIRECTORY ]]; then
         mycmd.trace "Nothing is loaded in the registry."
     fi
@@ -68,7 +70,13 @@ function project:task_registry._dump_task_registry() {
 
     local task_definition_file
     for task_definition_file in "${!_MYPROJECT_LOADED_TASK_DEFINITION_FILES[@]}"; do
-        mycmd.trace "- ${task_definition_file}"
+        local task_definition_file_description
+        if [[ -v _MYPROJECT_TASK_DEFINITION_FILE_DESCRIPTIONS["${task_definition_file}"] ]]; then
+            task_definition_file_description="${_MYPROJECT_TASK_DEFINITION_FILE_DESCRIPTIONS["${task_definition_file}"]}"
+            mycmd.trace "- ${task_definition_file}: ${task_definition_file_description}"
+        else
+            mycmd.trace "- ${task_definition_file}: No registered description."
+        fi
     done
 
     mycmd.trace "There are ${#_MYPROJECT_TASKS[@]} tasks registered."
@@ -164,6 +172,45 @@ function project:task_registry._load_task_definition_file() {
     _MYPROJECT_LOADED_TASK_DEFINITION_FILES[${task_definition_file_name}]=1
 
     return 0
+}
+
+function project:task_registry.register_task_file_description() {
+    if [[ ! -v MYPROJECT_CURRENT_TASK_FILE ]]; then
+        # coverage skip: 2
+        mycmd.debug "Error: MYPROJECT_CURRENT_TASK_FILE must be set."
+        return 1
+    fi
+
+    mycmd.trace "Attempting to register task file description for task definition file '${MYPROJECT_CURRENT_TASK_FILE}'."
+
+    local -r task_file_description="${1}"
+
+    if [[ -v _MYPROJECT_TASK_DEFINITION_FILE_DESCRIPTIONS["${MYPROJECT_CURRENT_TASK_FILE}"] ]]; then
+        local -r existing_description="${_MYPROJECT_TASK_DEFINITION_FILE_DESCRIPTIONS["${MYPROJECT_CURRENT_TASK_FILE}"]}"
+
+        mycmd.error_output "Task definition file description already registered: '${existing_description}'."
+        return 1
+    fi
+
+    _MYPROJECT_TASK_DEFINITION_FILE_DESCRIPTIONS["${MYPROJECT_CURRENT_TASK_FILE}"]="${task_file_description}"
+
+    mycmd.trace "Successfully registered task file description for task definition file '${MYPROJECT_CURRENT_TASK_FILE}': '${task_file_description}'."
+}
+
+function project:task_definition_file.get_description() {
+    local -r task_definition_file_name="${1}"
+
+    local task_file_description
+    if [[ -v _MYPROJECT_TASK_DEFINITION_FILE_DESCRIPTIONS["${task_definition_file_name}"] ]]; then
+        task_file_description="${_MYPROJECT_TASK_DEFINITION_FILE_DESCRIPTIONS["${task_definition_file_name}"]}"
+        readonly task_file_description
+        echo "${task_file_description}"
+        return 0
+    fi
+
+    mycmd.debug "No task file description registered for task definition file '${task_definition_file_name}'."
+
+    return 1
 }
 
 function project:task_registry.new_task() {

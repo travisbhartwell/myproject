@@ -261,6 +261,33 @@ function test_register_task_description() {
     assertFalse "Re-registering with a different task description for task 'task1' should fail." "${result}"
 }
 
+# shellcheck disable=SC2154,SC2312
+function test_task_file_description() {
+    local result=0
+    assertEquals "There should be no task file descriptions registered." \
+        0 "${#_MYPROJECT_TASK_DEFINITION_FILE_DESCRIPTIONS[@]}"
+
+    declare -gx MYPROJECT_CURRENT_TASK_FILE="main"
+    local result=0
+    project:task_registry.register_task_file_description "This is a description." || result="${?}"
+    assertTrue "Registering a description for task file 'main' should succeed." "${result}"
+    assertEquals "There should be one task file descriptions registered." \
+        1 "${#_MYPROJECT_TASK_DEFINITION_FILE_DESCRIPTIONS[@]}"
+
+    result=0
+    project:task_registry.register_task_file_description "This is another description." || result="${?}"
+    assertFalse "Registering a description for task file 'main' again should fail." "${result}"
+    assertEquals "There should still be one task file descriptions registered." \
+        1 "${#_MYPROJECT_TASK_DEFINITION_FILE_DESCRIPTIONS[@]}"
+    unset MYPROJECT_CURRENT_TASK_FILE
+
+    assertEquals "This is a description." "$(project:task_definition_file.get_description "main")"
+
+    result=0
+    project:task_definition_file.get_description "foobar" || result="${?}"
+    assertFalse "Getting a description for a non-registered task file should fail." "${result}"
+}
+
 # --------------------------------------------------------------------------------------------------
 # Test Helper Functions
 function setUp() {

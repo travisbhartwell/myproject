@@ -6,6 +6,7 @@ set -o nounset -o errexit -o errtrace -o pipefail
 
 # --------------------------------------------------------------------------------------------------
 # List Fileset Tasks
+myproject.register_task_definition_file_description "Tasks for listing files in MyProject's filesets"
 
 myproject.register_task_with_fileset all-files \
     myproject.list_files \

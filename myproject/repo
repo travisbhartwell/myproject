@@ -6,6 +6,7 @@ set -o nounset -o errexit -o errtrace -o pipefail
 
 # --------------------------------------------------------------------------------------------------
 # Git Repo Tasks
+myproject.register_task_definition_file_description "Tasks for dealing with the MyProject worktrees and snapshot git tags"
 
 # --------------------------------------------------------------------------------------------------
 # Global Dependencies

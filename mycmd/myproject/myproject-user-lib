@@ -20,6 +20,9 @@ mycmd:command_group.load_support_lib "fileset"
 mycmd:command_group.load_support_lib "output"
 mycmd:command_group.load_support_lib "task"
 
+shopt -s expand_aliases
+alias myproject.register_task_definition_file_description='project:task_registry.register_task_file_description'
+
 function myproject.register_task() {
     local -r task_name="${1}"
     shift
@@ -98,7 +101,6 @@ function myproject._get_fully_qualified_task_name() {
     echo "${fully_qualified_task_name}"
 }
 
-shopt -s expand_aliases
 alias myproject.register_fileset='project:fileset_registry.new_fileset'
 alias myproject.add_files_to_fileset='project:fileset.add_files'
 alias myproject.find_and_add_files_to_fileset='project:fileset.find_and_add_files'

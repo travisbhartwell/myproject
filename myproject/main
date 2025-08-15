@@ -4,6 +4,8 @@
 
 set -o nounset -o errexit -o errtrace -o pipefail
 
+myproject.register_task_definition_file_description "MyProject is a project task runner configured using Bash shell scripts"
+
 # --------------------------------------------------------------------------------------------------
 # Project-Wide Variables
 
