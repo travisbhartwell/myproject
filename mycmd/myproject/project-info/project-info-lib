@@ -139,11 +139,24 @@ function project_info.enable_quiet_mode_if_set_in_arguments() {
     fi
 }
 
-function project_info.call_output_fn_from_arguments() {
-    # shellcheck disable=SC2178
-    local -n arguments_ref="${1}"
+function project_info.handle_arguments_and_do_output() {
+    local -r output_fn_prefix="${1}"
+    shift
 
-    local -r output_fn="${arguments_ref["${PROJECT_INFO_ARGS_OUTPUT_FN}"]}"
+    # shellcheck disable=SC2034
+    local -A arguments=()
+
+    if ! project_info.parse_format_command_line arguments "${output_fn_prefix}" "${@}"; then
+        mycmd.err_exit 1 "Error parsing command line: '${*}'"
+    fi
+
+    project_info.enable_quiet_mode_if_set_in_arguments arguments
+
+    if ! project.load_all_task_definition_files; then
+        exit 1
+    fi
+
+    local -r output_fn="${arguments["${PROJECT_INFO_ARGS_OUTPUT_FN}"]}"
 
     "${output_fn}"
 }

@@ -20,18 +20,5 @@ mycmd:command.register_help_text "\t-f | --format  - Select the output format: p
 set -o nounset -o errexit -o errtrace -o pipefail
 
 function mycmd.main() {
-    # shellcheck disable=SC2034
-    local -A arguments=()
-
-    if ! project_info.parse_format_command_line arguments project_info.list_tasks "${@}"; then
-        mycmd.err_exit 1 "Error parsing command line: '${*}'"
-    fi
-
-    project_info.enable_quiet_mode_if_set_in_arguments arguments
-
-    if ! project.load_all_task_definition_files; then
-        exit 1
-    fi
-
-    project_info.call_output_fn_from_arguments arguments
+    project_info.handle_arguments_and_do_output project_info.list_tasks "${@}"
 }
