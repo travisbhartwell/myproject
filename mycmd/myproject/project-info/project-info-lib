@@ -34,6 +34,120 @@ function project_info.get_project_task_definition_directory() {
     echo "${project_directories["${_PROJECT_TASK_DEFINITION_DIRECTORY}"]}"
 }
 
+readonly PROJECT_INFO_FORMAT_PLAIN='plain'
+readonly PROJECT_INFO_FORMAT_TABLE='table'
+
+declare -Agx PROJECT_INFO_OUTPUT_DISPATCH
+PROJECT_INFO_OUTPUT_DISPATCH["${PROJECT_INFO_FORMAT_PLAIN}"]="_plain_format"
+PROJECT_INFO_OUTPUT_DISPATCH["${PROJECT_INFO_FORMAT_TABLE}"]="_table_format"
+
+readonly PROJECT_INFO_ARGS_FORMAT='format'
+readonly PROJECT_INFO_ARGS_OUTPUT_FN='output-fn'
+readonly PROJECT_INFO_ARGS_QUIET='quiet'
+readonly PROJECT_INFO_ARGS_UNKNOWN='unknown'
+
+function project_info.parse_format_command_line() {
+    local -n arguments_ref="${1}"
+    local -r output_fn_prefix="${2}"
+    shift 2
+
+    local -A errors=()
+
+    # Set defaults
+    arguments_ref["${PROJECT_INFO_ARGS_QUIET}"]=false
+    arguments_ref["${PROJECT_INFO_ARGS_FORMAT}"]="${PROJECT_INFO_FORMAT_TABLE}"
+
+    while (($# > 0)); do
+        case "${1}" in
+            "--${PROJECT_INFO_ARGS_QUIET}" | "-q")
+                arguments_ref["${PROJECT_INFO_ARGS_QUIET}"]=true
+                shift
+                ;;
+
+            "--${PROJECT_INFO_ARGS_FORMAT}"* | "-f")
+                local format
+
+                if [[ "${1}" =~ --${PROJECT_INFO_ARGS_FORMAT}=.+ ]]; then
+                    format=${1##*"${PROJECT_INFO_ARGS_FORMAT}"=}
+                    shift
+                elif [[ "${#}" -ge 2 && "${2:0:1}" != "-" ]]; then
+                    format="${2}"
+                    shift 2
+                else
+                    mycmd.error_output "Missing argument for '--${PROJECT_INFO_ARGS_FORMAT}'."
+                    errors["${PROJECT_INFO_ARGS_FORMAT}"]=1
+                    shift
+                fi
+
+                if [[ -v format ]]; then
+                    if [[ -v PROJECT_INFO_OUTPUT_DISPATCH["${format}"] ]]; then
+                        arguments_ref["${PROJECT_INFO_ARGS_FORMAT}"]="${format}"
+                    else
+                        project_info.print_unknown_format_message "${format}"
+                        errors["${PROJECT_INFO_ARGS_FORMAT}"]=1
+                    fi
+                fi
+                ;;
+
+            *)
+                mycmd.error_output "Unknown flag or argument: '${1}'."
+                errors["${PROJECT_INFO_ARGS_UNKNOWN}"]=1
+                shift
+                ;;
+        esac
+    done
+
+    local -r format="${arguments_ref["${PROJECT_INFO_ARGS_FORMAT}"]}"
+    local -r format_dispatch="${PROJECT_INFO_OUTPUT_DISPATCH["${format}"]}"
+    arguments_ref["${PROJECT_INFO_ARGS_OUTPUT_FN}"]="${output_fn_prefix}${format_dispatch}"
+
+    local command_name
+    # shellcheck disable=SC2154
+    command_name=$(basename "${_MYCMD_FULLY_QUALIFIED_NAME}")
+    readonly command_name
+
+    mycmd.trace "Parsed command line arguments for ${command_name}:"
+    local argument
+
+    for argument in \
+        "${PROJECT_INFO_ARGS_QUIET}" \
+        "${PROJECT_INFO_ARGS_FORMAT}" \
+        "${PROJECT_INFO_ARGS_OUTPUT_FN}"; do
+        mycmd.trace "${argument} = ${arguments_ref[${argument}]}"
+    done
+
+    (("${#errors[@]}" == 0))
+}
+
+function project_info.print_unknown_format_message() {
+    local -r supplied_format="${1}"
+
+    mycmd.error_output "Unknown output format '${supplied_format}', the following options are available:"
+
+    local format
+    for format in "${!PROJECT_INFO_OUTPUT_DISPATCH[@]}"; do
+        mycmd.error_output "- ${format}"
+    done
+}
+
+function project_info.enable_quiet_mode_if_set_in_arguments() {
+    # shellcheck disable=SC2178
+    local -n arguments_ref="${1}"
+
+    if [[ "${arguments_ref["${PROJECT_INFO_ARGS_QUIET}"]}" = "true" ]]; then
+        project.enable_quiet_mode
+    fi
+}
+
+function project_info.call_output_fn_from_arguments() {
+    # shellcheck disable=SC2178
+    local -n arguments_ref="${1}"
+
+    local -r output_fn="${arguments_ref["${PROJECT_INFO_ARGS_OUTPUT_FN}"]}"
+
+    "${output_fn}"
+}
+
 function project_info.list_tasks_plain_format() {
     project_info.list_tasks project:task_registry.foreach_task_by_task_definition_file project_info.print_task_namespaced_parts_string
 }
