@@ -13,192 +13,192 @@ source "${TESTS_DIRECTORY}/testing-support-lib"
 
 # ------------------------------------------------------------------------------
 # List Filesets Valid Project No Filesets Snapshot Test Case
-function test_project_info_filesets_valid_project_no_filesets() {
+function test_valid_project_no_filesets() {
     execute_and_assert_exit_code_and_snapshot 0
 }
 
-function snapshot_project_info_filesets_valid_project_no_filesets() {
+function snapshot_valid_project_no_filesets() {
     # shellcheck disable=SC2154
     cd "${VALID_PROJECT_DIRECTORY4}" && _mycmd myproject project-info filesets
 }
 
-function filter_project_info_filesets_valid_project_no_filesets() {
+function filter_valid_project_no_filesets() {
     # shellcheck disable=SC2154
     sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
 }
 
 # ------------------------------------------------------------------------------
 # List Filesets Valid Project No Filesets Plain Format Snapshot Test Case
-function test_project_info_filesets_valid_project_no_filesets_plain_format() {
+function test_valid_project_no_filesets_plain_format() {
     execute_and_assert_exit_code_and_snapshot 0
 }
 
-function snapshot_project_info_filesets_valid_project_no_filesets_plain_format() {
+function snapshot_valid_project_no_filesets_plain_format() {
     # shellcheck disable=SC2154
     cd "${VALID_PROJECT_DIRECTORY4}" && _mycmd myproject project-info filesets --format=plain
 }
 
-function filter_project_info_filesets_valid_project_no_filesets_plain_format() {
+function filter_valid_project_no_filesets_plain_format() {
     # shellcheck disable=SC2154
     sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
 }
 
 # ------------------------------------------------------------------------------
 # List Filesets Valid Project No Filesets Table Format Snapshot Test Case
-function test_project_info_filesets_valid_project_no_filesets_table_format() {
+function test_valid_project_no_filesets_table_format() {
     execute_and_assert_exit_code_and_snapshot 0
 }
 
-function snapshot_project_info_filesets_valid_project_no_filesets_table_format() {
+function snapshot_valid_project_no_filesets_table_format() {
     # shellcheck disable=SC2154
     cd "${VALID_PROJECT_DIRECTORY4}" && _mycmd myproject project-info filesets --format=table
 }
 
-function filter_project_info_filesets_valid_project_no_filesets_table_format() {
+function filter_valid_project_no_filesets_table_format() {
     # shellcheck disable=SC2154
     sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
 }
 
 # ------------------------------------------------------------------------------
 # List Filesets Valid Project No Filesets Quiet Flag Snapshot Test Case
-function test_project_info_filesets_valid_project_no_filesets_quiet_flag() {
+function test_valid_project_no_filesets_quiet_flag() {
     execute_and_assert_exit_code_and_snapshot 0
 }
 
-function snapshot_project_info_filesets_valid_project_no_filesets_quiet_flag() {
+function snapshot_valid_project_no_filesets_quiet_flag() {
     # shellcheck disable=SC2154
     cd "${VALID_PROJECT_DIRECTORY4}" && _mycmd myproject project-info filesets --quiet
 }
 
-function filter_project_info_filesets_valid_project_no_filesets_quiet_flag() {
+function filter_valid_project_no_filesets_quiet_flag() {
     # shellcheck disable=SC2154
     sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
 }
 
 # ------------------------------------------------------------------------------
 # List Filesets Valid Project No Filesets Table Format Quiet Flag Snapshot Test Case
-function test_project_info_filesets_valid_project_no_filesets_table_format_quiet_flag() {
+function test_valid_project_no_filesets_table_format_quiet_flag() {
     execute_and_assert_exit_code_and_snapshot 0
 }
 
-function snapshot_project_info_filesets_valid_project_no_filesets_table_format_quiet_flag() {
+function snapshot_valid_project_no_filesets_table_format_quiet_flag() {
     # shellcheck disable=SC2154
     cd "${VALID_PROJECT_DIRECTORY4}" && _mycmd myproject project-info filesets --format=table --quiet
 }
 
-function filter_project_info_filesets_valid_project_no_filesets_table_format_quiet_flag() {
+function filter_valid_project_no_filesets_table_format_quiet_flag() {
     # shellcheck disable=SC2154
     sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
 }
 
 # ------------------------------------------------------------------------------
 # List Filesets Valid Project Snapshot Test Case
-function test_project_info_filesets_valid_project() {
+function test_valid_project() {
     execute_and_assert_exit_code_and_snapshot 0
 }
 
-function snapshot_project_info_filesets_valid_project() {
+function snapshot_valid_project() {
     # shellcheck disable=SC2154
     cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info filesets
 }
 
-function filter_project_info_filesets_valid_project() {
+function filter_valid_project() {
     # shellcheck disable=SC2154
     sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
 }
 
 # ------------------------------------------------------------------------------
 # List Filesets Valid Project Plain Format Snapshot Test Case
-function test_project_info_filesets_valid_project_plain_format() {
+function test_valid_project_plain_format() {
     execute_and_assert_exit_code_and_snapshot 0
 }
 
-function snapshot_project_info_filesets_valid_project_plain_format() {
+function snapshot_valid_project_plain_format() {
     # shellcheck disable=SC2154
     cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info filesets --format=plain
 }
 
-function filter_project_info_filesets_valid_project_plain_format() {
+function filter_valid_project_plain_format() {
     # shellcheck disable=SC2154
     sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
 }
 
 # ------------------------------------------------------------------------------
 # List Filesets Valid Project Table Format Snapshot Test Case
-function test_project_info_filesets_valid_project_table_format() {
+function test_valid_project_table_format() {
     execute_and_assert_exit_code_and_snapshot 0
 }
 
-function snapshot_project_info_filesets_valid_project_table_format() {
+function snapshot_valid_project_table_format() {
     # shellcheck disable=SC2154
     cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info filesets --format=table
 }
 
-function filter_project_info_filesets_valid_project_table_format() {
+function filter_valid_project_table_format() {
     # shellcheck disable=SC2154
     sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
 }
 
 # ------------------------------------------------------------------------------
 # List Filesets Valid Project Plain Format Quiet Flag Snapshot Test Case
-function test_project_info_filesets_valid_project_quiet_flag() {
+function test_valid_project_quiet_flag() {
     execute_and_assert_exit_code_and_snapshot 0
 }
 
-function snapshot_project_info_filesets_valid_project_quiet_flag() {
+function snapshot_valid_project_quiet_flag() {
     # shellcheck disable=SC2154
     cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info filesets --quiet
 }
 
-function filter_project_info_filesets_valid_project_quiet_flag() {
+function filter_valid_project_quiet_flag() {
     # shellcheck disable=SC2154
     sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
 }
 
 # ------------------------------------------------------------------------------
 # List Filesets Valid Project Table Format Quiet Flag Snapshot Test Case
-function test_project_info_filesets_valid_project_table_format_quiet_flag() {
+function test_valid_project_table_format_quiet_flag() {
     execute_and_assert_exit_code_and_snapshot 0
 }
 
-function snapshot_project_info_filesets_valid_project_table_format_quiet_flag() {
+function snapshot_valid_project_table_format_quiet_flag() {
     # shellcheck disable=SC2154
     cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info filesets --format=table --quiet
 }
 
-function filter_project_info_filesets_valid_project_table_format_quiet_flag() {
+function filter_valid_project_table_format_quiet_flag() {
     # shellcheck disable=SC2154
     sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
 }
 
 # ------------------------------------------------------------------------------
 # List Filesets Valid Project Table Format With No Equals Snapshot Test Case
-function test_project_info_filesets_valid_project_table_format_no_equals() {
+function test_valid_project_table_format_no_equals() {
     execute_and_assert_exit_code_and_snapshot 0
 }
 
-function snapshot_project_info_filesets_valid_project_table_format_no_equals() {
+function snapshot_valid_project_table_format_no_equals() {
     # shellcheck disable=SC2154
     cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info filesets -f table
 }
 
-function filter_project_info_filesets_valid_project_table_format_no_equals() {
+function filter_valid_project_table_format_no_equals() {
     # shellcheck disable=SC2154
     sed "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
 }
 
 # ------------------------------------------------------------------------------
 # List Filesets Valid Project Invalid Format Test Case
-function test_project_info_filesets_valid_project_invalid_format() {
+function test_valid_project_invalid_format() {
     execute_and_assert_exit_code_and_snapshot 1
 }
 
-function snapshot_project_info_filesets_valid_project_invalid_format() {
+function snapshot_valid_project_invalid_format() {
     # shellcheck disable=SC2154
     cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info filesets --format=invalid
 }
 
-function filter_project_info_filesets_valid_project_invalid_format() {
+function filter_valid_project_invalid_format() {
     sed \
         -e 's/^\[[^]]*\]/[TIMESTAMP]/' \
         -e "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
@@ -207,16 +207,16 @@ function filter_project_info_filesets_valid_project_invalid_format() {
 
 # ------------------------------------------------------------------------------
 # List Filesets Valid Project Format No Argument Test Case
-function test_project_info_filesets_valid_project_format_no_argument() {
+function test_valid_project_format_no_argument() {
     execute_and_assert_exit_code_and_snapshot 1
 }
 
-function snapshot_project_info_filesets_valid_project_format_no_argument() {
+function snapshot_valid_project_format_no_argument() {
     # shellcheck disable=SC2154
     cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info filesets --format
 }
 
-function filter_project_info_filesets_valid_project_format_no_argument() {
+function filter_valid_project_format_no_argument() {
     sed \
         -e 's/^\[[^]]*\]/[TIMESTAMP]/' \
         -e "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
@@ -224,16 +224,16 @@ function filter_project_info_filesets_valid_project_format_no_argument() {
 
 # ------------------------------------------------------------------------------
 # List Filesets Valid Project Invalid Flag Test Case
-function test_project_info_filesets_valid_project_invalid_flag() {
+function test_valid_project_invalid_flag() {
     execute_and_assert_exit_code_and_snapshot 1
 }
 
-function snapshot_project_info_filesets_valid_project_invalid_flag() {
+function snapshot_valid_project_invalid_flag() {
     # shellcheck disable=SC2154
     cd "${VALID_PROJECT_DIRECTORY1}" && _mycmd myproject project-info filesets --invalid-flag
 }
 
-function filter_project_info_filesets_valid_project_invalid_flag() {
+function filter_valid_project_invalid_flag() {
     sed \
         -e 's/^\[[^]]*\]/[TIMESTAMP]/' \
         -e "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
@@ -241,31 +241,31 @@ function filter_project_info_filesets_valid_project_invalid_flag() {
 
 # ------------------------------------------------------------------------------
 # List Filesets Invalid Project Snapshot Test Case
-function test_project_info_filesets_invalid_project() {
+function test_invalid_project() {
     execute_and_assert_exit_code_and_snapshot 1
 }
 
-function snapshot_project_info_filesets_invalid_project() {
+function snapshot_invalid_project() {
     # shellcheck disable=SC2154
     cd "${INVALID_NO_TASK_DEFINITION_DIRECTORY}" && _mycmd myproject project-info filesets
 }
 
-function filter_project_info_filesets_invalid_project() {
+function filter_invalid_project() {
     sed 's/^\[[^]]*\]/[TIMESTAMP]/'
 }
 
 # ------------------------------------------------------------------------------
 # List Filesets Invalid Project Failing Loading All Snapshot Test Case
-function test_project_info_filesets_invalid_project_failing_loading_all() {
+function test_invalid_project_failing_loading_all() {
     execute_and_assert_exit_code_and_snapshot 1
 }
 
-function snapshot_project_info_filesets_invalid_project_failing_loading_all() {
+function snapshot_invalid_project_failing_loading_all() {
     # shellcheck disable=SC2154
     cd "${VALID_PROJECT_DIRECTORY3}" && _mycmd myproject project-info filesets
 }
 
-function filter_project_info_filesets_invalid_project_failing_loading_all() {
+function filter_invalid_project_failing_loading_all() {
     sed \
         -e 's/^\[[^]]*\]/[TIMESTAMP]/' \
         -e "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
@@ -273,16 +273,16 @@ function filter_project_info_filesets_invalid_project_failing_loading_all() {
 
 # ------------------------------------------------------------------------------
 # List Filesets Invalid Project Failing Loading All Snapshot Test Case
-function test_project_info_filesets_invalid_project_task_name_conflict() {
+function test_invalid_project_task_name_conflict() {
     execute_and_assert_exit_code_and_snapshot 1
 }
 
-function snapshot_project_info_filesets_invalid_project_task_name_conflict() {
+function snapshot_invalid_project_task_name_conflict() {
     # shellcheck disable=SC2154
     cd "${VALID_PROJECT_DIRECTORY5}" && _mycmd myproject project-info filesets
 }
 
-function filter_project_info_filesets_invalid_project_task_name_conflict() {
+function filter_invalid_project_task_name_conflict() {
     sed \
         -e 's/^\[[^]]*\]/[TIMESTAMP]/' \
         -e "s%${TEST_DATA_DIRECTORY}%TEST_DATA_DIRECTORY%"
