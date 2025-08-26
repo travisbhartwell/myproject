@@ -20,6 +20,12 @@ mycmd:command_group.load_support_lib "fileset"
 mycmd:command_group.load_support_lib "output"
 mycmd:command_group.load_support_lib "task"
 
+function myproject.source_myproject_lib() {
+    local -r lib_name="${1}"
+
+    mycmd.source_mycmd_lib "myproject/${lib_name}"
+}
+
 shopt -s expand_aliases
 alias myproject.register_task_definition_file_description='project:task_registry.register_task_file_description'
 

@@ -14,6 +14,8 @@ mycmd.trace "The following variables set in main are used in the test task defin
 # shellcheck disable=SC2154
 mycmd.trace "- WORKTREES_PARENT_DIR:   ${WORKTREES_PARENT_DIR}"
 
+myproject.source_myproject_lib "git"
+
 # --------------------------------------------------------------------------------------------------
 # Local Snapshot Task Definitions
 
@@ -32,7 +34,7 @@ function create_local_snapshot() {
     fi
     readonly commit
 
-    if project:git.commit_is_tagged_matching_pattern "${commit}" "${LOCAL_SNAPSHOT_TAG_PREFIX}-r.*"; then
+    if git.commit_is_tagged_matching_pattern "${commit}" "${LOCAL_SNAPSHOT_TAG_PREFIX}-r.*"; then
         mycmd.error_output "Commit '${commit}' already has a snapshot defined."
         return 1
     fi
@@ -44,7 +46,7 @@ function create_local_snapshot() {
     fi
     readonly new_snapshot_tag_name
 
-    if ! project:git.create_lightweight_tag "${new_snapshot_tag_name}" "${commit}"; then
+    if ! git.create_lightweight_tag "${new_snapshot_tag_name}" "${commit}"; then
         mycmd.error_output "Error creating tag '${new_snapshot_tag_name}' at '${commit}'."
         return 1
     fi
@@ -130,12 +132,12 @@ function promote_local_snapshot_to_development() {
     tag_messages+=("${summary_line}")
     tag_messages+=("Created from local snapshot tag '${local_snapshot_tag}'.")
 
-    if ! project:git.create_annotated_tag "${local_snapshot_tag}" "${new_development_snapshot_tag}" tag_messages; then
+    if ! git.create_annotated_tag "${local_snapshot_tag}" "${new_development_snapshot_tag}" tag_messages; then
         mycmd.error_output "Error creating annotated tag"
         return 1
     fi
 
-    if ! project:git.push_changes_with_annotated_tags; then
+    if ! git.push_changes_with_annotated_tags; then
         mycmd.error_output "Error pushing changes"
         return 1
     fi
@@ -190,10 +192,10 @@ function update_snapshot_worktree_to_snapshot() {
         fi
 
         update_snapshot_worktree_last_used_tag_file "${current_worktree_tag}"
-        project:git.update_worktree_to_commitish "${SNAPSHOT_WORKTREE}" "${tag}"
+        git.update_worktree_to_commitish "${SNAPSHOT_WORKTREE}" "${tag}"
         update_snapshot_worktree_current_tag_file "${tag}"
     else
-        project:git.add_worktree_at_detached_commit "${SNAPSHOT_WORKTREE}" "${tag}"
+        git.add_worktree_at_detached_commit "${SNAPSHOT_WORKTREE}" "${tag}"
         update_snapshot_worktree_current_tag_file "${tag}"
     fi
 }
@@ -216,7 +218,7 @@ myproject.register_task update-snapshot-worktree-to-latest-local-snapshot update
 myproject.register_task_description update-snapshot-worktree-to-latest-local-snapshot "Update snapshot worktree checkout to the latest local snapshot git tag."
 
 function update_snapshot_worktree_to_latest_development_snapshot() {
-    project:git.fetch_tags
+    git.fetch_tags
 
     local latest_development_snapshot
     if ! latest_development_snapshot="$(get_latest_development_snapshot_tag)"; then
@@ -320,7 +322,7 @@ function _get_next_tag_name_from_previous() {
 
 function get_local_snapshot_tags() {
     local -r tags_array_ref_name="${1}"
-    project:git.list_tags "${tags_array_ref_name}" "${LOCAL_SNAPSHOT_TAG_PREFIX}-*"
+    git.list_tags "${tags_array_ref_name}" "${LOCAL_SNAPSHOT_TAG_PREFIX}-*"
 }
 
 readonly SNAPSHOT_WORKTREE_CURRENT_TAG_FILE="${WORKTREES_PARENT_DIR}/.current-snapshot-tag"
@@ -347,7 +349,7 @@ function update_snapshot_worktree_current_tag_file() {
 
 function get_development_snapshot_tags() {
     local -r tags_array_ref_name="${1}"
-    project:git.list_tags "${tags_array_ref_name}" "${DEVELOPMENT_SNAPSHOT_TAG_PREFIX}-*"
+    git.list_tags "${tags_array_ref_name}" "${DEVELOPMENT_SNAPSHOT_TAG_PREFIX}-*"
 }
 
 function get_new_development_snapshot_tag_name() {
