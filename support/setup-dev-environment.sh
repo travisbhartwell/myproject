@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
-readonly GIT_REPO_URL=git@github.com:travisbhartwell/myproject.git
+if [[ -n "${MYPROJECT_USE_GIT_HTTPS-}" ]]; then
+    readonly GIT_REPO_URL=https://github.com/travisbhartwell/myproject.git
+else
+    readonly GIT_REPO_URL=git@github.com:travisbhartwell/myproject.git
+fi
 
 function absolute_dir_path() {
     local -r p="${1}"
@@ -26,9 +30,8 @@ function install_snapshot() {
 
     cd "${base_git_dir}" || return 1
 
-    # TODO: Update the MYCMD_SEARCH_PATH with the new install path
-    # TODO: Call the new task name
-    mycmd project run update-snapshot-worktree-to-latest-development-snapshot
+    MYCMD_SEARCH_PATH="${base_git_dir}"/mycmd \
+        mycmd myproject run repo update-snapshot-worktree-to-latest-development-snapshot
 }
 
 function main() {
@@ -44,7 +47,7 @@ function main() {
     fi
     readonly parent_dir
 
-    local base_dir="${parent_dir}/mycmd"
+    local base_dir="${parent_dir}/myproject"
 
     if [[ -d "${base_dir}" ]]; then
         echo >&2 "'${base_dir}' already exists, not overwriting."
@@ -52,7 +55,7 @@ function main() {
     fi
 
     if ! command -v mycmd &>/dev/null; then
-        echo >&"MyCmd is required to install MyProject."
+        echo >&2 "MyCmd is required to install MyProject."
         exit 1
     fi
 
