@@ -53,7 +53,6 @@ mycmd.trace "- WORKTREES_PARENT_DIR:   ${WORKTREES_PARENT_DIR}"
 myproject.register_fileset ALL_FILES
 myproject.find_and_add_files_to_fileset ALL_FILES "${MYPROJECT_LIB_BASE_DIR}" "${TEST_FILES_BASE}" "${SUPPORT_DIR}" "${MYPROJECT_TASK_DEFINITION_DIRECTORY}" -type f
 myproject.find_and_add_files_to_fileset ALL_FILES "${TESTING_BASE}/test-data/valid" -regex '.*/myproject/[^/]*' -type f
-myproject.add_files_to_fileset ALL_FILES myproject-tasks
 
 # Task Definition Files
 myproject.register_fileset TASK_DEFINITION_FILES
