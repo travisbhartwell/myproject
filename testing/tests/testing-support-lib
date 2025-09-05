@@ -327,6 +327,7 @@ function load_myproject_lib_and_start_tracing() {
     fi
 
     mycmd.source_mycmd_lib "myproject"
+    mycmd.batch_init_bin
 }
 
 function cleanup_tracing() {

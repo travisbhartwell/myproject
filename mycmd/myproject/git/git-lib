@@ -14,7 +14,7 @@ set -o nounset -o errexit -o errtrace -o pipefail
 [[ -n "${_GIT_LIB:-}" ]] && return
 readonly _GIT_LIB=1
 
-mycmd.defer_at_startup mycmd.init_bin git
+mycmd.add_to_init_bin_batch git
 
 function git._execute_git() {
     mycmd.bin_execute git "${@}"
@@ -107,7 +107,7 @@ function git.push_changes_with_annotated_tags() {
     fi
 }
 
-mycmd.defer_at_startup mycmd.init_bin grep
+mycmd.add_to_init_bin_batch grep
 function git.commit_is_tagged_matching_pattern() {
     local -r commit="${1}"
     local -r pattern="${2}"

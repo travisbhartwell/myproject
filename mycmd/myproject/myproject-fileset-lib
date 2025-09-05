@@ -82,7 +82,7 @@ function project:fileset_registry._get_sorted_filesets() {
         <(printf '%s\n' "${!_MYPROJECT_FILESETS[@]}" | LC_ALL=en_US.UTF-8 sort || true)
 }
 
-mycmd.defer_at_startup mycmd.init_bin realpath
+mycmd.add_to_init_bin_batch realpath
 function project:fileset.add_files() {
     if [[ ! -v MYPROJECT_ROOT_DIRECTORY ]]; then
         # coverage skip: 2
