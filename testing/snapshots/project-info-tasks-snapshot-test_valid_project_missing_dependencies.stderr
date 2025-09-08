@@ -1,0 +1,8 @@
+[TIMESTAMP] Unable to locate non-existing1.
+[TIMESTAMP] Unable to locate non-existing2.
+[TIMESTAMP] Unable to locate non-existing3.
+[TIMESTAMP] Missing the following required system dependencies:
+[TIMESTAMP] - non-existing1
+[TIMESTAMP] - non-existing2
+[TIMESTAMP] - non-existing3
+[TIMESTAMP] Error loading project task definition files.

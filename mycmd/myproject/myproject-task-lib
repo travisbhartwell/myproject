@@ -88,7 +88,7 @@ function project:task_registry._dump_task_registry() {
         mycmd.trace "It is registered with task function '${_MYPROJECT_TASKS["${fully_qualified_task_name}"]}'."
 
         if [[ -v _MYPROJECT_TASKS_DESCRIPTIONS["${fully_qualified_task_name}"] ]]; then
-            mycmd.trace "It is registred with the description '${_MYPROJECT_TASKS_DESCRIPTIONS["${fully_qualified_task_name}"]}'."
+            mycmd.trace "It is registered with the description '${_MYPROJECT_TASKS_DESCRIPTIONS["${fully_qualified_task_name}"]}'."
         fi
 
         mycmd.trace "-------------------------"
@@ -135,6 +135,10 @@ function project:task_registry.load_all_task_definition_files() {
             return 1
         fi
     done
+
+    if ! mycmd.batch_init_bin; then
+        return 1
+    fi
 }
 
 function project:task_registry._load_task_definition_file() {

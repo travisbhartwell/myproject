@@ -1,0 +1,7 @@
+#!/usr/bin/env -S mycmd project run
+# -*- mode: shell-script; sh-shell: bash; sh-basic-offset: 4; sh-indentation: 4; coding: utf-8 -*-
+# shellcheck shell=bash
+
+mycmd.add_to_init_bin_batch non-existing1
+mycmd.add_to_init_bin_batch non-existing2
+mycmd.add_to_init_bin_batch non-existing3
