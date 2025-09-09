@@ -70,6 +70,8 @@ function main() {
     local -r base_repo_dir="${base_dir}/${branch_to_start}"
 
     install_snapshot "${base_repo_dir}"
+
+    echo "Set MYCMD_SEARCH_PATH to '${base_dir}/snapshot/mycmd' in your shell to make MyProject available."
 }
 
 main "${@}"
