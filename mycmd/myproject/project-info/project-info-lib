@@ -11,6 +11,12 @@ set -o nounset -o errexit -o errtrace -o pipefail
     exit 1
 }
 
+mycmd:command_group.register_version "0.1"
+mycmd:command_group.register_short_description "MyProject Project Info Command Group Library"
+mycmd:command_group.register_help_text "The MyProject Project Task Runner Project Info Library"
+
+[[ -n "${_MYCMD_SOURCING_FOR_HELP:-}" ]] && return
+
 [[ -n "${_PROJECT_INFO_LIB:-}" ]] && return
 readonly _PROJECT_INFO_LIB=1
 
