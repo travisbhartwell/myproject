@@ -192,7 +192,7 @@ function release() {
     fi
     readonly release_name
 
-    myproject.verbose "Using release version '${release_name}'".
+    myproject.verbose_output "Using release version '${release_name}'".
 
     myproject.execute_tasks release-check \; repo clean-dist-directory \; repo create-release-tarball "${release_name}"
 }
