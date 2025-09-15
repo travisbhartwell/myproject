@@ -16,6 +16,7 @@ mycmd.trace "- MYPROJECT_ROOT_DIRECTORY:            ${MYPROJECT_ROOT_DIRECTORY}"
 mycmd.trace "- MYPROJECT_TASK_DEFINITION_DIRECTORY: ${MYPROJECT_TASK_DEFINITION_DIRECTORY}"
 
 readonly MYPROJECT_LIB_BASE_DIR="${MYPROJECT_ROOT_DIRECTORY}/mycmd"
+readonly MYPROJECT_LIB="${MYPROJECT_LIB_BASE_DIR}/myproject/myproject-lib"
 readonly DOCS_DIR="${MYPROJECT_ROOT_DIRECTORY}/docs"
 readonly SUPPORT_DIR="${MYPROJECT_ROOT_DIRECTORY}/support"
 readonly TEMPLATES_DIR="${SUPPORT_DIR}/templates"
@@ -35,6 +36,7 @@ readonly WORKTREES_PARENT_DIR
 
 mycmd.trace "Set the following variables:"
 mycmd.trace "- MYPROJECT_LIB_BASE_DIR: ${MYPROJECT_LIB_BASE_DIR}"
+mycmd.trace "- MYPROJECT_LIB:          ${MYPROJECT_LIB}"
 mycmd.trace "- DOCS_DIR:               ${DOCS_DIR}"
 mycmd.trace "- SUPPORT_DIR:            ${SUPPORT_DIR}"
 mycmd.trace "- TEMPLATES_DIR:          ${TEMPLATES_DIR}"
@@ -82,6 +84,11 @@ myproject.find_and_add_files_to_fileset SNAPSHOT_FILES \
     "${TEST_SNAPSHOTS_DIR}" \
     -type f
 
+# Release Artifacts
+myproject.register_fileset RELEASE_ARTIFACTS
+myproject.add_files_to_fileset RELEASE_ARTIFACTS "${MYPROJECT_LIB_BASE_DIR}"
+myproject.add_files_to_fileset RELEASE_ARTIFACTS LICENSE README.md
+
 # --------------------------------------------------------------------------------------------------
 # Main Tasks
 
@@ -99,6 +106,20 @@ function format_shell_files() {
 
 myproject.register_task_with_fileset format format_shell_files ALL_FILES
 myproject.register_task_description format "Format all shell script source files with shfmt."
+
+function format_check_shell_files() {
+    local -n format_fileset="${1}"
+
+    if myproject.is_verbose_enabled; then
+        mycmd.output "Checking the format of the following files:"
+        myproject.list_files "${!format_fileset}"
+    fi
+
+    mycmd.bin_execute shfmt --language-dialect bash --indent=4 --binary-next-line --case-indent --diff "${format_fileset[@]}"
+}
+
+myproject.register_task_with_fileset format-check format_check_shell_files ALL_FILES
+myproject.register_task_description format-check "Check the format all shell script source files with shfmt."
 
 mycmd.add_to_init_bin_batch shellcheck
 function lint_shell_files() {
@@ -152,6 +173,28 @@ function clean_up() {
 
 myproject.register_task clean-up clean_up
 myproject.register_task_description clean-up "Clean up miscellaneous files."
+
+function release_check() {
+    myproject.execute_tasks clean-up \; format-check \; lint \; test execute-all
+}
+
+myproject.register_task release-check release_check
+myproject.register_task_description release-check "Execute all release check build tasks: check format, lint, and tests."
+
+mycmd.add_to_init_bin_batch sed
+
+function release() {
+    local release_name
+    release_name="$(mycmd.bin_execute sed -r -n "s/^mycmd:command_group\.register_version \"(.*)\"/\1/p" "${MYPROJECT_LIB}")"
+    readonly release_name
+
+    mycmd.output "Found release version '${release_name}'".
+
+    myproject.execute_tasks release-check \; repo clean-dist-directory \; repo create-release-tarball "${release_name}"
+}
+
+myproject.register_task release release
+myproject.register_task_description release "Execute all release build tasks: release-check and create-dist-tarball."
 
 function all() {
     myproject.execute_tasks clean-up \; format \; lint \; test execute-all

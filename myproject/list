@@ -38,4 +38,9 @@ myproject.register_task_with_fileset snapshot-files \
     SNAPSHOT_FILES
 myproject.register_task_description snapshot-files "List all of the snapshot files in the project."
 
+myproject.register_task_with_fileset release-artifacts \
+    myproject.list_files \
+    RELEASE_ARTIFACTS
+myproject.register_task_description release-artifacts "List all of the release artifacts in the project."
+
 mycmd.trace "Finished loading the list task definition file."

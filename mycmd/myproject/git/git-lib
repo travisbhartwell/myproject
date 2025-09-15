@@ -42,6 +42,43 @@ function git.is_working_tree_dirty() {
     [[ -n "${status-}" ]]
 }
 
+function git.has_unstaged_changes_in_paths() {
+    if (($# > 0)); then
+        set -- --quiet --exit-code -- "${@}"
+    else
+        set -- --quiet --exit-code
+    fi
+
+    # This returns non-zero if there are changes, and we want the opposite
+    if ! git._execute_git diff "${@}" 2>/dev/null; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+function git.commit_changes_in_paths_with_message() {
+    local -r message="${1}"
+    shift
+
+    if (($# == 0)); then
+        myproject.output_only_if_not_quiet "Adding all changes across the working tree."
+        set -- --all
+    fi
+
+    if ! git._execute_git add "${@}"; then
+        mycmd.error_output "Error adding changes to the index."
+        return 1
+    fi
+
+    if ! git._execute_git commit --message="${message}" "${@}"; then
+        mycmd.error_output "Error committing changes."
+        return 1
+    fi
+
+    return 0
+}
+
 function git.list_tags() {
     local -n dest_array_ref="${1}"
     shift
