@@ -185,10 +185,14 @@ mycmd.add_to_init_bin_batch sed
 
 function release() {
     local release_name
-    release_name="$(mycmd.bin_execute sed -r -n "s/^mycmd:command_group\.register_version \"(.*)\"/\1/p" "${MYPROJECT_LIB}")"
+    if (($# > 0)); then
+        release_name="${1}"
+    else
+        release_name="$(mycmd.bin_execute sed -r -n "s/^mycmd:command_group\.register_version \"(.*)\"/\1/p" "${MYPROJECT_LIB}")"
+    fi
     readonly release_name
 
-    mycmd.output "Found release version '${release_name}'".
+    myproject.verbose "Using release version '${release_name}'".
 
     myproject.execute_tasks release-check \; repo clean-dist-directory \; repo create-release-tarball "${release_name}"
 }
