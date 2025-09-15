@@ -200,6 +200,15 @@ function release() {
 myproject.register_task release release
 myproject.register_task_description release "Execute all release build tasks: release-check and create-dist-tarball."
 
+function update_version_and_manual_release() {
+    local -r release_name="${1}"
+
+    myproject.execute_tasks repo update-myproject-version "${release_name}" \; release \; repo create-manual-github-release "${release_name}"
+}
+
+myproject.register_task update-version-and-manual-release update_version_and_manual_release
+myproject.register_task_description update-version-and-manual-release "Update the MyProject version to the specified version and then create a GitHub release."
+
 function all() {
     myproject.execute_tasks clean-up \; format \; lint \; test execute-all
 }

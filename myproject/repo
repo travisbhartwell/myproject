@@ -318,11 +318,11 @@ function create_release_tarball() {
         fi
     done
 
-    local dist_tarball
-    dist_tarball="$(get_release_tarball_filename "${release_name}")"
-    readonly dist_tarball
+    local release_tarball
+    release_tarball="$(get_release_tarball_filename "${release_name}")"
+    readonly release_tarball
 
-    if ! tar_dist_directory "${myproject_release_name}" "${dist_tarball}"; then
+    if ! tar_dist_directory "${myproject_release_name}" "${release_tarball}"; then
         return 1
     fi
 }
@@ -352,11 +352,49 @@ function update_myproject_version() {
         if ! git.commit_changes_in_paths_with_message "${message}" "${fileset[@]}"; then
             return 1
         fi
+
+        if ! git.push_changes_with_annotated_tags; then
+            return 1
+        fi
     fi
 }
 
 myproject.register_task_with_fileset update-myproject-version update_myproject_version IMPLEMENTATION_FILES
 myproject.register_task_description update-myproject-version "Update the MyCmd version string for MyProject in the source."
+
+function create_manual_github_release() {
+    local -r release_name="${1}"
+
+    local release_tarball
+    release_tarball="$(get_release_tarball_filename "${release_name}")"
+    readonly release_tarball
+
+    local -r editor="${EDITOR:-vim}"
+    if ! mycmd.init_bin_no_exit "${editor}"; then
+        mycmd.error_output "Required tool '${editor}' not found."
+        return 1
+    fi
+
+    local release_notes="${DIST_PARENT_DIR}/myproject-${release_name}-notes.md"
+
+    # shellcheck disable=SC2162
+    read -p "Press enter to edit release notes in ${editor}."
+
+    "${editor}" "${release_notes}"
+
+    if [[ ! -s "${release_notes}" ]]; then
+        mycmd.error_output "No release notes were created, not creating a release."
+        return 1
+    fi
+
+    if ! git.create_github_release "${release_name}" "${release_tarball}" "${release_notes}"; then
+        mycmd.error_output "Error creating GH release."
+        return 1
+    fi
+}
+
+myproject.register_task create-manual-github-release create_manual_github_release
+myproject.register_task_description create-manual-github-release "Create a GitHub release with the specified release version."
 
 # --------------------------------------------------------------------------------------------------
 # Task Support Functions
@@ -527,7 +565,7 @@ function get_release_tarball_filename() {
 
 function tar_dist_directory() {
     local -r dist_dir="${1}"
-    local -r dist_tarball="${2}"
+    local -r release_tarball="${2}"
 
     local tarball_options="-cz"
 
@@ -540,7 +578,7 @@ function tar_dist_directory() {
     pushd "${DIST_PARENT_DIR}" &>/dev/null
 
     # shellcheck disable=SC2086
-    if ! tar ${tarball_options} -f "${dist_tarball}" "${dist_dir}"; then
+    if ! tar ${tarball_options} -f "${release_tarball}" "${dist_dir}"; then
         mycmd.error_output "Error creating tarball."
         return 1
     fi

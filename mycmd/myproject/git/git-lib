@@ -216,4 +216,28 @@ function git.fetch_tags() {
     fi
 }
 
+function git.create_github_release() {
+    if ! mycmd.init_bin_no_exit gh; then
+        mycmd.error_output "Required tool 'gh' not found."
+        return 1
+    fi
+
+    local -r release_name="${1}"
+    local -r release_tag="v${release_name}"
+    local -r release_tarball="${2}"
+    local -r release_notes="${3}"
+
+    if [[ ! -e "${release_tarball}" ]]; then
+        mycmd.error_output "Missing release tarball '${release_tarball}'."
+        return 1
+    fi
+
+    if [[ ! -e "${release_notes}" ]]; then
+        mycmd.error_output "Missing release notes file '${release_notes}'."
+        return 1
+    fi
+
+    mycmd.bin_execute gh release create "${release_tag}" -F "${release_notes}" "${release_tarball}"
+}
+
 mycmd.trace "The MyProject Git Command Group library has been sourced."
