@@ -55,13 +55,13 @@ if [[ ! -v MYCMD_BIN_DIRECTORY ]]; then
     readonly MYCMD_BIN_DIRECTORY
 fi
 
-if [[ ! -v MYCMD_TESTING_BIN_DIRECTORY ]]; then
-    if ! MYCMD_TESTING_BIN_DIRECTORY=$(cd "${MYCMD_SYSTEM_BASE_DIR}/../testing/bin" &>/dev/null && pwd -P); then
-        echo >&2 "Error fetching MyCmd testing bin directory."
+if [[ ! -v TESTING_BIN_DIRECTORY ]]; then
+    if ! TESTING_BIN_DIRECTORY=$(cd "${TESTS_DIRECTORY}/../bin" &>/dev/null && pwd -P); then
+        echo >&2 "Error fetching testing bin directory."
         exit 1
     fi
-    export MYCMD_TESTING_BIN_DIRECTORY
-    readonly MYCMD_TESTING_BIN_DIRECTORY
+    export TESTING_BIN_DIRECTORY
+    readonly TESTING_BIN_DIRECTORY
 fi
 
 if [[ -z "${TEST_OUTPUT_DIR-}" ]]; then
@@ -291,7 +291,7 @@ function execute_and_assert_exit_code_and_snapshot() {
 }
 
 function _mycmd() {
-    "${MYCMD_TESTING_BIN_DIRECTORY}/mycmd-test" "${@}"
+    "${TESTING_BIN_DIRECTORY}/mycmd-test" "${@}"
 }
 
 # ------------------------------------------------------------------------------
@@ -304,16 +304,8 @@ function copy_test_source_data() {
     fi
 }
 
-function load_myproject_lib_and_start_tracing() {
-    export MYCMD_OUTPUT_FILE="${TEST_OUTPUT_DIR}/test-stdout.log"
-    export MYCMD_ERROR_OUTPUT_FILE="${TEST_OUTPUT_DIR}/test-stderr.log"
-
-    # shellcheck source=/dev/null
-    . "${MYCMD_SYSTEM_BASE_DIR}/mycmd-lib"
-
+function start_tracing() {
     if [[ -v TEST_TRACE_FILE ]]; then
-        mycmd.trace "Tracing execution in '${TEST_TRACE_FILE}'."
-
         PS4='+${BASH_SOURCE}:${LINENO}# '
         export PS4
 
@@ -325,8 +317,18 @@ function load_myproject_lib_and_start_tracing() {
 
         set -o xtrace
     else
-        mycmd.trace "Missing environment variable TEST_TRACE_FILE, skipping tracing."
+        echo >&2 "Missing environment variable TEST_TRACE_FILE, skipping tracing."
     fi
+}
+
+function load_myproject_lib_and_start_tracing() {
+    export MYCMD_OUTPUT_FILE="${TEST_OUTPUT_DIR}/test-stdout.log"
+    export MYCMD_ERROR_OUTPUT_FILE="${TEST_OUTPUT_DIR}/test-stderr.log"
+
+    # shellcheck source=/dev/null
+    . "${MYCMD_SYSTEM_BASE_DIR}/mycmd-lib"
+
+    start_tracing
 
     mycmd.source_mycmd_lib "myproject"
     mycmd.batch_init_bin

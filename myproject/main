@@ -21,6 +21,7 @@ readonly DOCS_DIR="${MYPROJECT_ROOT_DIRECTORY}/docs"
 readonly SUPPORT_DIR="${MYPROJECT_ROOT_DIRECTORY}/support"
 readonly TEMPLATES_DIR="${SUPPORT_DIR}/templates"
 readonly TESTING_BASE="${MYPROJECT_ROOT_DIRECTORY}/testing"
+readonly TESTING_BIN="${TESTING_BASE}/bin"
 readonly TEST_FILES_BASE="${TESTING_BASE}/tests"
 readonly TEST_SNAPSHOTS_DIR="${TESTING_BASE}/snapshots"
 readonly TEST_VENDOR_DIR="${TESTING_BASE}/vendor"
@@ -41,6 +42,7 @@ mycmd.trace "- DOCS_DIR:               ${DOCS_DIR}"
 mycmd.trace "- SUPPORT_DIR:            ${SUPPORT_DIR}"
 mycmd.trace "- TEMPLATES_DIR:          ${TEMPLATES_DIR}"
 mycmd.trace "- TESTING_BASE:           ${TESTING_BASE}"
+mycmd.trace "- TESTING_BIN:            ${TESTING_BIN}"
 mycmd.trace "- TEST_FILES_BASE:        ${TEST_FILES_BASE}"
 mycmd.trace "- TEST_SNAPSHOTS_DIR:     ${TEST_SNAPSHOTS_DIR}"
 mycmd.trace "- TEST_VENDOR_DIR:        ${TEST_VENDOR_DIR}"
@@ -53,7 +55,7 @@ mycmd.trace "- WORKTREES_PARENT_DIR:   ${WORKTREES_PARENT_DIR}"
 
 # All Files
 myproject.register_fileset ALL_FILES
-myproject.find_and_add_files_to_fileset ALL_FILES "${MYPROJECT_LIB_BASE_DIR}" "${TEST_FILES_BASE}" "${SUPPORT_DIR}" "${MYPROJECT_TASK_DEFINITION_DIRECTORY}" -type f
+myproject.find_and_add_files_to_fileset ALL_FILES "${MYPROJECT_LIB_BASE_DIR}" "${TEST_FILES_BASE}" "${TESTING_BIN}" "${SUPPORT_DIR}" "${MYPROJECT_TASK_DEFINITION_DIRECTORY}" -type f
 myproject.find_and_add_files_to_fileset ALL_FILES "${TESTING_BASE}/test-data/valid" -regex '.*/myproject/[^/]*' -type f
 
 # Task Definition Files
