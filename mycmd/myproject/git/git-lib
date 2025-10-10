@@ -11,7 +11,7 @@ set -o nounset -o errexit -o errtrace -o pipefail
     exit 1
 }
 
-mycmd:command_group.register_version "0.01"
+mycmd:command_group.register_version "0.02"
 mycmd:command_group.register_short_description "MyProject Git Command Group Library"
 mycmd:command_group.register_help_text "The MyProject Project Task Runner Git Library"
 
