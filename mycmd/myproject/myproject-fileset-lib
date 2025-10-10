@@ -128,6 +128,8 @@ function project:fileset.add_files() {
     return "${result}"
 }
 
+mycmd.add_to_init_bin_batch find
+
 function project:fileset.find_and_add_files() {
     # shellcheck disable=SC2178
     local -n fileset="${1}"
