@@ -6,7 +6,7 @@ mycmd.trace "Using the following variables provided by the MyCmd environment:"
 # shellcheck disable=SC2154
 mycmd.trace "- _MYCMD_NAMESPACED_PARTS_STRING: '${_MYCMD_NAMESPACED_PARTS_STRING}'"
 
-mycmd:command.register_version "0.02"
+mycmd:command.register_version "0.03"
 mycmd:command.register_short_description "Run one or more tasks defined by the current MyProject task definition directory."
 
 mycmd:command.register_help_text "${_MYCMD_NAMESPACED_PARTS_STRING} [[-V|--verbose] [-q|--quiet] --] <task1> [argument1..] [;]\n"
