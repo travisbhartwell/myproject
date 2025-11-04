@@ -649,6 +649,11 @@ function project:task.execute() {
     project:task.get_arguments "${!task_struct_ref}" task_arguments
     set -- "${task_arguments[@]}" "${@}"
 
+    local old_myproject_current_task_file
+    if [[ -n "${MYPROJECT_CURRENT_TASK_FILE-}" ]]; then
+        old_myproject_current_task_file="${MYPROJECT_CURRENT_TASK_FILE}"
+    fi
+
     declare -gx MYPROJECT_CURRENT_TASK_FILE="${task_definition_file_name}"
 
     local task_description
@@ -676,6 +681,12 @@ function project:task.execute() {
         mycmd.output "✅ Task '${namespaced_parts_string}' succeeded."
     else
         mycmd.output "❌ Task '${namespaced_parts_string}' failed."
+    fi
+
+    if [[ -n "${old_myproject_current_task_file-}" ]]; then
+        MYPROJECT_CURRENT_TASK_FILE="${old_myproject_current_task_file}"
+    else
+        unset MYPROJECT_CURRENT_TASK_FILE
     fi
 
     return "${return_code}"
